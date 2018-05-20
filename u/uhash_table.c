@@ -1,7 +1,6 @@
 #include <stddef.h>
 #include <string.h>
-#include <malloc.h>
-#include "uassert.h"
+#include "ualloc.h"
 #include "uhash_table.h"
 
 void* uhash_table_put(

@@ -1,0 +1,1 @@
+OPCODE_DEF(MOV,"mov",transfer,"rr")

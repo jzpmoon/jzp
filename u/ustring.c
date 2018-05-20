@@ -1,7 +1,6 @@
-#include <malloc.h>
 #include <stddef.h>
 #include <string.h>
-#include "uassert.h"
+#include "ualloc.h"
 #include "ustring.h"
 
 unsigned int data_hscd(void* v,int len){
