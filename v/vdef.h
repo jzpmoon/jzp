@@ -3,5 +3,6 @@
 
 typedef int VInt;
 typedef double VFloat;
+typedef char gcMark_t;
 
 #endif

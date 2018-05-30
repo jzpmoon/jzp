@@ -5,13 +5,25 @@
 #include "udef.h"
 #include "vdef.h"
 
+#define vgcArrSize(obj)						\
+  sizeof(VgcArray)+(((VgcArray*)obj)->len-1)*sizeof(VgcObj*)
+#define vgcNumSize(obj)				\
+  sizeof(VgcNum)
+#define vgcStringSize(obj)			\
+  sizeof(VgcString)
+
+#define gcobjt_defs		      \
+  objt_def(gc_arr,vgcArrSize)	      \
+  objt_def(gc_num,vgcNumSize)	      \
+  objt_def(gc_str,vgcStringSize)
+
 enum gcObj_t{
-  gc_arr,gc_num,gc_str,
+#define objt_def(t,s) t,
+  gcobjt_defs
+#undef objt_def
 };
 
-typedef char gcMark_t;
-
-#define GCHEADER enum gcObj_t t;VgcObj* n;gcMark_t m;
+#define GCHEADER struct _VgcObj* n;enum gcObj_t t;gcMark_t m;
 
 typedef struct _VgcObj{
   GCHEADER
@@ -24,8 +36,10 @@ typedef struct _VgcArray{
 } VgcArray,VgcRootSet;
 
 typedef struct _Value{
-  VInt i;
-  VFloat f;
+  union{
+    VInt i;
+    VFloat f;
+  } u;
 } Value;
 
 typedef struct _VgcNum{

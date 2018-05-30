@@ -7,15 +7,11 @@
 typedef struct _VgcHeap{
   usize_t size;
   VgcRootSet* rootSet;
-  VgcObj* obj;
+  VgcObj* alive;
+  VgcObj* limit;
   void* addr;
 } VgcHeap;
 
-void gcMark(VgcObj* root,VgcObj* heap);
-void gcSweep(VgcObj* heep);
-VgcObj* vgcAlloc(usize_t s,
-		 enum gcObj_t t,
-		 VgcRootSet* rootSet,
-		 VgcObj* heap);
+usize_t vgcObjSize(VgcObj* obj);
 
 #endif
