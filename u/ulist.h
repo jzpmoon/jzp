@@ -9,4 +9,6 @@ typedef struct _ulist{
 
 void* ulist_append(ulist* list,void* value);
 
+int ulist_length(ulist* list);
+
 #endif

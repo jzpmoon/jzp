@@ -19,3 +19,14 @@ void* ulist_append(ulist* list,void* value){
   node->value=value;
   return header;
 }
+
+int ulist_length(ulist* list){
+  ulist* header=list;
+  ulist* node=list;
+  int length=0;
+  while(node!=header){
+    node=node->next;
+    length++;
+  }
+  return length;
+}

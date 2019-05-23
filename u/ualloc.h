@@ -8,15 +8,13 @@
   if(test){t}else{e}
 
 #define unew(ptr,size,err)			\
-  uif(((ptr)=malloc(size))==NULL,err,)
+  uif(((ptr)=malloc(size))==NULL,err,NULL;)
 
 #define ufree(ptr) free(ptr)
 
-#define BOUNDARY 8
+#define BOUNDARY (sizeof(void*))
 #define ALIGN(size,align) ((size+align-1)&(~(align-1)))
 
 #define ALIGN_BOUNDARY(size) ALIGN(size,BOUNDARY)
-
-#define uabort() abort()
 
 #endif
