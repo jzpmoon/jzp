@@ -3,6 +3,15 @@
 #include "uerror.h"
 #include <stddef.h>
 
+vinst*
+vinst_new(usize_t code,usize_t operand){
+  vinst* inst;
+  unew(inst,sizeof(vinst),uabort("vinst:new error!"););
+  inst->code = code;
+  inst->operand = operand;
+  return inst;
+}
+
 usize_t
 _vinst_length(ulist* insts){
   ulist* header=insts;
@@ -20,52 +29,82 @@ _vinst_length(ulist* insts){
   return length;
 }
 
+usize_t
+_vinst_offset_length(ulist* insts,usize_t offset){
+  ulist* node = insts;
+  usize_t length = 0;
+  usize_t count = offset >= 0 ? offset : -offset;
+  usize_t i;
+  for(i = 0;i < count;i++){
+    vinst* inst=node->value;
+    switch(inst->code){
+      #define DF(code,name,value,len)			\
+      case (code):length+=len;break;
+      VBYTE_CODE
+      #undef DF
+    }
+    if(offset > 0){
+      node = node->next;
+    }else{
+      node = node->prev;
+    }
+  }
+  return offset >= 0 ? length : -length;
+}
+
 vgc_str*
-vinst_to_str(vgc_heap* heap,
-	     ulist* insts){
-  ulist* header=insts;
-  ulist* node=insts;
-  usize_t length=_vinst_length(insts);
-  vgc_str* str=vgc_str_new(heap,
-			   length);
-  usize_t count=0;
+vinst_to_str(vgc_heap* heap,ulist* insts){
+  ulist* header = insts;
+  ulist* node = insts;
+  int total = 0;
+  usize_t length = _vinst_length(insts);
+  vgc_str* str = vgc_str_new(heap,length);
+  usize_t count = 0;
   if(!str) return NULL;
   do{
     vinst* inst=node->value;
-      switch(inst->code){
-        #define DF(ocode,name,value,len)		\
-	case (ocode):{					\
-	  int i=0;					\
-	  str->u.b[count++]=inst->code;			\
-	  while(i<len-1&&i<sizeof(usize_t)){		\
-	    str->u.b[count++]=				\
-	      inst->operand>>(8*i);			\
-	    i++;					\
-	  }						\
-	  break;					\
-	}						
-	VBYTE_CODE				
-        #undef DF
-      }
-  }while((node=node->next)!=header);
+    switch(inst->code){
+#define DF(ocode,name,value,len)					\
+      case (ocode):{							\
+	int i = 0;							\
+	usize_t operand;						\
+	if(ocode == Bjmp || ocode == Bjmpi){				\
+	  operand = total + _vinst_offset_length(node,inst->operand);	\
+	}else{								\
+	  operand = inst->operand;					\
+	}								\
+	str->b[count++] = inst->code;					\
+	while(i<len-1&&i<sizeof(usize_t)){				\
+	  str->b[count++] = operand>>(8*i);				\
+	  i++;								\
+	}								\
+	total += len;							\
+	break;								\
+      }						
+      VBYTE_CODE				
+#undef DF
+	}
+  }while((node = node->next) != header);
   return str;
 }
 
 vcontext*
-vcontext_new(vgc_heap* heap){
+vcontext_new(vgc_heap* heap,usize_t stack_size){
   vgc_stack* stack;
   vcontext* ctx;
-  stack=vgc_stack_new(heap,1024);
+  stack=vgc_stack_new(heap,stack_size);
   if(!stack) return NULL;
-  if(vgc_heap_obj_reg(heap,
-		      (vgc_obj*)stack))
-    return NULL;
-  unew(ctx,
-       sizeof(vcontext),
-       return NULL;);
-  ctx->heap=heap;
-  ctx->stack=stack;
-  ctx->curr_call=NULL;
+  ctx = (vcontext*)vgc_heap_obj_new(heap,
+				    vcontext,
+				    2,
+				    gc_context,
+				    area_static);
+  if(ctx){
+    ctx->heap=heap;
+    ctx->stack=stack;
+    ctx->curr_call=NULL;
+    vgc_obj_flip((vgc_obj*)ctx);
+  }
   return ctx;
 }
 
@@ -172,7 +211,7 @@ void bc_jmp(vcontext* ctx,
   vgc_str* bc=curr_call->subr->bc;
   if(!vgc_str_bound_check(bc,offset))
     uabort("vm:jmp error!");
-  curr_call->pc=bc->u.b+offset;
+  curr_call->pc=bc->b+offset;
 }
 
 void bc_jmpi(vcontext* ctx,

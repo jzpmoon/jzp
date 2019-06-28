@@ -1,6 +1,7 @@
 #include <stddef.h>
 #include "ustack.h"
 #include "ualloc.h"
+#include "uerror.h"
 
 #define BLOCK_SIZE 4*1024
 
@@ -20,6 +21,14 @@ typedef struct _ublock{
 #define _IS_STACK_EMPTY(S)      \
   (!(S)->curr_block)
 
+void ustack_log(ustack* stack){
+  ulog1("ustack curr_block: %ld",(long)stack->curr_block);
+  ulog1("ustack cache_block:%ld",(long)stack->cache_block);
+  ulog1("ustack block_pos:  %d",stack->block_pos);
+  ulog1("ustack block_count:%d",stack->block_count);
+  ulog1("ustack block_limit:%d",stack->block_limit);
+}
+
 static ublock* ublock_push(ustack* stack){
   ublock* block;
   if(_IS_BLOCK_FULL(stack)){
@@ -34,6 +43,7 @@ static ublock* ublock_push(ustack* stack){
     }
     block->next=stack->curr_block;
     stack->curr_block=block;
+    stack->cache_block=NULL;
     stack->block_pos=0;
   }
   return stack->curr_block;

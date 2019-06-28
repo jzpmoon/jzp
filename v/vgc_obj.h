@@ -4,23 +4,23 @@
 #include "udef.h"
 #include "ustack.h"
 
-enum gc_obj_t{
-  gc_stack,
-  gc_num,
-  gc_str,
-  gc_cfunc,
-  gc_subr,
-  gc_call,
-  gc_cons,
+enum {
+    gc_stack,
+      gc_num,
+      gc_str,
+    gc_cfunc,
+     gc_subr,
+     gc_call,
+  gc_context,
 };
 
 #define VGCTYPEOF(O,T) \
   (((O)->mark.t==(T)))
 
 struct mark_t{
-  unsigned char m :1;
-  unsigned char a :1;
-  unsigned char t :6;
+  unsigned char m : 1;
+  unsigned char a : 1;
+  unsigned char t : 6;
 };
 
 #define VGCHEADER	 \
@@ -39,24 +39,37 @@ typedef struct _vgc_stack{
   vgc_obj* objs[1];
 } vgc_stack;
 
+enum {
+  area_static,
+  area_active,
+};
+
 typedef struct _vgc_heap{
-  usize_t size;
-  vgc_obj* rootset;
-  vgc_obj* end;
-  vgc_obj* mem;
-  ustack stack;
+  vgc_obj* static_begin;
+  vgc_obj*   static_end;
+  vgc_obj* static_index;
+  vgc_obj* active_begin;
+  vgc_obj*   active_end;
+  vgc_obj* active_index;
+  vgc_obj* memory_begin;
+  vgc_obj*   memory_end;
+  ustack          stack;
 } vgc_heap;
+
+vgc_heap* vgc_heap_new(usize_t static_size,
+		       usize_t active_size);
 
 void vgc_collect(vgc_heap* heap);
 
 vgc_obj*
 _vgc_heap_obj_new(vgc_heap* heap,
-		  usize_t size,
-		  usize_t len,
-		  int type);
+		  usize_t   size,
+		  usize_t    len,
+		  int   obj_type,
+		  int  area_type);
 
-#define vgc_heap_obj_new(heap,size,len,type)	\
-  _vgc_heap_obj_new(heap,sizeof(size),len,type)
+#define vgc_heap_obj_new(heap,size,len,obj_type,area_type)	\
+  _vgc_heap_obj_new(heap,sizeof(size),len,obj_type,area_type)
 
 #define vgc_obj_ref_list(obj)				\
   ((vgc_obj**)(((void*)(obj)+(obj)->size)-sizeof(vgc_obj*)*(obj)->len))
@@ -75,20 +88,17 @@ _vgc_heap_obj_new(vgc_heap* heap,
 
 vgc_stack*
 vgc_stack_new(vgc_heap* heap,
-	      usize_t len);
+	      usize_t    len);
 
 void vgc_stack_push(vgc_stack* stack,
-		    vgc_obj* obj);
+		    vgc_obj*     obj);
 
 vgc_obj*
 vgc_stack_pop(vgc_stack* stack);
 
 vgc_stack*
-vgc_stack_expand(vgc_heap* heap,
+vgc_stack_expand(vgc_heap*   heap,
 		 vgc_stack* stack);
-
-int vgc_heap_obj_reg(vgc_heap* heap,
-		     vgc_obj* obj);
 
 typedef struct _vgc_str{
   VGCHEADER;
@@ -96,11 +106,11 @@ typedef struct _vgc_str{
   union {
     char c[1];
     unsigned char b[1];
-  } u;
+  };
 } vgc_str;
 
 vgc_str*
-vgc_str_new(vgc_heap* heap,
+vgc_str_new(vgc_heap*  heap,
 	    usize_t str_len);
 
 #define vgc_str_bound_check(str,index) \
@@ -131,11 +141,11 @@ typedef struct _vgc_call{
 } vgc_call;
 
 vgc_call*
-vgc_call_new(vgc_heap* heap,
-	     usize_t base,
-	     vgc_subr* subr,
+vgc_call_new(vgc_heap*    heap,
+	     usize_t      base,
+	     vgc_subr*    subr,
 	     vgc_stack* locals,
-	     vgc_call* caller);
+	     vgc_call*  caller);
 
 typedef struct _vgc_num{
   VGCHEADER;
@@ -164,11 +174,5 @@ vgc_num_eq(vgc_heap* heap,
   vgc_num_new(heap,VTRUE)
 #define vgc_false_new(heap) \
   vgc_num_new(heap,VFALSE)
-
-typedef struct _vgc_cons{
-  VGCHEADER;
-  vgc_obj* car;
-  vgc_obj* cdr;
-} vgc_cons;
 
 #endif
