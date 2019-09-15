@@ -43,7 +43,7 @@ vgc_heap* vgc_heap_new(usize_t static_size,
 #define _IS_STATIC(H,O)					\
   ((O) >= (H)->static_begin && (O) < (H)->static_end)
 
-#define _NEXT_OBJ(O,S)				\
+#define _NEXT_OBJ(O,S)				        \
   ((vgc_obj*)((void*)(O) + ALIGN_BOUNDARY(S)))
 
 #define _LAST_OBJ(H) ((H)->memory_end)
@@ -59,7 +59,7 @@ void mark_obj(vgc_obj* root,ustack* stack) {
   if(ustack_push_obj(stack,root))
     uabort("vgc_heap:stack overflow!");
   while(1){
-    vgc_obj** ref_list;
+    vslot* ref_list;
     vgc_obj* tmp_obj;
     usize_t i;
     if(ustack_pop_obj(stack,tmp_obj)){
@@ -73,7 +73,8 @@ void mark_obj(vgc_obj* root,ustack* stack) {
     _MARK_OBJ(tmp_obj);
     ref_list = vgc_obj_ref_list(tmp_obj);
     for(i=0;i<tmp_obj->top;i++){
-      if(ustack_push_obj(stack,ref_list[i])){
+      vgc_obj* ref_obj = vslot_ref_get(ref_list[i]);
+      if(ustack_push_obj(stack,ref_obj)){
 	uabort("vgc_heap:stack overflow!");
       }
     }
@@ -99,7 +100,7 @@ void update_addr(vgc_heap* heap,vgc_obj* root,ustack* stack) {
   if(ustack_push_obj(stack,root))
     uabort("vgc_heap:stack overflow!");
   while(1){
-    vgc_obj** ref_list;
+    vslot* ref_list;
     vgc_obj* tmp_obj;
     usize_t i;
     if(ustack_pop_obj(stack,tmp_obj)){
@@ -113,9 +114,9 @@ void update_addr(vgc_heap* heap,vgc_obj* root,ustack* stack) {
     _UNMARK(tmp_obj);
     ref_list=vgc_obj_ref_list(tmp_obj);
     for(i=0;i < tmp_obj->top;i++){
-      vgc_obj* ref_obj=ref_list[i];
+      vgc_obj* ref_obj = vslot_ref_get(ref_list[i]);
       if(ref_obj && !_IS_STATIC(heap,ref_obj)){
-	ref_list[i]=ref_obj->addr;
+	vslot_ref_set(ref_list[i],ref_obj->addr);
       }
       if(ustack_push_obj(stack,ref_obj)){
 	uabort("vgc_heap:stack overflow!");
@@ -168,9 +169,9 @@ void vgc_collect(vgc_heap* heap) {
 
 vgc_obj* vgc_try_new(vgc_heap* heap,
 		     usize_t   size,
-		     usize_t    len,
-		     int   obj_type,
-		     int  area_type) {
+		     usize_t   len,
+		     int       obj_type,
+		     int       area_type) {
   vgc_obj* new_obj = NULL;
   vgc_obj* next_obj;
   vgc_obj* last_obj;
@@ -204,9 +205,9 @@ vgc_obj* vgc_try_new(vgc_heap* heap,
 
 vgc_obj* _vgc_heap_obj_new(vgc_heap* heap,
 			   usize_t   size,
-			   usize_t    len,
-			   int   obj_type,
-			   int  area_type) {
+			   usize_t   len,
+			   int       obj_type,
+			   int       area_type) {
   vgc_obj* new_obj = vgc_try_new(heap,size,len,obj_type,area_type);
   if(!new_obj && area_type != area_static){
     vgc_collect(heap);
@@ -216,30 +217,30 @@ vgc_obj* _vgc_heap_obj_new(vgc_heap* heap,
 }
 
 vgc_stack* vgc_stack_new(vgc_heap* heap,
-			 usize_t    len) {
-  usize_t size = TYPE_SIZE_OF(vgc_stack,vgc_obj*,len);
+			 usize_t   len) {
+  usize_t size = TYPE_SIZE_OF(vgc_stack,vslot,len);
   vgc_stack* stack = (vgc_stack*)
     _vgc_heap_obj_new(heap,size,len,gc_stack,area_active);
   return stack;
 }
 
 void vgc_stack_push(vgc_stack* stack,
-		    vgc_obj*     obj) {
+		    vslot      slot) {
   if(!vgc_obj_is_full(stack)) {
-    vgc_obj** objs     = stack->objs;
-    objs[stack->top++] = obj;
+    vslot* objs = stack->objs;
+    objs[stack->top++] = slot;
   }
 }
 
-vgc_obj* vgc_stack_pop(vgc_stack* stack){
+vslot vgc_stack_pop(vgc_stack* stack){
   if(!vgc_obj_is_empty(stack)){
-    vgc_obj** objs = stack->objs;
+    vslot* objs = stack->objs;
     return objs[--stack->top];
   }
-  return NULL;
+  return (vslot){vslot_type_null,{0}};
 }
 
-vgc_stack* vgc_stack_expand(vgc_heap*   heap,
+vgc_stack* vgc_stack_expand(vgc_heap*  heap,
 			    vgc_stack* stack) {
   usize_t new_len = stack->len > 0 ? stack->len*2 : 1;
   vgc_stack* new_stack = vgc_stack_new(heap,new_len);
@@ -252,8 +253,8 @@ vgc_stack* vgc_stack_expand(vgc_heap*   heap,
   return new_stack;
 }
 
-vgc_str* vgc_str_new(vgc_heap*  heap,
-		     usize_t str_len) {
+vgc_str* vgc_str_new(vgc_heap* heap,
+		     usize_t   str_len) {
   usize_t size = TYPE_SIZE_OF(vgc_str,char,str_len);
   vgc_str* str=(vgc_str*)
     _vgc_heap_obj_new(heap,size,0,gc_str,area_active);
@@ -270,36 +271,37 @@ void vgc_str_log(vgc_str* str) {
   }
 }
 
-vgc_subr* vgc_subr_new(vgc_heap*    heap,
-		       usize_t  para_len,
-		       usize_t local_len,
-		       vgc_str*       bc,
+vgc_subr* vgc_subr_new(vgc_heap*  heap,
+		       usize_t    para_len,
+		       usize_t    local_len,
+		       vgc_str*   bc,
 		       vgc_stack* consts) {
   vgc_subr* subr = (vgc_subr*)
     vgc_heap_obj_new(heap,vgc_subr,2,gc_subr,area_active);
   if(subr){
     subr->para_len  = para_len;
     subr->local_len = local_len;
-    subr->bc        = bc;
-    subr->consts    = consts;
+    vslot_ref_set(subr->bc,bc);
+    vslot_ref_set(subr->consts,consts);
     vgc_obj_flip(subr);
   }
   return subr;
 }
 
-vgc_call* vgc_call_new(vgc_heap*    heap,
-		       usize_t      base,
-		       vgc_subr*    subr,
+vgc_call* vgc_call_new(vgc_heap*  heap,
+		       usize_t    base,
+		       vgc_subr*  subr,
 		       vgc_stack* locals,
 		       vgc_call*  caller) {
   vgc_call* call = (vgc_call*)
     vgc_heap_obj_new(heap,vgc_call,3,gc_call,area_active);
   if(call){
-    call->pc     = subr->bc->u.b;
+    vgc_str* str = (vgc_str*)vslot_ref_get(subr->bc);
+    call->pc     = str->u.b;
     call->base   = base;
-    call->subr   = subr;
-    call->locals = locals;
-    call->caller = caller;
+    vslot_ref_set(call->subr,subr);
+    vslot_ref_set(call->locals,locals);
+    vslot_ref_set(call->caller,caller);
     vgc_obj_flip(call);
   }
   return call;
