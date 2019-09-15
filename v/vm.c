@@ -85,7 +85,6 @@ vinst_to_str(vgc_heap* heap,ulist* insts){
 #undef DF
 	}
   }while((node = node->next) != header);
-  vgc_str_log(str);
   return str;
 }
 

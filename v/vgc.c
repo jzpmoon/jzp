@@ -51,8 +51,8 @@ vgc_heap* vgc_heap_new(usize_t static_size,
 void vgc_obj_log(vgc_obj* obj){
   ulog1("type:%d",obj->mark.t);
   ulog1("size:%d",obj->size);
-  ulog1("len:%d",obj->len);
-  ulog1("top:%d",obj->top);
+  ulog1("len :%d",obj->len);
+  ulog1("top :%d",obj->top);
 }
 
 void mark_obj(vgc_obj* root,ustack* stack) {
@@ -217,8 +217,7 @@ vgc_obj* _vgc_heap_obj_new(vgc_heap* heap,
 
 vgc_stack* vgc_stack_new(vgc_heap* heap,
 			 usize_t    len) {
-  usize_t size =
-    sizeof(vgc_stack) + sizeof(vgc_obj*) * (len - 1);
+  usize_t size = TYPE_SIZE_OF(vgc_stack,vgc_obj*,len);
   vgc_stack* stack = (vgc_stack*)
     _vgc_heap_obj_new(heap,size,len,gc_stack,area_active);
   return stack;
@@ -255,8 +254,7 @@ vgc_stack* vgc_stack_expand(vgc_heap*   heap,
 
 vgc_str* vgc_str_new(vgc_heap*  heap,
 		     usize_t str_len) {
-  usize_t size=
-    sizeof(vgc_str) + sizeof(char) * (str_len-1);
+  usize_t size = TYPE_SIZE_OF(vgc_str,char,str_len);
   vgc_str* str=(vgc_str*)
     _vgc_heap_obj_new(heap,size,0,gc_str,area_active);
   if(str){

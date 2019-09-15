@@ -17,4 +17,7 @@
 
 #define ALIGN_BOUNDARY(size) ALIGN(size,BOUNDARY)
 
+#define TYPE_SIZE_OF(stype,mtype,length)	\
+  sizeof(stype)+sizeof(mtype)*((length)-1)
+
 #endif

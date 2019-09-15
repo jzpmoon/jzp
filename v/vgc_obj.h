@@ -34,6 +34,21 @@ typedef struct _vgc_obj{
   VGCHEADER;
 } vgc_obj;
 
+enum {
+  vsolt_type_num,
+  vsolt_type_bool,
+  vsolt_type_ptr,
+};
+
+typedef struct _vsolt{
+  int t;
+  union {
+    double number;
+    int boolean;
+    vgc_obj* ptr;
+  } u;
+} vsolt;
+
 typedef struct _vgc_stack{
   VGCHEADER;
   vgc_obj* objs[1];
