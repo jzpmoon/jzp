@@ -265,6 +265,13 @@ vgc_str* vgc_str_new(vgc_heap*  heap,
   return str;
 }
 
+void vgc_str_log(vgc_str* str) {
+  usize_t i = 0;
+  while (i < str->str_len) {
+    ulog1("vgc_str:%d",str->u.b[i++]);
+  }
+}
+
 vgc_subr* vgc_subr_new(vgc_heap*    heap,
 		       usize_t  para_len,
 		       usize_t local_len,
@@ -290,7 +297,7 @@ vgc_call* vgc_call_new(vgc_heap*    heap,
   vgc_call* call = (vgc_call*)
     vgc_heap_obj_new(heap,vgc_call,3,gc_call,area_active);
   if(call){
-    call->pc     = subr->bc->b;
+    call->pc     = subr->bc->u.b;
     call->base   = base;
     call->subr   = subr;
     call->locals = locals;

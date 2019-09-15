@@ -73,9 +73,9 @@ vinst_to_str(vgc_heap* heap,ulist* insts){
 	}else{								\
 	  operand = inst->operand;					\
 	}								\
-	str->b[count++] = inst->code;					\
+	str->u.b[count++] = inst->code;					\
 	while(i<len-1&&i<sizeof(usize_t)){				\
-	  str->b[count++] = operand>>(8*i);				\
+	  str->u.b[count++] = operand>>(8*i);				\
 	  i++;								\
 	}								\
 	total += len;							\
@@ -85,6 +85,7 @@ vinst_to_str(vgc_heap* heap,ulist* insts){
 #undef DF
 	}
   }while((node = node->next) != header);
+  vgc_str_log(str);
   return str;
 }
 
@@ -211,7 +212,7 @@ void bc_jmp(vcontext* ctx,
   vgc_str* bc=curr_call->subr->bc;
   if(!vgc_str_bound_check(bc,offset))
     uabort("vm:jmp error!");
-  curr_call->pc=bc->b+offset;
+  curr_call->pc=bc->u.b+offset;
 }
 
 void bc_jmpi(vcontext* ctx,
@@ -292,7 +293,15 @@ void bc_return_void(vcontext* ctx){
 
 #define NEXT (*(ctx->curr_call->pc)++)
 
-#define NEXT2 ((NEXT)+(NEXT<<8))
+/*#define NEXT2 ((NEXT)+(NEXT<<8))*/
+
+#define NEXT2 _NEXT2(ctx)
+
+usize_t _NEXT2 (vcontext * ctx) {
+  usize_t op = NEXT;
+  op = op + (NEXT<<8);
+  return op;
+}
 
 void vcontext_execute(vcontext* ctx,
 		      vgc_subr* subr){

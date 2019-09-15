@@ -5,8 +5,8 @@ obj_list=uhash_table.o \
          ustring.o
 CFLAGS=-std=c89 -Wall $(DEBUG_MODE)
 &(lib_name):$(obj_list)
-	$(CC) $(obj_list) -o $(lib_name) -fpic -shared
+	$(CC) $(obj_list) -o $(lib_name) -shared
 .c.o:
-	$(CC) -c -o $@ $< $(CFLAGS)
+	$(CC) -c -o $@ $< $(CFLAGS) -fPIC
 clean:
 	rm -f $(lib_name) $(obj_list)

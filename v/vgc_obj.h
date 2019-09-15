@@ -106,12 +106,14 @@ typedef struct _vgc_str{
   union {
     char c[1];
     unsigned char b[1];
-  };
+  } u;
 } vgc_str;
 
 vgc_str*
 vgc_str_new(vgc_heap*  heap,
 	    usize_t str_len);
+
+void vgc_str_log(vgc_str* str);
 
 #define vgc_str_bound_check(str,index) \
   ((index)>=0&&(index)<(str)->str_len)
