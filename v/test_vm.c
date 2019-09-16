@@ -10,6 +10,13 @@
   insts=ulist_append(insts,&((vinst){code,operand}))
 
 int main(){
+  vslot slot_num;
+  vslot slot_num1;
+  vslot slot_num2;
+  vslot slot_stk;
+  vslot slot_subr;
+  vgc_num* num;
+  vgc_stack* stk;
   ulist* insts=NULL;
   vgc_stack* stack;
   vgc_subr* subr;
@@ -39,14 +46,18 @@ int main(){
 		    vinst_to_str( heap,
 				 insts),
 		    stack);
-  vgc_num* num=vgc_num_new( heap,0);
-  vgc_stack* stk=vgc_stack_new( heap,1);
-  vgc_stack_push(stk,(vgc_obj*)num);
-  
-  vgc_stack_push(stack,(vgc_obj*)subr);
-  vgc_stack_push(stack,(vgc_obj*)stk);
-  vgc_stack_push(stack,(vgc_obj*)vgc_num_new( heap,4));
-  vgc_stack_push(stack,(vgc_obj*)vgc_num_new( heap,1));
+  num = vgc_num_new( heap,0);
+  vslot_ref_set(slot_num,num);
+  stk = vgc_stack_new( heap,1);
+  vslot_ref_set(slot_stk,stk);
+  vgc_stack_push(stk,slot_num);
+  vslot_ref_set(slot_subr,subr);
+  vslot_ref_set(slot_num1,vgc_num_new( heap,4));
+  vslot_ref_set(slot_num2,vgc_num_new( heap,1));
+  vgc_stack_push(stack,slot_subr);
+  vgc_stack_push(stack,slot_stk);
+  vgc_stack_push(stack,slot_num1);
+  vgc_stack_push(stack,slot_num2);
   ctx=vcontext_new(heap,1024);
   if(!ctx) uabort("ctx error!");
   /*vgc_collect(heap);*/

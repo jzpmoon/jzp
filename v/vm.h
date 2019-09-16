@@ -31,8 +31,10 @@ vinst_to_str(vgc_heap* heap,
 typedef struct _vcontext{
   VGCHEADER;
   vgc_heap* heap;
-  vgc_stack* stack;
-  vgc_call* curr_call;
+  /*vgc_stack*/
+  vslot stack;
+  /*vgc_call*/
+  vslot curr_call;
 } vcontext;
 
 vcontext*

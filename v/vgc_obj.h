@@ -90,6 +90,12 @@ _vgc_heap_obj_new(vgc_heap* heap,
 #define vgc_obj_ref_list(obj)					\
   ((vslot*)(((void*)(obj)+(obj)->size)-sizeof(vslot)*(obj)->len))
 
+#define VSLOT_NULL ((vslot){vslot_type_null,{0}})
+
+#define vslot_is_ref(slot) ((slot).t==vslot_type_ref)
+
+#define vslot_is_null(slot) ((slot).t==vslot_type_null)
+
 #define vslot_ref_get(slot)			                \
   (((slot).t==vslot_type_ref)?(slot).u.ref:NULL)
 

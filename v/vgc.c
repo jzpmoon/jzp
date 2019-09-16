@@ -237,7 +237,7 @@ vslot vgc_stack_pop(vgc_stack* stack){
     vslot* objs = stack->objs;
     return objs[--stack->top];
   }
-  return (vslot){vslot_type_null,{0}};
+  return VSLOT_NULL;
 }
 
 vgc_stack* vgc_stack_expand(vgc_heap*  heap,
