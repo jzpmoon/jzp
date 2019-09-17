@@ -48,13 +48,6 @@ vgc_heap* vgc_heap_new(usize_t static_size,
 
 #define _LAST_OBJ(H) ((H)->memory_end)
 
-void vgc_obj_log(vgc_obj* obj){
-  ulog1("type:%d",obj->mark.t);
-  ulog1("size:%d",obj->size);
-  ulog1("len :%d",obj->len);
-  ulog1("top :%d",obj->top);
-}
-
 void mark_obj(vgc_obj* root,ustack* stack) {
   if(ustack_push_obj(stack,root))
     uabort("vgc_heap:stack overflow!");
@@ -216,6 +209,13 @@ vgc_obj* _vgc_heap_obj_new(vgc_heap* heap,
   return new_obj;
 }
 
+void vgc_obj_log(vgc_obj* obj){
+  ulog1("type:%d",obj->mark.t);
+  ulog1("size:%d",obj->size);
+  ulog1("len :%d",obj->len);
+  ulog1("top :%d",obj->top);
+}
+
 vgc_stack* vgc_stack_new(vgc_heap* heap,
 			 usize_t   len) {
   usize_t size = TYPE_SIZE_OF(vgc_stack,vslot,len);
@@ -307,37 +307,45 @@ vgc_call* vgc_call_new(vgc_heap*  heap,
   return call;
 }
 
-vgc_num*
-vgc_num_new(vgc_heap* heap,
-	    float    value) {
-  vgc_num* num=(vgc_num*)
-    vgc_heap_obj_new(heap,
-		     vgc_num,
-		     0,
-		     gc_num,
-		     area_active);
-  if(num){
-    num->value = value;
-  }
-  return num;
+vslot vslot_num_add(vslot num1,
+		    vslot num2){
+  double _num1;
+  double _num2;
+  double sum;
+  vslot  slot;
+  _num1 = vslot_num_get(num1);
+  _num2 = vslot_num_get(num2);
+  sum   = _num1 + _num2;
+  vslot_num_set(slot,sum);
+  return slot;
 }
 
-vgc_num*
-vgc_num_add(vgc_heap* heap,
-	    vgc_num* num1,
-	    vgc_num* num2){
-  float value=num1->value+num2->value;
-  vgc_num* num=vgc_num_new(heap,value);
-  return num;
-}
-
-vgc_bool*
-vgc_num_eq(vgc_heap* heap,
-	   vgc_num* num1,
-	   vgc_num* num2){
-  if(num1->value==num2->value){
-    return vgc_true_new(heap);
+vslot vslot_num_eq(vslot num1,
+		   vslot num2){
+  double _num1;
+  double _num2;
+  vslot  slot;
+  _num1 = vslot_num_get(num1);
+  _num2 = vslot_num_get(num2);
+  if(_num1 == _num2){
+    vslot_bool_set(slot,VTRUE);
   }else{
-    return vgc_false_new(heap);
+    vslot_bool_set(slot,VFALSE);
   }
+  return slot;
+}
+
+vslot vslot_ref_eq(vslot ref1,
+		   vslot ref2){
+  vgc_obj* _ref1;
+  vgc_obj* _ref2;
+  vslot  slot;
+  _ref1 = vslot_ref_get(ref1);
+  _ref2 = vslot_ref_get(ref2);
+  if(_ref1 == _ref2){
+    vslot_bool_set(slot,VTRUE);
+  }else{
+    vslot_bool_set(slot,VFALSE);
+  }
+  return slot;
 }

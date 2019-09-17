@@ -15,7 +15,6 @@ int main(){
   vslot slot_num2;
   vslot slot_stk;
   vslot slot_subr;
-  vgc_num* num;
   vgc_stack* stk;
   ulist* insts=NULL;
   vgc_stack* stack;
@@ -46,14 +45,13 @@ int main(){
 		    vinst_to_str( heap,
 				 insts),
 		    stack);
-  num = vgc_num_new( heap,0);
-  vslot_ref_set(slot_num,num);
+  vslot_num_set(slot_num,0);
   stk = vgc_stack_new( heap,1);
   vslot_ref_set(slot_stk,stk);
   vgc_stack_push(stk,slot_num);
   vslot_ref_set(slot_subr,subr);
-  vslot_ref_set(slot_num1,vgc_num_new( heap,4));
-  vslot_ref_set(slot_num2,vgc_num_new( heap,1));
+  vslot_num_set(slot_num1,4);
+  vslot_num_set(slot_num2,1);
   vgc_stack_push(stack,slot_subr);
   vgc_stack_push(stack,slot_stk);
   vgc_stack_push(stack,slot_num1);

@@ -35,27 +35,6 @@ typedef struct _vgc_obj{
 } vgc_obj;
 
 enum {
-  vslot_type_null,
-  vslot_type_num,
-  vslot_type_bool,
-  vslot_type_ref,
-};
-
-typedef struct _vslot{
-  int t;
-  union {
-    double   num;
-    int      bool;
-    vgc_obj* ref;
-  } u;
-} vslot;
-
-typedef struct _vgc_stack{
-  VGCHEADER;
-  vslot objs[1];
-} vgc_stack;
-
-enum {
   area_static,
   area_active,
 };
@@ -84,29 +63,13 @@ _vgc_heap_obj_new(vgc_heap* heap,
 		  int       obj_type,
 		  int       area_type);
 
+void vgc_obj_log(vgc_obj* obj);
+
 #define vgc_heap_obj_new(heap,size,len,obj_type,area_type)	\
   _vgc_heap_obj_new(heap,sizeof(size),len,obj_type,area_type)
 
 #define vgc_obj_ref_list(obj)					\
   ((vslot*)(((void*)(obj)+(obj)->size)-sizeof(vslot)*(obj)->len))
-
-#define VSLOT_NULL ((vslot){vslot_type_null,{0}})
-
-#define vslot_is_ref(slot) ((slot).t==vslot_type_ref)
-
-#define vslot_is_null(slot) ((slot).t==vslot_type_null)
-
-#define vslot_ref_get(slot)			                \
-  (((slot).t==vslot_type_ref)?(slot).u.ref:NULL)
-
-#define vslot_ref_set(slot,obj)					\
-  ((slot).t=vslot_type_ref,(slot).u.ref=(vgc_obj*)(obj))
-
-#define vslot_num_set(slot,_num)		                \
-  ((slot).t=vslot_type_num,(slot).u.num=(_num))
-
-#define vslot_bool_set(slot,_bool)			        \
-  ((slot).t=vslot_type_bool,(slot).u.bool=(_bool))
 
 #define vgc_obj_ref_check(obj,index) 		                \
   ((index)>=0&&(index)<(obj)->len)
@@ -119,6 +82,72 @@ _vgc_heap_obj_new(vgc_heap* heap,
 
 #define vgc_obj_flip(obj)                                       \
   (obj)->top=(obj)->len
+
+enum {
+  vslot_type_null,
+  vslot_type_num,
+  vslot_type_bool,
+  vslot_type_ref,
+};
+
+typedef struct _vslot{
+  int t;
+  union {
+    double   num;
+    int      bool;
+    vgc_obj* ref;
+  } u;
+} vslot;
+
+vslot vslot_num_add(vslot  num1,
+		    vslot  num2);
+
+vslot vslot_num_eq(vslot  num1,
+		   vslot  num2);
+
+vslot vslot_ref_eq(vslot ref1,
+		   vslot ref2);
+
+#define VTRUE (1)
+
+#define VFALSE (0)
+
+#define VTRUEP(_bool) ((_bool).u.bool)
+
+#define VFALSEP(_bool) (!(_bool).u.bool)
+
+#define VSLOT_NULL ((vslot){vslot_type_null,{0}})
+
+#define vslot_is_ref(slot) ((slot).t==vslot_type_ref)
+
+#define vslot_is_null(slot) ((slot).t==vslot_type_null)
+
+#define vslot_is_num(slot) ((slot).t==vslot_type_num)
+
+#define vslot_is_bool(slot) ((slot).t==vslot_type_bool)
+
+#define vslot_ref_get(slot)			                \
+  (((slot).t==vslot_type_ref)?(slot).u.ref:NULL)
+
+#define vslot_num_get(slot)			                \
+  ((slot).u.num)
+
+#define vslot_bool_get(slot)			                \
+  ((slot).u.bool)
+
+#define vslot_ref_set(slot,obj)					\
+  ((slot).t=vslot_type_ref,(slot).u.ref=(vgc_obj*)(obj))
+
+#define vslot_num_set(slot,_num)		                \
+  ((slot).t=vslot_type_num,(slot).u.num=(_num))
+
+#define vslot_bool_set(slot,_bool)			        \
+  ((slot).t=vslot_type_bool,(slot).u.bool=(_bool))
+
+typedef struct _vgc_stack{
+  VGCHEADER;
+  vslot objs[1];
+} vgc_stack;
 
 vgc_stack* vgc_stack_new(vgc_heap* heap,
 			 usize_t   len);
@@ -173,7 +202,7 @@ typedef struct _vgc_call{
   vslot subr;
   /*vgc_stack*/
   vslot locals;
-  /*struct _vgc_call*/
+  /*vgc_call*/
   vslot caller;
 } vgc_call;
 
@@ -183,33 +212,5 @@ vgc_call_new(vgc_heap*  heap,
 	     vgc_subr*  subr,
 	     vgc_stack* locals,
 	     vgc_call*  caller);
-
-typedef struct _vgc_num{
-  VGCHEADER;
-  float value;
-} vgc_num,vgc_bool;
-
-vgc_num*
-vgc_num_new(vgc_heap* heap,
-	    float     value);
-
-vgc_num*
-vgc_num_add(vgc_heap* heap,
-	    vgc_num*  num1,
-	    vgc_num*  num2);
-
-vgc_bool*
-vgc_num_eq(vgc_heap* heap,
-	   vgc_num*  num1,
-	   vgc_num*  num2);
-
-#define VTRUE (1)
-#define VFALSE (0)
-#define VTRUEP(B) ((B)->value)
-#define VFALSEP(B) (!(B)->value)
-#define vgc_true_new(heap) \
-  vgc_num_new(heap,VTRUE)
-#define vgc_false_new(heap) \
-  vgc_num_new(heap,VFALSE)
 
 #endif

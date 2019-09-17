@@ -156,21 +156,6 @@ void bc_store(vcontext* ctx,
   locals->objs[index] = slot;
 }
 
-vgc_obj*
-bc_pop_type(vcontext* ctx,int type){
-  vslot slot   = bc_pop(ctx);
-  vgc_obj* obj = vslot_ref_get(slot);
-  if(!vslot_is_ref(slot) || !VGCTYPEOF(obj,type))
-    uabort("vm:pop type error!");
-  return obj;
-}
-
-#define bc_pop_num(ctx)	    \
-  (vgc_num*)bc_pop_type(ctx,gc_num)
-
-#define bc_pop_bool(ctx)    \
-  bc_pop_num(ctx)
-
 void bc_ref(vcontext* ctx,
 	    usize_t index){
   vslot slot   = bc_pop(ctx);
@@ -195,27 +180,31 @@ void bc_set(vcontext* ctx,
 }
 
 void bc_add(vcontext* ctx){
-  vgc_num* num1 = bc_pop_num(ctx);
-  vgc_num* num2 = bc_pop_num(ctx);
-  vgc_num* num  =
-    vgc_num_add(ctx->heap,num1,num2);
-  vslot slot;
-  vslot_ref_set(slot,num);
-  if(!num)
-    uabort("vm:out of memory!");
-  bc_push(ctx,slot);
+  vslot slot1 = bc_pop(ctx);
+  vslot slot2 = bc_pop(ctx);
+  vslot num;
+  if(!vslot_is_num(slot1) ||
+     !vslot_is_num(slot2)){
+    uabort("vm:add not a number!");
+  }
+  num = vslot_num_add(slot1,slot2);
+  bc_push(ctx,num);
 }
 
 void bc_eq(vcontext* ctx){
-  vgc_num* num1  = bc_pop_num(ctx);
-  vgc_num* num2  = bc_pop_num(ctx);
-  vgc_bool* bool =
-    vgc_num_eq(ctx->heap,num1,num2);
-  vslot slot;
-  vslot_ref_set(slot,bool);
-  if(!bool)
-    uabort("vm:out of memory!");
-  bc_push(ctx,slot);
+  vslot slot1 = bc_pop(ctx);
+  vslot slot2 = bc_pop(ctx);
+  vslot bool;
+  if(vslot_is_num(slot1) &&
+     vslot_is_num(slot2)){
+    bool = vslot_num_eq(slot1,slot2);
+  }else if(vslot_is_ref(slot1) &&
+	   vslot_is_ref(slot2)){
+    bool = vslot_ref_eq(slot1,slot2);
+  }else{
+    uabort("vm:eq type error!");
+  }
+  bc_push(ctx,bool);
 }
 
 void bc_jmp(vcontext* ctx,
@@ -233,8 +222,8 @@ void bc_jmp(vcontext* ctx,
 
 void bc_jmpi(vcontext* ctx,
 	     usize_t   offset){
-  vgc_bool* bool = bc_pop_bool(ctx);
-  if(VTRUEP(bool))
+  vslot slot = bc_pop(ctx);
+  if(vslot_is_bool(slot) && VTRUEP(slot))
     bc_jmp(ctx,offset);
 }
 
