@@ -6,7 +6,6 @@
 
 enum {
   gc_stack,
-  gc_num,
   gc_str,
   gc_cfunc,
   gc_subr,

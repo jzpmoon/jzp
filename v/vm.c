@@ -1,65 +1,61 @@
-#include "vm.h"
+#include <stddef.h>
 #include "ualloc.h"
 #include "uerror.h"
-#include <stddef.h>
+#include "vm.h"
 
 vinst*
 vinst_new(usize_t code,usize_t operand){
   vinst* inst;
   unew(inst,sizeof(vinst),uabort("vinst:new error!"););
-  inst->code = code;
+  inst->code    = code;
   inst->operand = operand;
   return inst;
 }
 
 usize_t
-_vinst_length(ulist* insts){
-  ulist* header=insts;
-  ulist* node=insts;
-  usize_t length=0;
+vinst_full_length(ulist* insts){
+  ulist*  header = insts;
+  ulist*  node   = insts;
+  usize_t length = 0;
   do{
-    vinst* inst=node->value;
+    vinst* inst = node->value;
     switch(inst->code){
-      #define DF(code,name,value,len) \
+#define DF(code,name,value,len)			\
       case (code):length+=len;break;
       VBYTE_CODE
-      #undef DF
+#undef DF
     }
   } while((node=node->next)!=header);
   return length;
 }
 
 usize_t
-_vinst_offset_length(ulist* insts,usize_t offset){
-  ulist* node = insts;
+vinst_byte_length(ulist* insts,usize_t offset){
+  usize_t i      = 0;
   usize_t length = 0;
-  usize_t count = offset >= 0 ? offset : -offset;
-  usize_t i;
-  for(i = 0;i < count;i++){
-    vinst* inst=node->value;
+  ulist*  node   = insts;
+  while(i < offset){
+    vinst* inst = node->value;
     switch(inst->code){
-      #define DF(code,name,value,len)			\
+#define DF(code,name,value,len)			\
       case (code):length+=len;break;
       VBYTE_CODE
-      #undef DF
+#undef DF
     }
-    if(offset > 0){
-      node = node->next;
-    }else{
-      node = node->prev;
-    }
+    node = node->next;
+    i++;
   }
-  return offset >= 0 ? length : -length;
+  return length;
 }
 
 vgc_str*
 vinst_to_str(vgc_heap* heap,ulist* insts){
-  ulist* header = insts;
-  ulist* node = insts;
-  int total = 0;
-  usize_t length = _vinst_length(insts);
-  vgc_str* str = vgc_str_new(heap,length);
-  usize_t count = 0;
+  ulist*   header     = insts;
+  ulist*   node       = insts;
+  usize_t  inst_count = 0;
+  usize_t  byte_count = 0;
+  usize_t  length     = vinst_full_length(insts);
+  vgc_str* str        = vgc_str_new(heap,length);
   if(!str) return NULL;
   do{
     vinst* inst=node->value;
@@ -69,21 +65,22 @@ vinst_to_str(vgc_heap* heap,ulist* insts){
 	int i = 0;							\
 	usize_t operand;						\
 	if(ocode == Bjmp || ocode == Bjmpi){				\
-	  operand = total + _vinst_offset_length(node,inst->operand);	\
+	  operand = vinst_byte_length(header,				\
+				      inst_count + inst->operand);	\
 	}else{								\
 	  operand = inst->operand;					\
 	}								\
-	str->u.b[count++] = inst->code;					\
+	str->u.b[byte_count++] = inst->code;				\
 	while(i<len-1&&i<sizeof(usize_t)){				\
-	  str->u.b[count++] = operand>>(8*i);				\
+	  str->u.b[byte_count++] = operand>>(8*i);			\
 	  i++;								\
 	}								\
-	total += len;							\
+	inst_count++;							\
 	break;								\
       }						
       VBYTE_CODE				
 #undef DF
-	}
+    }
   }while((node = node->next) != header);
   return str;
 }
