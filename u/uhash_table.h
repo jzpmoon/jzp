@@ -3,22 +3,21 @@
 
 typedef struct _uhash_node{
 	struct _uhash_node* next;
-	void* k;
-	void* v;
+	void*               k;
 } uhash_node,* uhash_table;
 
-typedef int(*hstb_comp)(void*,void*);
+typedef void*(*uhstb_key_ft)(void*);
+typedef int(*uhstb_comp_ft)(void*,void*);
 
-void* uhash_table_put(
-	uhash_table* hstb,
-	unsigned int hscd,
-	void* k,
-	void* v,
-	hstb_comp comp);
+void* uhash_table_put(uhash_table*  hstb,
+		      unsigned int  hscd,
+		      void*         k,
+		      uhstb_key_ft  putk,
+		      uhstb_comp_ft comp);
 
-void* uhash_table_get(
-	uhash_table* hstb,
-	unsigned int hscd,
-	void* k,
-	hstb_comp comp);
+void* uhash_table_get(uhash_table*  hstb,
+		      unsigned int  hscd,
+		      void*         k,
+		      uhstb_key_ft  getk,
+		      uhstb_comp_ft comp);
 #endif

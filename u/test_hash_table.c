@@ -4,6 +4,9 @@
 #include "uhash_table.h"
 
 uhash_table hstb[17];
+void* putk(void* k){
+  return k;
+}
 int comp(void* k1,void*k2){
 	return k1-k2;
 }
@@ -13,9 +16,10 @@ int main(){
 	int i=0,j=0;
 	while(i<5){
 		uhash_table_put(
-		hstb,string_hscd(a[i])%17,
+		hstb,
+		string_hscd(a[i])%17,
 		a[i],
-		a[i],
+		putk,
 		comp);
 		i++;
 	}
