@@ -304,17 +304,11 @@ void bc_return_void(vcontext* ctx){
 #define CHECK_CURR_CALL \
   if(!vslot_ref_get(ctx->curr_call)) goto context_exit
 
-#define NEXT (*(((vgc_call*)vslot_ref_get(ctx->curr_call))->pc)++)
+#define FETCH (*(((vgc_call*)vslot_ref_get(ctx->curr_call))->pc)++)
 
-/*#define NEXT2 ((NEXT)+(NEXT<<8))*/
+#define NEXT op=FETCH
 
-#define NEXT2 _NEXT2(ctx)
-
-usize_t _NEXT2 (vcontext * ctx) {
-  usize_t op = NEXT;
-  op = op + (NEXT<<8);
-  return op;
-}
+#define NEXT2 do{op=FETCH;op+=FETCH;}while(0)
 
 void vcontext_execute(vcontext* ctx,
 		      vgc_subr* subr){
@@ -325,10 +319,10 @@ void vcontext_execute(vcontext* ctx,
   while(1){
     int op;
     CHECK_CURR_CALL;
-    op=NEXT;
+    NEXT;
     switch(op){
     case Bpush:
-      op=NEXT;
+      NEXT;
       ulog1("Bpush %d",op);
       bc_push(ctx,bc_constant(ctx,op));
       break;
@@ -337,22 +331,22 @@ void vcontext_execute(vcontext* ctx,
       bc_pop(ctx);
       break;
     case Bload:
-      op=NEXT;
+      NEXT;
       ulog1("Bload %d",op);
       bc_push(ctx,bc_locals(ctx,op));
       break;
     case Bstore:
-      op=NEXT;
+      NEXT;
       ulog1("Bstore %d",op);
       bc_store(ctx,op);
       break;
     case Bref:
-      op=NEXT2;
+      NEXT2;
       ulog1("Bref %d",op);
       bc_ref(ctx,op);
       break;
     case Bset:
-      op=NEXT2;
+      NEXT2;
       ulog1("Bset %d",op);
       bc_set(ctx,op);
       break;
@@ -365,12 +359,12 @@ void vcontext_execute(vcontext* ctx,
       bc_eq(ctx);
       break;
     case Bjmpi:
-      op=NEXT2;
+      NEXT2;
       ulog1("Bjmpi %d",op);
       bc_jmpi(ctx,op);
       break;
     case Bjmp:
-      op=NEXT2;
+      NEXT2;
       ulog1("Bjmp %d",op);
       bc_jmp(ctx,op);
       break;
