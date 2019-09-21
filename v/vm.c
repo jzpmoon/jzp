@@ -306,9 +306,9 @@ void bc_return_void(vcontext* ctx){
 
 #define FETCH (*(((vgc_call*)vslot_ref_get(ctx->curr_call))->pc)++)
 
-#define NEXT op=FETCH
+#define NEXT (op=FETCH)
 
-#define NEXT2 do{op=FETCH;op+=FETCH;}while(0)
+#define NEXT2 do{op=FETCH;op+=FETCH<<8;}while(0)
 
 void vcontext_execute(vcontext* ctx,
 		      vgc_subr* subr){
