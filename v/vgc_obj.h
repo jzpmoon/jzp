@@ -3,6 +3,7 @@
 
 #include "udef.h"
 #include "ustack.h"
+#include "ustring_table.h"
 
 enum {
   gc_stack,
@@ -11,6 +12,7 @@ enum {
   gc_subr,
   gc_call,
   gc_context,
+  gc_extend,
 };
 
 #define VGCTYPEOF(O,T) \
@@ -62,25 +64,25 @@ _vgc_heap_obj_new(vgc_heap* heap,
 		  int       obj_type,
 		  int       area_type);
 
-void vgc_obj_log(vgc_obj* obj);
+#define vgc_heap_obj_new(heap,stype,slen,otype,atype)			\
+  (stype*)_vgc_heap_obj_new(heap,sizeof(stype),slen,otype,atype)
 
-#define vgc_heap_obj_new(heap,size,len,obj_type,area_type)	\
-  _vgc_heap_obj_new(heap,sizeof(size),len,obj_type,area_type)
-
-#define vgc_obj_ref_list(obj)					\
+#define vgc_obj_ref_list(obj)						\
   ((vslot*)(((void*)(obj)+(obj)->size)-sizeof(vslot)*(obj)->len))
 
-#define vgc_obj_ref_check(obj,index) 		                \
+#define vgc_obj_ref_check(obj,index)		\
   ((index)>=0&&(index)<(obj)->len)
 
-#define vgc_obj_is_full(obj)			                \
+#define vgc_obj_is_full(obj)			\
   ((obj)->top>=(obj)->len)
 
-#define vgc_obj_is_empty(obj)		                	\
+#define vgc_obj_is_empty(obj)			\
   ((obj)->top<=0)
 
-#define vgc_obj_flip(obj)                                       \
+#define vgc_obj_flip(obj)			\
   (obj)->top=(obj)->len
+
+void vgc_obj_log(vgc_obj* obj);
 
 enum {
   vslot_type_null,
@@ -211,5 +213,28 @@ vgc_call_new(vgc_heap*  heap,
 	     vgc_subr*  subr,
 	     vgc_stack* locals,
 	     vgc_call*  caller);
+
+typedef struct _vgc_objex_t{
+  ustring* type_name;
+} vgc_objex_t;
+
+#define VGCHEADEREX \
+  VGCHEADER	    \
+  vgc_objex_t oet;
+
+typedef struct _vgc_objex{
+  VGCHEADEREX
+} vgc_objex;
+
+vgc_objex* _vgc_objex_new(vgc_heap*   heap,
+			  usize_t     objex_size,
+			  usize_t     slot_len,
+			  vgc_objex_t objex_type,
+			  int         area_type);
+
+#define vgc_objex_new(heap,stype,slen,otype,atype)		\
+  (stype*)_vgc_objex_new(heap,sizeof(stype),slen,otype,atype)
+
+vgc_objex_t vgc_objex_register(char* str);
 
 #endif

@@ -8,7 +8,7 @@
   if(test){t}else{e}
 
 #define unew(ptr,size,err)			\
-  uif(((ptr)=malloc(size))==NULL,err,NULL;)
+  uif(!((ptr)=malloc(size)),err,(void)0;)
 
 #define ufree(ptr) free(ptr)
 

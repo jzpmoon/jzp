@@ -142,3 +142,32 @@ void vgc_obj_log(vgc_obj* obj){
   ulog1("len :%d",obj->len);
   ulog1("top :%d",obj->top);
 }
+
+vgc_objex* _vgc_objex_new(vgc_heap*   heap,
+			usize_t     objex_size,
+			usize_t     slot_len,
+			vgc_objex_t objex_type,
+			int         area_type){
+  vgc_objex* objex = (vgc_objex*)
+    _vgc_heap_obj_new(heap,
+		      objex_size,
+		      slot_len,
+		      gc_extend,
+		      area_type);
+  if(objex){
+    objex->oet = objex_type;
+  }
+  return objex;
+}
+
+#define VGCHEAP_STRTB_LEN 17
+static ustring_table _strtb[VGCHEAP_STRTB_LEN];
+
+vgc_objex_t vgc_objex_register(char* charp){
+  ustring* str     = ustring_table_put(_strtb,
+				       VGCHEAP_STRTB_LEN,
+				       charp,
+				       -1);
+  vgc_objex_t type = (vgc_objex_t){str};
+  return type;
+}

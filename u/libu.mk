@@ -1,8 +1,10 @@
 lib_name=libu.so
-obj_list=uhash_table.o \
-         ulist.o       \
-         ustack.o      \
-         ustring.o
+obj_list=uhash_table.o   \
+         ulist.o         \
+         ustack.o      	 \
+         ustring.o       \
+         ustring_table.o
+
 CFLAGS=-std=c89 -Wall $(DEBUG_MODE)
 &(lib_name):$(obj_list)
 	$(CC) $(obj_list) -o $(lib_name) -shared
