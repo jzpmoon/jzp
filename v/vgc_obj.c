@@ -163,7 +163,7 @@ vgc_objex* _vgc_objex_new(vgc_heap*   heap,
 #define VGCHEAP_STRTB_LEN 17
 static ustring_table _strtb[VGCHEAP_STRTB_LEN];
 
-vgc_objex_t vgc_objex_register(char* charp){
+vgc_objex_t vgc_objex_init(char* charp){
   ustring* str     = ustring_table_put(_strtb,
 				       VGCHEAP_STRTB_LEN,
 				       charp,

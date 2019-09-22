@@ -215,7 +215,7 @@ vgc_call_new(vgc_heap*  heap,
 	     vgc_call*  caller);
 
 typedef struct _vgc_objex_t{
-  ustring* type_name;
+  ustring* type;
 } vgc_objex_t;
 
 #define VGCHEADEREX \
@@ -235,6 +235,8 @@ vgc_objex* _vgc_objex_new(vgc_heap*   heap,
 #define vgc_objex_new(heap,stype,slen,otype,atype)		\
   (stype*)_vgc_objex_new(heap,sizeof(stype),slen,otype,atype)
 
-vgc_objex_t vgc_objex_register(char* str);
+vgc_objex_t vgc_objex_init(char* str);
+
+#define vgc_objex_is_init(otype) ((otype).type)
 
 #endif
