@@ -105,6 +105,24 @@ vcontext_new(vgc_heap* heap,usize_t stack_size){
   return ctx;
 }
 
+vm* vm_new(int area_static,int area_active,usize_t stack_size){
+  vgc_heap* heap;
+  vcontext* ctx;
+  vm*       vm;
+  heap = vgc_heap_new(area_static,area_active);
+  if(!heap){
+    uabort("vm:create heap error!");
+  }
+  ctx = vcontext_new(heap,stack_size);
+  if(!ctx){
+    uabort("vm:create context error!");
+  }
+  unew(vm,
+       sizeof(vm),
+       uabort("vm:create vm error!"););
+  return vm;
+}
+
 void bc_top(vcontext* ctx,usize_t top){
   vgc_stack* stack = (vgc_stack*)
     vslot_ref_get(ctx->stack);

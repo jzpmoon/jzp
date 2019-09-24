@@ -50,6 +50,16 @@ vgc_str* vgc_str_new(vgc_heap* heap,
   return str;
 }
 
+vgc_str* vgc_str_newc(vgc_heap*  heap,
+		      char*      charp,
+		      usize_t    str_len){
+  vgc_str* str = vgc_str_new(heap,str_len);
+  if(str){
+    memcpy(str->u.b,charp,str_len);
+  }
+  return str;
+}
+
 void vgc_str_log(vgc_str* str) {
   usize_t i = 0;
   while (i < str->str_len) {
@@ -163,11 +173,40 @@ vgc_objex* _vgc_objex_new(vgc_heap*   heap,
 #define VGCHEAP_STRTB_LEN 17
 static ustring_table _strtb[VGCHEAP_STRTB_LEN];
 
-vgc_objex_t vgc_objex_init(char* charp){
-  ustring* str     = ustring_table_put(_strtb,
-				       VGCHEAP_STRTB_LEN,
-				       charp,
-				       -1);
-  vgc_objex_t type = (vgc_objex_t){str};
+#define VGCHEAP_TYTB_LEN 17
+static uhash_table _tytb[VGCHEAP_TYTB_LEN];
+
+static vgc_objex_t* vtytb_key_put(void* key){
+  vgc_objex_t* type;
+  ustring* str = (ustring*)key;
+  unew(type,
+       sizeof(vgc_objex_t),
+       uabort("new vgc_objex_t error!"););
+  type->type_name = str;
+  return type;
+}
+
+static int vtytb_comp(void* k1,void* k2){
+  return k1-k2;
+}
+
+ustring* vstrtb_put(char* charp,int len){
+  ustring* str = ustring_table_put(_strtb,
+				   VGCHEAP_STRTB_LEN,
+				   charp,
+				   len);
+  return str;
+}
+
+vgc_objex_t* vgc_objex_init(char* charp){
+  ustring* str = vstrtb_put(charp,-1);
+  vgc_objex_t type;
+  if(!str){
+    type = uhash_table(_tytb,
+		       str->hash_code % VGCHEAP_TYTB_LEN,
+		       str,
+		       vtytb_key_put,
+		       vtytb_comp);
+  }
   return type;
 }

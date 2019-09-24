@@ -2,6 +2,7 @@
 #define _LTOKEN_H_
 
 enum ltoken{
+  ltk_bad,
   ltk_indentify,
   ltk_left,
   ltk_right,
@@ -10,13 +11,17 @@ enum ltoken{
 };
 
 typedef struct _ltoken_state{
-  char* buf;
-  char* pos;
-  int token;
+  char*    buf;
+  char*    pos;
+  int      token;
+  vgc_obj* str;
+  ustring* sym;
+  double   num;
+  int      bool;
   struct {
     int x;
     int y;
-  } coord;
+  }        coord;
 } ltoken_state;
 
 int ltoken_next(ltoken* token);

@@ -42,4 +42,14 @@ vcontext_new(vgc_heap* heap,usize_t stack_size);
 
 void vcontext_execute(vcontext* ctx,
 		      vgc_subr* subr);
+
+typedef struct _vm{
+  vgc_heap* heap;
+  vcontext* context;
+} vm;
+
+vm* vm_new(usize_t area_static,
+	   usize_t area_active,
+	   usize_t stack_size);
+
 #endif

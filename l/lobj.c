@@ -3,7 +3,7 @@
 
 
 lcons* lcons_new(vgc_heap* heap){
-  static vgc_objex_t lcons_type;
+  static vgc_objex_t* lcons_type;
   lcons* cons;
   if(!vgc_objex_is_init(lcons_type)){
     lcons_type = vgc_objex_init("cons");
