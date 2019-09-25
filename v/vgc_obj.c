@@ -153,11 +153,11 @@ void vgc_obj_log(vgc_obj* obj){
   ulog1("top :%d",obj->top);
 }
 
-vgc_objex* _vgc_objex_new(vgc_heap*   heap,
-			usize_t     objex_size,
-			usize_t     slot_len,
-			vgc_objex_t objex_type,
-			int         area_type){
+vgc_objex* _vgc_objex_new(vgc_heap*    heap,
+			  usize_t      objex_size,
+			  usize_t      slot_len,
+			  vgc_objex_t* objex_type,
+			  int          area_type){
   vgc_objex* objex = (vgc_objex*)
     _vgc_heap_obj_new(heap,
 		      objex_size,
@@ -176,7 +176,7 @@ static ustring_table _strtb[VGCHEAP_STRTB_LEN];
 #define VGCHEAP_TYTB_LEN 17
 static uhash_table _tytb[VGCHEAP_TYTB_LEN];
 
-static vgc_objex_t* vtytb_key_put(void* key){
+static void* vtytb_key_put(void* key){
   vgc_objex_t* type;
   ustring* str = (ustring*)key;
   unew(type,
@@ -200,13 +200,13 @@ ustring* vstrtb_put(char* charp,int len){
 
 vgc_objex_t* vgc_objex_init(char* charp){
   ustring* str = vstrtb_put(charp,-1);
-  vgc_objex_t type;
+  vgc_objex_t* type = NULL;
   if(!str){
-    type = uhash_table(_tytb,
-		       str->hash_code % VGCHEAP_TYTB_LEN,
-		       str,
-		       vtytb_key_put,
-		       vtytb_comp);
+    type = uhash_table_put(_tytb,
+			   str->hash_code % VGCHEAP_TYTB_LEN,
+			   str,
+			   vtytb_key_put,
+			   vtytb_comp);
   }
   return type;
 }

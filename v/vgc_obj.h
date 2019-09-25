@@ -224,24 +224,24 @@ typedef struct _vgc_objex_t{
 
 #define VGCHEADEREX \
   VGCHEADER	    \
-  vgc_objex_t oet;
+  vgc_objex_t* oet;
 
 typedef struct _vgc_objex{
   VGCHEADEREX
 } vgc_objex;
 
-vgc_objex* _vgc_objex_new(vgc_heap*   heap,
-			  usize_t     objex_size,
-			  usize_t     slot_len,
-			  vgc_objex_t objex_type,
-			  int         area_type);
+vgc_objex* _vgc_objex_new(vgc_heap*    heap,
+			  usize_t      objex_size,
+			  usize_t      slot_len,
+			  vgc_objex_t* objex_type,
+			  int          area_type);
 
 #define vgc_objex_new(heap,stype,slen,otype,atype)		\
   (stype*)_vgc_objex_new(heap,sizeof(stype),slen,otype,atype)
 
-ustring* vstrtb_put(char* charp);
+ustring* vstrtb_put(char* charp,int len);
 
-vgc_objex_t* vgc_objex_init(char* str,int len);
+vgc_objex_t* vgc_objex_init(char* str);
 
 #define vgc_objex_is_init(otype) ((otype) != NULL)
 

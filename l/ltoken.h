@@ -8,6 +8,7 @@ enum ltoken{
   ltk_right,
   ltk_string,
   ltk_number,
+  ltk_quote,
 };
 
 typedef struct _ltoken_state{
