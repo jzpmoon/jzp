@@ -13,6 +13,6 @@ ustring* ustring_new(
 unsigned int data_hscd(void* v,int len);
 unsigned int string_hscd(char* v);
 void ustring_dest(ustring* str);
-char* utf8_from_gbk(char* gbk);
+double ustring_to_number(ustring* str);
 
 #endif

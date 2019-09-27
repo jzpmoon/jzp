@@ -53,9 +53,10 @@ vgc_str* vgc_str_new(vgc_heap* heap,
 vgc_str* vgc_str_newc(vgc_heap*  heap,
 		      char*      charp,
 		      usize_t    str_len){
-  vgc_str* str = vgc_str_new(heap,str_len);
+  vgc_str* str = vgc_str_new(heap,str_len + 1);
   if(str){
-    memcpy(str->u.b,charp,str_len);
+    memcpy(str->u.c,charp,str_len);
+    str->u.c[str_len] = '\0';
   }
   return str;
 }

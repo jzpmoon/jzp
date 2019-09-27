@@ -5,10 +5,18 @@
 
 typedef struct _lcons{
   VGCHEADEREX
-  vgc_obj* car;
-  vgc_obj* cdr;
+  vslot car;
+  vslot cdr;
 } lcons;
 
+typedef struct _lsymbol{
+  VGCHEADEREX
+  ustring* key;
+  vslot    val;
+} lsymbol;
+
 lcons* lcons_new(vgc_heap* heap);
+
+lsymbol* lsymbol_new(vgc_heap* heap,ustring* key);
 
 #endif

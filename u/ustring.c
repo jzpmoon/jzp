@@ -1,5 +1,6 @@
 #include <stddef.h>
 #include <string.h>
+#include <stdlib.h>
 #include "ualloc.h"
 #include "ustring.h"
 
@@ -52,6 +53,6 @@ int ustring_comp(ustring* s1,ustring* s2){
 	}
 }
 
-char* utf8_from_gbk(char* gbk){
-  return NULL;
+double ustring_to_number(ustring* str){
+  return atof(str->value);
 }
