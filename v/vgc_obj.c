@@ -1,3 +1,4 @@
+#include <string.h>
 #include "ualloc.h"
 #include "uerror.h"
 #include "vgc_obj.h"
