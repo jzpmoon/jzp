@@ -1,8 +1,9 @@
 #include <stddef.h>
 #include "lobj.h"
 
+vgc_objex_t* lcons_type;
+
 lcons* lcons_new(vgc_heap* heap){
-  static vgc_objex_t* lcons_type;
   lcons* cons;
   if(!vgc_objex_is_init(lcons_type)){
     lcons_type = vgc_objex_init("cons");
@@ -15,8 +16,9 @@ lcons* lcons_new(vgc_heap* heap){
   return cons;
 }
 
+vgc_objex_t* lsymbol_type;
+
 lsymbol* lsymbol_new(vgc_heap* heap,ustring* key){
-  static vgc_objex_t* lsymbol_type;
   lsymbol* symbol;
   if(!vgc_objex_is_init(lsymbol_type)){
     lsymbol_type = vgc_objex_init("symbol");

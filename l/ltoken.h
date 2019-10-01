@@ -38,4 +38,6 @@ vslot lparser_parse(ltoken_state* ts,vgc_heap* heap);
 
 void ltoken_log(ltoken_state* ts);
 
+void lparser_exp_log(vslot s_exp);
+
 #endif

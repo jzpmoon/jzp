@@ -94,16 +94,6 @@ int ltoken_lex_identify(ltoken_state* ts){
     case ')':
     case '\'':
     case '"':
-    case '0':
-    case '1':
-    case '2':
-    case '3':
-    case '4':
-    case '5':
-    case '6':
-    case '7':
-    case '8':
-    case '9':
     case ' ':
     case '\n':
     case '\t':
@@ -160,59 +150,15 @@ int ltoken_next(ltoken_state* ts,vgc_heap* heap){
   }
 }
 
-/*
- * s-exp := ( exp ) | atom
- * exp   := exp exp | s-exp | atom
-*/
-vslot lparser_parse(ltoken_state* ts,vgc_heap* heap){
+vslot lparser_atom_parse(ltoken_state* ts,vgc_heap* heap){
   vslot s_exp = VSLOT_NULL;
-  int   tk;
-  while(1){
-    tk = ltoken_next(ts,heap);
-    switch(tk){
-    case ltk_left:{
-      lcons* cons = NULL;
-      tk = ltoken_next(ts,heap);
-      while(1){
-	vslot car;
-	switch(tk){
-	case ltk_left:
-	  car = lparser_parse(ts,heap);
-	case ltk_string:
-	  vslot_ref_set(car,ts->str);
-	case ltk_identify:{
-	  lsymbol* sym = lsymbol_new(heap,ts->sym);
-	  if(!sym){
-	    uabort("lparser_parse error!");
-	  }
-	  vslot_ref_set(car,sym);
-	}
-	case ltk_number:
-	  vslot_num_set(car,ts->num);
-	case ltk_right:
-	  return s_exp;
-	default:
-	  uabort("lparser_parse error!");
-	}
-	{
-	  lcons* tmp = lcons_new(heap);
-	  if(!tmp){
-	    uabort("lparser_parse error!");
-	  }
-	  if(!cons){
-	    vslot_ref_set(s_exp,tmp);
-	  }else{
-	    vslot_ref_set(cons->cdr,tmp);
-	  }
-	  cons = tmp;
-	  tmp->car = car;
-	}
-      }
-    }
-    case ltk_string:
-      vslot_ref_set(s_exp,ts->str);
-      return s_exp;
-    case ltk_identify:{
+  int   tk    = ts->token;
+  switch(tk){
+  case ltk_string:
+    vslot_ref_set(s_exp,ts->str);
+    return s_exp;
+  case ltk_identify:
+    {
       lsymbol* sym = lsymbol_new(heap,ts->sym);
       if(!sym){
 	uabort("lparser_parse error!");
@@ -220,11 +166,61 @@ vslot lparser_parse(ltoken_state* ts,vgc_heap* heap){
       vslot_ref_set(s_exp,sym);
       return s_exp;
     }
-    case ltk_number:
-      vslot_num_set(s_exp,ts->num);
+  case ltk_number:
+    vslot_num_set(s_exp,ts->num);
+    return s_exp;
+  default:
+    ltoken_log(ts);
+    uabort("lparser_parse error!");
+  }
+}
+
+vslot lparser_exp_parse(ltoken_state* ts,vgc_heap* heap){
+  vslot s_exp = VSLOT_NULL;
+  lcons* cons = NULL;
+  while(1){
+    vslot car;
+    int   tk = ltoken_next(ts,heap);
+    switch(tk){
+    case ltk_left:
+      car = lparser_exp_parse(ts,heap);
+      break;
+    case ltk_right:
       return s_exp;
     default:
-      uabort("lparser_parse error!");
+      car = lparser_atom_parse(ts,heap);
+    }
+    {
+      lcons* tmp = lcons_new(heap);
+      if(!tmp){
+	uabort("lparser_parse error!");
+      }
+      if(!cons){
+	vslot_ref_set(s_exp,tmp);
+      }else{
+	vslot_ref_set(cons->cdr,tmp);
+      }
+      cons = tmp;
+      cons->car = car;
+    }
+  }
+}
+
+/*
+ * s-exp := ( exp ) | atom
+ * exp   := exp exp | s-exp | atom
+*/
+vslot lparser_parse(ltoken_state* ts,vgc_heap* heap){
+  vslot s_exp = VSLOT_NULL;
+  while(1){
+    int tk = ltoken_next(ts,heap);
+    switch(tk){
+    case ltk_left:
+      s_exp = lparser_exp_parse(ts,heap);
+      return s_exp;
+    default:
+      s_exp = lparser_atom_parse(ts,heap);
+      return s_exp;
     }
   }
 }
@@ -251,4 +247,70 @@ void ltoken_log(ltoken_state* ts){
   ulog1("string :%s",str);
   ulog1("number :%f",ts->num);
   ulog ("********token state   end");
+}
+
+void lparser_atom_log(vslot s_exp){
+  if(vslot_is_ref(s_exp)){
+    vgc_obj* obj = vslot_ref_get(s_exp);
+    if(VGCTYPEOF(obj,gc_extend)){
+      vgc_objex* objex = (vgc_objex*)obj;
+      if(VGCTYPEOFEX(objex,lsymbol_type)){
+	lsymbol* sym = (lsymbol*)objex;
+	ulog1(" %s",sym->key->value);
+      }else{
+	ulog(" [objex]");
+      }
+    }else if(VGCTYPEOF(obj,gc_str)){
+      vgc_str* str = (vgc_str*)obj;
+      ulog1(" \"%s\"",str->u.c);
+    }else{
+      ulog(" [obj]");
+    }
+  }else if(vslot_is_null(s_exp)){
+    ulog(" ()");
+  }else if(vslot_is_num(s_exp)){
+    double num = vslot_num_get(s_exp);
+    ulog1(" %f",num);
+  }else if(vslot_is_bool(s_exp)){
+    int bool = vslot_bool_get(s_exp);
+    ulog1(" %d",bool);
+  }else{
+    ulog("lparser log error!");
+  }
+}
+
+void lparser_exp_log(vslot s_exp){
+  lcons* cons;
+  if(vslot_is_ref(s_exp)){
+    vgc_obj* obj = vslot_ref_get(s_exp);
+    if(VGCTYPEOF(obj,gc_extend)){
+      vgc_objex* objex = (vgc_objex*)obj;
+      if(VGCTYPEOFEX(objex,lcons_type)){
+	cons = (lcons*)objex;
+	ulog("(");
+	while(1){
+	  vslot slot;
+	  lparser_exp_log(cons->car);
+	  slot = cons->cdr;
+	  if(vslot_is_ref(slot)){
+	    vgc_obj* obj = vslot_ref_get(slot);
+	    if(VGCTYPEOF(obj,gc_extend)){
+	      vgc_objex* objex = (vgc_objex*)obj;
+	      if(VGCTYPEOFEX(objex,lcons_type)){
+		cons = (lcons*)objex;
+		continue;
+	      }
+	    }
+	  }else if(vslot_is_null(slot)){
+	    ulog(")");
+	    break;
+	  }
+	  lparser_atom_log(slot);
+	  break;
+	}
+	return;
+      }
+    }
+  }
+  lparser_atom_log(s_exp);
 }

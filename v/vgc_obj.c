@@ -105,6 +105,10 @@ vgc_call* vgc_call_new(vgc_heap*  heap,
   return call;
 }
 
+void vslot_log(vslot slot){
+  ulog1("vslot type:%d",slot.t);
+}
+
 vslot vslot_num_add(vslot num1,
 		    vslot num2){
   double _num1;
@@ -203,12 +207,14 @@ ustring* vstrtb_put(char* charp,int len){
 vgc_objex_t* vgc_objex_init(char* charp){
   ustring* str = vstrtb_put(charp,-1);
   vgc_objex_t* type = NULL;
-  if(!str){
+  if(str){
     type = uhash_table_put(_tytb,
 			   str->hash_code % VGCHEAP_TYTB_LEN,
 			   str,
 			   vtytb_key_put,
 			   vtytb_comp);
+  }else{
+    uabort("vgc_objex_init error!");
   }
   return type;
 }

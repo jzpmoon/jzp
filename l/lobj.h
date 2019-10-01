@@ -15,7 +15,11 @@ typedef struct _lsymbol{
   vslot    val;
 } lsymbol;
 
+extern vgc_objex_t* lcons_type;
+
 lcons* lcons_new(vgc_heap* heap);
+
+extern vgc_objex_t* lsymbol_type;
 
 lsymbol* lsymbol_new(vgc_heap* heap,ustring* key);
 

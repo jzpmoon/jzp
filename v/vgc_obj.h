@@ -145,6 +145,8 @@ vslot vslot_ref_eq(vslot ref1,
 #define vslot_bool_set(slot,_bool)			        \
   ((slot).t=vslot_type_bool,(slot).u.bool=(_bool))
 
+void vslot_log(vslot slot);
+
 typedef struct _vgc_stack{
   VGCHEADER;
   vslot objs[1];
@@ -225,6 +227,9 @@ typedef struct _vgc_objex_t{
 #define VGCHEADEREX \
   VGCHEADER	    \
   vgc_objex_t* oet;
+
+#define VGCTYPEOFEX(objex,type)			\
+  ((objex)->oet==(type))
 
 typedef struct _vgc_objex{
   VGCHEADEREX
