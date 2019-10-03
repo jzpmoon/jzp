@@ -23,13 +23,33 @@ int ubuffer_read_from_buff(ubuffer* to_buff,
   return count;
 }
 
-int ubuffer_seed(ubuffer* buff,int offset,int origin,URI_DECL){
+int ubuffer_read_next(ubuffer* buff){
+  int next;
+  if(buff->pos < buff->limit){
+    next = buff->data[buff->pos++];
+  }else{
+    next = -1;
+  }
+  return next;
+}
+
+int ubuffer_look_ahead(ubuffer* buff){
+  int next;
+  if(buff->pos < buff->limit){
+    next = buff->data[buff->pos+1];
+  }else{
+    next = -1;
+  }
+  return next;
+}
+
+int ubuffer_seek(ubuffer* buff,int offset,int origin,URI_DECL){
   int pos;
-  if(origin == USEED_SET){
+  if(origin == USEEK_SET){
     pos = 0;
-  }else if(origin == USEED_CUR){
+  }else if(origin == USEEK_CUR){
     pos = buff->pos;
-  }else if(origin == USEED_END){
+  }else if(origin == USEEK_END){
     pos = buff->limit;
   }else{
     URI_VALRET(-100,"origin undefine!");

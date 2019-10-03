@@ -18,6 +18,14 @@ typedef struct _ustream{
   } u;
 } stream;
 
+ustream* ustream_new_by_buff(int iot,ubuffer* buff,URI_DECL);
+
+ustream* ustream_new_by_file(int iot,FILE* file,URI_DECL);
+
 int ustream_read_to_buff(ustrean* stream,ubuffer* buff,URI_DECL);
+
+int ustream_read_next(ustream* stream,URI_DECL);
+
+int ustream_look_ahead(ustream* stream,URI_DECL);
 
 #endif

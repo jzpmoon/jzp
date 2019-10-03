@@ -15,13 +15,17 @@ ubuffer* ubuffer_new(int size,URI_DECL);
 int ubuffer_read_from_buff(ubuffer* to_buff,
 			   ubuffer* from_buff);
 
-#define USEED_SET 0
+int ubuffer_read_next(ubuffer* buff);
 
-#define USEED_CUR 1
+int ubuffer_look_ahead(ubuffer* buff);
 
-#define USEED_END 2
+#define USEEK_SET 0
 
-int ubuffer_seed(ubuffer* buff,int offset,int origin,URI_DECL);
+#define USEEK_CUR 1
+
+#define USEEK_END 2
+
+int ubuffer_seek(ubuffer* buff,int offset,int origin,URI_DECL);
 
 #define ubuffer_readly_read(buff)		\
   do{						\
