@@ -37,7 +37,24 @@ typedef struct _ureturn_infor{
   char* msg;
 } ureturn_infor;
 
+#define URI_DEFINE \
+  ureturn_infor (*ri) = &(ureturn_infor){UERR_C_SUCC,UERR_M_SUCC}
+
+#define URI_REF ri
+
 #define URI_DECL ureturn_infor* ri
+
+#define URI_CASE(CODE) if((CODE) == ri->code){
+
+#define URI_ELSE(CODE) }if((CODE) == ri->code){
+
+#define URI_ERROR if(UERR_C_SUCC != ri->code){
+
+#define URI_END }
+
+#define URI_CODE ri->code
+
+#define URI_MSG ri->msg
 
 #define UERR_C_ERR  (-1)
 
@@ -56,9 +73,9 @@ typedef struct _ureturn_infor{
   URI_SET(c,m);return (r)
 
 #define URI_ADDRET_SUCC(a)			\
-  URI_SETRET(URI_C_SUCC,URI_M_SUCC,a)
+  URI_SETRET(UERR_C_SUCC,UERR_M_SUCC,a)
 
-#define URI_VAlRET(c,m)				\
+#define URI_VALRET(c,m)				\
   URI_SET(c,m);return c
 
 #define URI_VALRET_SUCC				\

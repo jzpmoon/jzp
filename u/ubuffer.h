@@ -15,6 +15,9 @@ ubuffer* ubuffer_new(int size,URI_DECL);
 int ubuffer_read_from_buff(ubuffer* to_buff,
 			   ubuffer* from_buff);
 
+int ubuffer_read_from_file(ubuffer* to_buff,
+			   FILE*    from_file);
+
 int ubuffer_read_next(ubuffer* buff);
 
 int ubuffer_look_ahead(ubuffer* buff);
@@ -27,16 +30,23 @@ int ubuffer_look_ahead(ubuffer* buff);
 
 int ubuffer_seek(ubuffer* buff,int offset,int origin,URI_DECL);
 
-#define ubuffer_readly_read(buff)		\
+#define ubuffer_ready_read(buff)		\
   do{						\
     (buff)->limit = (buff)->pos;		\
     (buff)->pos   = 0;				\
   }while(0)
 
-#define ubuffer_readly_write(buff)		\
+#define ubuffer_ready_write(buff)		\
   do{						\
     buff->limit = buff->size;			\
     buff->pos   = 0;				\
   }while(0)
+
+#define ubuffer_empty(buff) \
+  ((buff)->pos = 0,(buff)->limit = 0)
+
+#define ubuffer_has_next(buff) ((buff)->limit - (buff)->pos > 0)
+
+#define ubuffer_is_empty(buff) ((buff)->pos == 0 && (buff)->limit == 0)
 
 #endif

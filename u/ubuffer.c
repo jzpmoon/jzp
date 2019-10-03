@@ -1,3 +1,4 @@
+#include "ualloc.h"
 #include "ubuffer.h"
 
 ubuffer* ubuffer_new(int size,URI_DECL){
@@ -5,7 +6,7 @@ ubuffer* ubuffer_new(int size,URI_DECL){
   ubuffer* buff;
   unew(buff,
        _size,
-       URI_NILRET(UERR_C_OFM,UERR_M_OFM));
+       URI_NILRET(UERR_C_OFM,UERR_M_OFM););
   buff->pos   = 0;
   buff->limit = 0;
   buff->size  = size;
@@ -19,6 +20,25 @@ int ubuffer_read_from_buff(ubuffer* to_buff,
 	from_buff->pos < from_buff->limit){
     to_buff->data[to_buff->pos++] = from_buff->data[from_buff->pos++];
     count++;
+  }
+  return count;
+}
+
+int ubuffer_read_from_file(ubuffer* to_buff,
+			   FILE*    from_file){
+  int count = 0;
+  int eof_val;
+  int err_val;
+  int len   = to_buff->limit - to_buff->pos;
+  if(len > 0){
+    count = fread(&to_buff->data[to_buff->pos],1,len,from_file);
+    eof_val = feof(from_file);
+    err_val = ferror(from_file);
+    if(!eof_val && err_val){
+      uabort("read file error!");
+    }
+    to_buff->pos += count;
+    to_buff->limit   = to_buff->pos;
   }
   return count;
 }
