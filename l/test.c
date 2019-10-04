@@ -6,7 +6,7 @@ ltoken_state ts;
 
 int main(){
   URI_DEFINE;
-  vgc_heap* heap=vgc_heap_new(256,1024);
+  vgc_heap* heap=vgc_heap_new(256,1024*10);
   vslot slot;
   FILE* file;
   ustream* stream;

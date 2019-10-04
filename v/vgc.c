@@ -17,7 +17,7 @@ vgc_heap* vgc_heap_new(usize_t static_size,
   heap->static_end   = memory + align_static_size;
   heap->static_index = heap->static_begin;
   heap->active_begin = heap->static_end;
-  heap->active_end   = heap->active_begin + align_active_size;
+  heap->active_end   = memory + align_memory_size;
   heap->active_index = heap->active_begin;
   heap->memory_begin = memory;
   heap->memory_end   = heap->active_end;
@@ -117,8 +117,9 @@ void update_addr(vgc_heap* heap,vgc_obj* root,ustack* stack) {
   }
 }
 
-void move_obj(vgc_obj* bg_obj,vgc_obj* ed_obj) {
-  vgc_obj* tmp_obj  = bg_obj;
+vgc_obj* move_obj(vgc_obj* bg_obj,vgc_obj* ed_obj) {
+  vgc_obj* tmp_obj   = bg_obj;
+  vgc_obj* index_obj = bg_obj;
   while(tmp_obj < ed_obj){
     vgc_obj* next_obj = _NEXT_OBJ(tmp_obj,tmp_obj->size);
     if(_IS_ADDR(tmp_obj)){
@@ -126,12 +127,14 @@ void move_obj(vgc_obj* bg_obj,vgc_obj* ed_obj) {
       vgc_obj_log(tmp_obj);
       _UNADDR(tmp_obj);
       memcpy(tmp_obj->addr,tmp_obj,tmp_obj->size);
+      index_obj = tmp_obj->addr;
     }else{
       ulog("*********release*********");
       vgc_obj_log(tmp_obj);
     }
     tmp_obj=next_obj;
   }
+  return index_obj;
 }
 
 void vgc_collect(vgc_heap* heap) {
@@ -155,7 +158,8 @@ void vgc_collect(vgc_heap* heap) {
   }
   ulog("vgc_heap:Update Address end");
   
-  move_obj(heap->active_begin,heap->active_index);
+  heap->active_index =
+    move_obj(heap->active_begin,heap->active_index);
   ulog("vgc_heap:Collect end");
 }
 
