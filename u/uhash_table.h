@@ -9,6 +9,8 @@ typedef struct _uhash_node{
 typedef void*(*uhstb_key_ft)(void*);
 typedef int(*uhstb_comp_ft)(void*,void*);
 
+uhash_table* uhash_table_new(int size);
+
 void* uhash_table_put(uhash_table*  hstb,
 		      unsigned int  hscd,
 		      void*         k,

@@ -156,8 +156,8 @@ typedef struct _vgc_stack{
 vgc_stack* vgc_stack_new(vgc_heap* heap,
 			 usize_t   len);
 
-void vgc_stack_push(vgc_stack* stack,
-		    vslot      slot);
+int vgc_stack_push(vgc_stack* stack,
+		   vslot      slot);
 
 vslot vgc_stack_pop(vgc_stack* stack);
 
@@ -226,7 +226,7 @@ vgc_call_new(vgc_heap*  heap,
 
 typedef struct _vcontext{
   VGCHEADER;
-  vgc_heap* heap;
+  struct _vm* vm;
   /*vgc_stack*/
   vslot stack;
   /*vgc_call*/

@@ -85,8 +85,17 @@ vinst_to_str(vgc_heap* heap,ulist* insts){
   return str;
 }
 
+vsymbol* vsymbol_new(ustring* name,usize_t index){
+  vsymbol* sym;
+  unew(sym,sizeof(vsymbol),return NULL;);
+  sym->name  = name;
+  sym->index = index;
+  return sym;
+}
+
 vcontext*
-vcontext_new(vgc_heap* heap,usize_t stack_size){
+vcontext_new(struct _vm* vm,usize_t stack_size){
+  vgc_heap* heap = vm->heap;
   vgc_stack* stack;
   vcontext* ctx;
   stack=vgc_stack_new(heap,stack_size);
@@ -97,7 +106,7 @@ vcontext_new(vgc_heap* heap,usize_t stack_size){
 				    gc_context,
 				    area_static);
   if(ctx){
-    ctx->heap = heap;
+    ctx->vm = vm;
     vslot_ref_set(ctx->stack,stack);
     vslot_ref_set(ctx->curr_call,NULL);
     vgc_obj_flip((vgc_obj*)ctx);
@@ -105,22 +114,93 @@ vcontext_new(vgc_heap* heap,usize_t stack_size){
   return ctx;
 }
 
-vm* vm_new(int area_static,int area_active,usize_t stack_size){
-  vgc_heap* heap;
-  vcontext* ctx;
-  vm*       vm;
+vm* vm_new(usize_t area_static,
+	   usize_t area_active,
+	   usize_t stack_size,
+	   usize_t consts_size){
+  vgc_heap*    heap;
+  vcontext*    ctx;
+  vgc_stack*   consts;
+  uhash_table* symtb;
+  vm*          vm;
   heap = vgc_heap_new(area_static,area_active);
   if(!heap){
     uabort("vm:create heap error!");
   }
-  ctx = vcontext_new(heap,stack_size);
-  if(!ctx){
-    uabort("vm:create context error!");
+  consts = vgc_stack_new(heap,consts_size);
+  if(!consts){
+    uabort("vm:create consts error!");
+  }
+  symtb = uhash_table_new(VM_SYMTB_SIZE);
+  if(!symtb){
+    uabort("vm:create symtb error!");
   }
   unew(vm,
        sizeof(vm),
        uabort("vm:create vm error!"););
+  ctx = vcontext_new(vm,stack_size);
+  if(!ctx){
+    uabort("vm:create context error!");
+  }
+  vm->heap    = heap;
+  vm->symtb   = symtb;
+  vm->consts  = consts;
+  vm->context = ctx;
   return vm;
+}
+
+void* vm_symtb_key_put(void* key){
+  vsymbol* sym = key;
+  vsymbol* new_sym;
+  new_sym = vsymbol_new(sym->name,sym->index);
+  return new_sym;
+}
+
+int vm_symtb_key_comp(void* k1,void* k2){
+  vsymbol* sym1 = k1;
+  vsymbol* sym2 = k2;
+  return sym1->name - sym2->name;
+}
+
+int vm_obj_put(vm* vm,ustring* name,vgc_obj* obj){
+  vsymbol sym;
+  vsymbol* new_sym;
+  uhash_table* symtb = vm->symtb;
+  vgc_stack*   consts = vm->consts;
+  vslot slot_obj;
+  vslot_ref_set(slot_obj,obj);
+  int index = vgc_stack_push(consts,slot_obj);
+  if(index < 0){
+    return -1;
+  }
+  sym = vsymbol_init(name,index);
+  new_sym = uhash_table_put(symtb,
+			    name->hash_code % VM_SYMTB_SIZE,
+			    &sym,
+			    vm_symtb_key_put,
+			    vm_symtb_key_comp);
+  if(!new_sym){
+    return -1;
+  }else{
+    return index;
+  }
+}
+
+void* vm_symtb_key_get(void* key){
+  return key;
+}
+
+int vm_obj_get(vm* vm,ustring* name){
+  uhash_table* symtb = vm->symtb;
+  vsymbol* sym = uhash_table_get(symtb,
+				 name->hash_code % VM_SYMTB_SIZE,
+				 name,
+				 vm_symtb_key_get,
+				 vm_symtb_key_comp);
+  if(!sym){
+    return -1;
+  }
+  return sym->index;
 }
 
 void bc_top(vcontext* ctx,usize_t top){
@@ -261,7 +341,7 @@ vgc_stack* bc_locals_new(vcontext* ctx,
     subr->para_len + subr->local_len;
   usize_t i = 0;
   vgc_stack* locals =
-    vgc_stack_new(ctx->heap,locals_len);
+    vgc_stack_new(ctx->vm->heap,locals_len);
   if(!locals)
     uabort("out of memory!");
   while(i < subr->para_len){
@@ -274,7 +354,7 @@ vgc_stack* bc_locals_new(vcontext* ctx,
 }
 
 void bc_call(vcontext* ctx){
-  vgc_heap* heap      = ctx->heap;
+  vgc_heap* heap      = ctx->vm->heap;
   vgc_stack* stack    = (vgc_stack*)
     vslot_ref_get(ctx->stack);
   vgc_call* curr_call = (vgc_call*)

@@ -28,19 +28,38 @@ vgc_str*
 vinst_to_str(vgc_heap* heap,
 	     ulist* insts);
 
+typedef struct _vsymbol{
+  ustring* name;
+  usize_t  index;
+} vsymbol;
+
+#define vsymbol_init(name,index) \
+  ((vsymbol){name,index})
+
+vsymbol* vsymbol_new(ustring* name,usize_t index);
+
 vcontext*
-vcontext_new(vgc_heap* heap,usize_t stack_size);
+vcontext_new(struct _vm* vm,usize_t stack_size);
 
 void vcontext_execute(vcontext* ctx,
 		      vgc_subr* subr);
 
+#define VM_SYMTB_SIZE 17
+
 typedef struct _vm{
-  vgc_heap* heap;
-  vcontext* context;
+  vgc_heap*    heap;
+  uhash_table* symtb;
+  vgc_stack*   consts;
+  vcontext*    context;
 } vm;
 
 vm* vm_new(usize_t area_static,
 	   usize_t area_active,
-	   usize_t stack_size);
+	   usize_t stack_size,
+	   usize_t consts_size);
+
+int vm_obj_put(vm* vm,ustring* name,vgc_obj* obj);
+
+int vm_obj_get(vm* vm,ustring* name);
 
 #endif

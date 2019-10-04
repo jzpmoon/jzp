@@ -11,12 +11,14 @@ vgc_stack* vgc_stack_new(vgc_heap* heap,
   return stack;
 }
 
-void vgc_stack_push(vgc_stack* stack,
-		    vslot      slot) {
+int vgc_stack_push(vgc_stack* stack,
+		   vslot      slot) {
   if(!vgc_obj_is_full(stack)) {
     vslot* objs = stack->objs;
-    objs[stack->top++] = slot;
+    objs[stack->top] = slot;
+    return stack->top++;
   }
+  return -1;
 }
 
 vslot vgc_stack_pop(vgc_stack* stack){
@@ -99,7 +101,7 @@ vgc_subr* vgc_subr_new(vgc_heap*  heap,
   return subr;
 }
 
-vgc_cfun* vgc_cfunc_new(vgc_heap* heap,vcfun_t entry){
+vgc_cfun* vgc_cfun_new(vgc_heap* heap,vcfun_t entry){
   vgc_cfun* cfun = (vgc_cfun*)
     vgc_heap_obj_new(heap,vgc_cfun,0,gc_cfun,area_active);
   if(cfun){

@@ -3,6 +3,14 @@
 #include "ualloc.h"
 #include "uhash_table.h"
 
+uhash_table* uhash_table_new(int size){
+  uhash_table* hstb;
+  int _size = sizeof(uhash_node) * size;
+  unew(hstb,_size,return NULL;);
+  memset(hstb,0,_size);
+  return hstb;
+}
+
 void* uhash_table_put(uhash_table*  hstb,
 		      unsigned int  hscd,
 		      void*         k,
