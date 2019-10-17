@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "vm.h"
+#include "vvm.h"
 #include "ltoken.h"
 #include "lobj.h"
 #include "leval.h"
@@ -56,10 +56,10 @@ int test_1(){
 }
 
 int test_2(){
-  vm* vm = vm_new(1024*10,
-		  1028*10,
-		  100,
-		  100);
+  vvm* vm = vvm_new(1024*10,
+		    1028*10,
+		    100,
+		    100);
   lstartup(vm);
   return 0;
 }

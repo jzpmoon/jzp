@@ -8,7 +8,7 @@ int lcfun_parse(vcontext* ctx){
 
 int lcfun_stream_new(vcontext* ctx){
   char* path = "./test.txt";
-  vm* vm = ctx->vm;
+  vvm* vm = ctx->vm;
   vgc_stack* stack = (vgc_stack*)
     vslot_ref_get(ctx->stack);
   lstream_new_by_file(vm->heap,
@@ -18,7 +18,7 @@ int lcfun_stream_new(vcontext* ctx){
 }
 
 int lentry(vcontext* ctx){
-  vm* vm = ctx->vm;
+  vvm* vm = ctx->vm;
   vgc_stack* stack = vslot_ref_get(ctx->stack);
   ustring* string;
   vslot* cfun;
@@ -33,15 +33,15 @@ int lentry(vcontext* ctx){
 		      0,
 		      lcfun_stream_new,
 		      area_static);
-  vm_obj_put(ctx->vm,
-	     string,
-	     cfun);
+  vvm_obj_put(ctx->vm,
+	      string,
+	      cfun);
   ulog("end   lentry");
   
   return 0;
 }
 
-int lstartup(vm* vm){
+int lstartup(vvm* vm){
   vcontext* ctx = vm->context;
   vgc_stack* stack = vslot_ref_get(ctx->stack);
   vslot* entry = vgc_cfun_new(vm->heap,stack,0,lentry,area_static);

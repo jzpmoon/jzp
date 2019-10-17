@@ -1,6 +1,6 @@
 #include <stddef.h>
 
-#include "vm.h"
+#include "vvm.h"
 #include "ualloc.h"
 #include "uerror.h"
 
@@ -22,9 +22,9 @@ int main(){
   vgc_subr* subr;
   vgc_heap* heap;
   vcontext* ctx;
-  vm* vm;
+  vvm* vm;
 
-  vm=vm_new(heap_size,heap_size,100,100);
+  vm=vvm_new(heap_size,heap_size,100,100);
   if(!vm){
     uabort("vm new error!");
   }

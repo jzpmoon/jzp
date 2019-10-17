@@ -219,7 +219,7 @@ vgc_subr_new(vgc_heap*  heap,
 
 typedef struct _vcontext{
   VGCHEADER;
-  struct _vm* vm;
+  struct _vvm* vm;
   vgc_stack* cache;
   /*vgc_stack*/
   vslot stack;
@@ -264,6 +264,11 @@ vgc_call_new(vgc_heap*  heap,
 	     vslot*     slotp_cfun,
 	     vslot*     slotp_locals,
 	     vslot*     slotp_caller);
+
+#define vgc_call_is_subr(call) \
+  vslot_is_ref((call)->subr)
+#define vgc_call_is_cfun(call) \
+  vslot_is_ref((call)->cfun)
 
 typedef struct _vgc_objex_t{
   ustring* type_name;

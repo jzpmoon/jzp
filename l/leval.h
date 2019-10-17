@@ -1,8 +1,8 @@
 #ifndef _LEVAL_H_
 #define _LEVAL_H_
 
-#include "vm.h"
+#include "vvm.h"
 
-int lstartup(vm* vm);
+int lstartup(vvm* vm);
 
 #endif
