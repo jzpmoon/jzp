@@ -1,13 +1,13 @@
-lib_name=test_stream
-obj_list=ubuffer.o     \
-	 udbuffer.o    \
-	 ustream.o     \
-	 test_stream.o
+bin_name = test_stream
+obj_list = test_stream.o
+u_lib    = u
+CFLAGS   = -std=c89 -Wall $(DEBUG_MODE)
 
-CFLAGS=-std=c89 -Wall $(DEBUG_MODE)
-&(lib_name):$(obj_list)
-	$(CC) $(obj_list) -o $(lib_name)
+&(lib_name):$(obj_list) $(u_lib)
+	$(CC) $(obj_list) -L./ -l$(u_lib) -Wl,-rpath='$$ORIGIN' -o $(bin_name)
 .c.o:
 	$(CC) -c -o $@ $< $(CFLAGS)
+$(u_lib):
+	make -f libu.mk
 clean:
-	rm -f $(lib_name) $(obj_list)
+	make -f libu.mk clean;rm -f $(bin_name) $(obj_list)

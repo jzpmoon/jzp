@@ -3,7 +3,11 @@ obj_list=uhash_table.o   \
          ulist.o         \
          ustack.o      	 \
          ustring.o       \
-         ustring_table.o
+         ustring_table.o \
+	 uerror.o        \
+	 ubuffer.o       \
+	 udbuffer.o	 \
+	 ustream.o
 
 CFLAGS=-std=c89 -Wall $(DEBUG_MODE)
 &(lib_name):$(obj_list)

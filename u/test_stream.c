@@ -6,6 +6,7 @@ int main(){
   URI_DEFINE;
   FILE* file;
   ustream* stream;
+  int next;
   
   file = fopen("./test.txt","r");
   if(!file){
@@ -16,7 +17,15 @@ int main(){
   URI_ERROR;
   uabort(URI_MSG);
   URI_END;
-
+  
+  do{
+    next = ustream_read_next(stream,URI_REF);
+    URI_ERROR;
+    uabort(URI_MSG);
+    URI_END;
+    printf("read %c\n",next);
+  } while(next != -1);
+  
   return 0;
 }
 

@@ -4,11 +4,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define uabort(msg) \
-  do{	            \
-    printf(msg);    \
-    printf("\n");   \
-    abort();	    \
+#define uabort(msg)	\
+  do{			\
+    printf("%s\n",msg); \
+    abort();		\
   }while(0)
 
 #ifndef NDEBUG
@@ -56,18 +55,27 @@ typedef struct _ureturn_infor{
 
 #define URI_MSG ri->msg
 
-#define UERR_C_ERR  (-1)
+#define URI_GLOBAL_ITEM_COUNT 3
 
 #define UERR_C_OFM  (-2)
 
-#define UERR_M_OFM  "over of memory!"
+#define UERR_M_OFM  URI_ERRMSG(UERR_C_OFM)
+
+#define UERR_C_ERR  (-1)
+
+#define UERR_M_ERR  URI_ERRMSG(UERR_C_ERR)
 
 #define UERR_C_SUCC (0)
 
-#define UERR_M_SUCC "success!"
+#define UERR_M_SUCC URI_ERRMSG(UERR_C_SUCC)
+
+extern ureturn_infor _uri_global_table[URI_GLOBAL_ITEM_COUNT];
+
+#define URI_ERRMSG(CODE)			\
+  _uri_global_table[(CODE) + 2].msg
 
 #define URI_SET(c,m)				\
-  ri->code=(c);ri->msg=(m)
+  (ri->code=(c),ri->msg=(m))
 
 #define URI_SETRET(c,m,r)			\
   URI_SET(c,m);return (r)
