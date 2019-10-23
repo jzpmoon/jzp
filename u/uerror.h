@@ -32,64 +32,45 @@
 #endif
 
 typedef struct _ureturn_infor{
-  int   code;
-  char* msg;
+  char* code;
+  char* desc;
 } ureturn_infor;
 
-#define URI_DEFINE \
-  ureturn_infor (*ri) = &(ureturn_infor){UERR_C_SUCC,UERR_M_SUCC}
+#define URI_ERR_DEFINE(NAME,CODE,DESC)		\
+  const ureturn_infor (*NAME)=			\
+    &(ureturn_infor){CODE,DESC}
 
-#define URI_REF ri
+#define URI_ERR_DECL(NAME)			\
+  extern const ureturn_infor (*NAME)
+    
+#define URI_DEFINE				\
+  const ureturn_infor* _ri = UERR_SUCC;		\
+  const ureturn_infor** const _rip = &_ri
 
-#define URI_DECL ureturn_infor* ri
+#define URI_REF _rip
 
-#define URI_CASE(CODE) if((CODE) == ri->code){
+#define URI_DECL const ureturn_infor** const _rip
 
-#define URI_ELSE(CODE) }if((CODE) == ri->code){
+#define URI_CASE(CODE) if((CODE) == *_rip){
 
-#define URI_ERROR if(UERR_C_SUCC != ri->code){
+#define URI_ELSE(CODE) }if((CODE) == *_rip){
+
+#define URI_ERROR if(UERR_SUCC != *_rip){
 
 #define URI_END }
 
-#define URI_CODE ri->code
+#define URI_CODE (*_rip)->code
 
-#define URI_MSG ri->msg
+#define URI_DESC (*_rip)->desc
 
-#define URI_GLOBAL_ITEM_COUNT 3
+#define URI_RETVAL(RETERR,RETVAL)		\
+  *_rip=(RETERR);return (RETVAL)
 
-#define UERR_C_OFM  (-2)
-
-#define UERR_M_OFM  URI_ERRMSG(UERR_C_OFM)
-
-#define UERR_C_ERR  (-1)
-
-#define UERR_M_ERR  URI_ERRMSG(UERR_C_ERR)
-
-#define UERR_C_SUCC (0)
-
-#define UERR_M_SUCC URI_ERRMSG(UERR_C_SUCC)
-
-extern ureturn_infor _uri_global_table[URI_GLOBAL_ITEM_COUNT];
-
-#define URI_ERRMSG(CODE)			\
-  _uri_global_table[(CODE) + 2].msg
-
-#define URI_SET(c,m)				\
-  (ri->code=(c),ri->msg=(m))
-
-#define URI_SETRET(c,m,r)			\
-  URI_SET(c,m);return (r)
-
-#define URI_ADDRET_SUCC(a)			\
-  URI_SETRET(UERR_C_SUCC,UERR_M_SUCC,a)
-
-#define URI_VALRET(c,m)				\
-  URI_SET(c,m);return c
-
-#define URI_VALRET_SUCC				\
-  URI_VALRET(UERR_C_SUCC,UERR_M_SUCC)
-
-#define URI_NILRET(c,m)				\
-  URI_SET(c,m);return NULL
+URI_ERR_DECL(UERR_SUCC);
+URI_ERR_DECL(UERR_ERR);
+URI_ERR_DECL(UERR_OFM);
+URI_ERR_DECL(UERR_EOF);
+URI_ERR_DECL(UERR_IOT);
+URI_ERR_DECL(UERR_DST);
 
 #endif

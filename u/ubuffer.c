@@ -6,11 +6,11 @@ ubuffer* ubuffer_new(int size,URI_DECL){
   ubuffer* buff;
   unew(buff,
        _size,
-       URI_NILRET(UERR_C_OFM,UERR_M_OFM););
+       URI_RETVAL(UERR_OFM,NULL););
   buff->pos   = 0;
   buff->limit = 0;
   buff->size  = size;
-  URI_ADDRET_SUCC(buff);
+  URI_RETVAL(UERR_SUCC,buff);
 }
 
 int ubuffer_read_from_buff(ubuffer* to_buff,
@@ -72,7 +72,7 @@ int ubuffer_seek(ubuffer* buff,int offset,int origin,URI_DECL){
   }else if(origin == USEEK_END){
     pos = buff->limit;
   }else{
-    URI_VALRET(-100,"origin undefine!");
+    URI_RETVAL(UERR_ERR,-1);
   }
   pos += offset;
   if(pos < 0){
@@ -81,5 +81,5 @@ int ubuffer_seek(ubuffer* buff,int offset,int origin,URI_DECL){
     pos = buff->limit;
   }
   buff->pos = pos;
-  URI_VALRET_SUCC;
+  URI_RETVAL(UERR_SUCC,0);
 }

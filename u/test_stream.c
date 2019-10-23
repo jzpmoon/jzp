@@ -15,13 +15,13 @@ int main(){
   
   stream = ustream_new_by_file(USTREAM_INPUT,file,URI_REF);
   URI_ERROR;
-  uabort(URI_MSG);
+  uabort(URI_DESC);
   URI_END;
   
   do{
     next = ustream_read_next(stream,URI_REF);
     URI_ERROR;
-    uabort(URI_MSG);
+    uabort(URI_DESC);
     URI_END;
     printf("read %c\n",next);
   } while(next != -1);

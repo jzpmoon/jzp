@@ -70,7 +70,7 @@ ubuffer* udbuffer_empty_buff_get(udbuffer* dbuff,
   if(!buff){
     buff_empty = ubuffer_new(dbuff->buff_size,URI_REF);
     URI_ERROR;
-    return 0;
+    return NULL;
     URI_END;
     ubuffer_ready_write(buff_empty);
   }else if(ubuffer_is_empty(buff)){
