@@ -10,6 +10,8 @@ typedef struct _udbuffer{
   int      buff_size;
 } udbuffer;
 
+udbuffer* udbuffer_new(int size);
+
 int udbuffer_read_next(udbuffer* dbuff);
 
 int udbuffer_look_ahead(udbuffer* dbuff);

@@ -1,15 +1,26 @@
+#include "ualloc.h"
 #include "udbuffer.h"
 
+udbuffer* udbuffer_new(int size){
+  udbuffer* dbuff;
+  unew(dbuff,sizeof(udbuffer),return NULL;);
+  dbuff->buff_prev = NULL;
+  dbuff->buff_next = NULL;
+  dbuff->buff_curr = NULL;
+  dbuff->buff_size = size;
+  return dbuff;
+}
+
 int udbuffer_read_next(udbuffer* dbuff){
-  int next;
+  int c;
   ubuffer* buff;
   if(!dbuff->buff_curr){
     return -1;
   }
   buff = dbuff->buff_curr;
   
-  next = ubuffer_read_next(buff);
-  if(next == -1){
+  c = ubuffer_read_next(buff);
+  if(c == -1){
     if(buff == dbuff->buff_prev){
       if(!dbuff->buff_next||
 	 ubuffer_is_empty(dbuff->buff_next)){
@@ -24,24 +35,24 @@ int udbuffer_read_next(udbuffer* dbuff){
       return -1;
     }
   }else{
-    return next;
+    return c;
   }
   
-  next = ubuffer_read_next(buff);
+  c = ubuffer_read_next(buff);
   dbuff->buff_curr = buff;
-  return next;
+  return c;
 }
 
 int udbuffer_look_ahead(udbuffer* dbuff){
-  int next;
+  int c;
   ubuffer* buff;
   if(!dbuff->buff_curr){
     return -1;
   }
   buff = dbuff->buff_curr;
   
-  next = ubuffer_look_ahead(buff);
-  if(next == -1){
+  c = ubuffer_look_ahead(buff);
+  if(c == -1){
     if(buff == dbuff->buff_prev){
       if(!dbuff->buff_next||
 	 ubuffer_is_empty(dbuff->buff_next)){
@@ -56,22 +67,22 @@ int udbuffer_look_ahead(udbuffer* dbuff){
       return -1;
     }
   }else{
-    return next;
+    return c;
   }
   
-  next = ubuffer_look_ahead(buff);
-  return next;
+  c = ubuffer_look_ahead(buff);
+  dbuff->buff_curr = buff;
+  return c;
 }
 
 ubuffer* udbuffer_empty_buff_get(udbuffer* dbuff,
 				 ubuffer* buff){
-  URI_DEFINE;
   ubuffer* buff_empty = NULL;
   if(!buff){
-    buff_empty = ubuffer_new(dbuff->buff_size,URI_REF);
-    URI_ERROR;
-    return NULL;
-    URI_END;
+    buff_empty = ubuffer_new(dbuff->buff_size);
+    if(!buff_empty){
+      return NULL;
+    }
     ubuffer_ready_write(buff_empty);
   }else if(ubuffer_is_empty(buff)){
     buff_empty = buff;

@@ -1,26 +1,55 @@
 #include "uerror.h"
 #include "ltoken.h"
 
-#define ltoken_next_char(ts) \
-  *(ts)->pos++;(ts)->coord.x++
+int ltoken_next_char(ltoken_state* ts){
+  URI_DEFINE;
+  int c;
+  c = ustream_read_next(ts->stream,URI_REF);
+  URI_ERROR;
+    URI_CASE(UERR_EOF);
+      return c;
+    URI_END;
+    uabort(URI_DESC);
+  URI_END;
+  ts->coord.x++;
+  return c;
+}
+
 #define ltoken_new_line(ts) \
   (ts)->coord.x=0;(ts)->coord.y++
-#define ltoken_back_char(ts) \
-  (ts)->pos--;(ts)->coord.x--
-#define ltoken_look_ahead(ts) \
-  *(ts)->pos+1
+
+int ltoken_look_ahead(ltoken_state* ts){
+  URI_DEFINE;
+  int c;
+  c = ustream_look_ahead(ts->stream,URI_REF);
+  URI_ERROR;
+    URI_CASE(UERR_EOF);
+      return c;
+    URI_END;
+    uabort(URI_DESC);
+  URI_END;
+  return c;
+}
+
+#define ltoken_mark(ts,c)			\
+  if(ubuffer_write_next((ts)->buff,c) == -1){	\
+    ubuffer_empty((ts)->buff);			\
+    return (ts)->token = ltk_bad;		\
+  }
+  
 
 void ltoken_skip_blank(ltoken_state* ts){
   int c;
   while(1){
-    c = ltoken_next_char(ts);
+    c = ltoken_look_ahead(ts);
     if(c == ' ' || c == '\t' || c== '\r'){
+      ltoken_next_char(ts);
       continue;
     }if(c== '\n'){
+      ltoken_next_char(ts);
       ltoken_new_line(ts);
       continue;
     }else{
-      ltoken_back_char(ts);
       break;
     }
   }
@@ -31,7 +60,7 @@ int ltoken_lex_string(ltoken_state* ts,vgc_heap* heap){
   char*    begin;
   int      len;
   int      c;
-  begin = ts->pos;
+  ubuffer* buff = ts->buff;
   while(1){
     c = ltoken_next_char(ts);
     if(c == '"'){
@@ -40,9 +69,13 @@ int ltoken_lex_string(ltoken_state* ts,vgc_heap* heap){
     if(c == LEOF){
       return ts->token = ltk_bad;
     }
+    ltoken_mark(ts,c);
   }
-  len = ts->pos - begin - 1;
-  str = vgc_str_newc(heap,begin,len);
+  ubuffer_ready_read(buff);
+  begin = buff->data;
+  len   = ubuffer_stock(buff);
+  ubuffer_ready_write(buff);
+  str   = vgc_str_newc(heap,begin,len);
   if(!str){
     uabort("lparse: new vgc_str error!");
   }
@@ -54,12 +87,11 @@ int ltoken_lex_number(ltoken_state* ts){
   ustring* str;
   char*    begin;
   int      len;
-  int      dot;
+  int      dot = 0;
   int      c;
-  dot   = 0;
-  begin = ts->pos - 1;
+  ubuffer* buff = ts->buff;
   while(1){
-    c = ltoken_next_char(ts);
+    c = ltoken_look_ahead(ts);
     if(c == '.'){
       dot++;
     }
@@ -67,12 +99,16 @@ int ltoken_lex_number(ltoken_state* ts){
       return ts->token = ltk_bad;
     }
     if(c < '0' || c > '9'){
-      ltoken_back_char(ts);
       break;
     }
+    ltoken_mark(ts,c);
+    ltoken_next_char(ts);
   }
-  len = ts->pos - begin;
-  str = vstrtb_put(begin,len);
+  ubuffer_ready_read(buff);
+  begin = buff->data;
+  len   = ubuffer_stock(buff);
+  ubuffer_ready_write(buff);
+  str   = vstrtb_put(begin,len);
   if(!str){
     uabort("lparse: vstrtb_put error!");
   }
@@ -86,9 +122,9 @@ int ltoken_lex_identify(ltoken_state* ts){
   char*    begin;
   int      len;
   int      c;
-  begin = ts->pos - 1;
+  ubuffer* buff = ts->buff;
   while(1){
-    c = ltoken_next_char(ts);
+    c = ltoken_look_ahead(ts);
     switch(c){
     case '(':
     case ')':
@@ -99,15 +135,19 @@ int ltoken_lex_identify(ltoken_state* ts){
     case '\t':
     case '\r':
     case LEOF:
-      ltoken_back_char(ts);
-      len = ts->pos - begin;
-      str = vstrtb_put(begin,len);
+      ubuffer_ready_read(buff);
+      begin = buff->data;
+      len   = ubuffer_stock(buff);
+      ubuffer_ready_write(buff);
+      str   = vstrtb_put(begin,len);
       if(!str){
 	uabort("lparse: vstrtb_put error!");
       }
       ts->sym = str;
       return ts->token = ltk_identify;
     default:
+      ltoken_mark(ts,c);
+      ltoken_next_char(ts);
       continue;
     }
   }
@@ -128,9 +168,12 @@ int ltoken_next(ltoken_state* ts,vgc_heap* heap){
     return ltoken_lex_string(ts,heap);
   case '+':
   case '-':
+    ltoken_mark(ts,c);
     c = ltoken_look_ahead(ts);
     if(c < '0' || c > '9'){
       return ltoken_lex_identify(ts);
+    }else{
+      goto lab_num;
     }
   case '0':
   case '1':
@@ -142,10 +185,13 @@ int ltoken_next(ltoken_state* ts,vgc_heap* heap){
   case '7':
   case '8':
   case '9':
+    ltoken_mark(ts,c);
+  lab_num:
     return ltoken_lex_number(ts);
   case LEOF:
     return ts->token = ltk_eof;
   default:
+    ltoken_mark(ts,c);
     return ltoken_lex_identify(ts);
   }
 }
@@ -239,9 +285,6 @@ void ltoken_log(ltoken_state* ts){
     str = "";
   }
   ulog ("********token state begin");
-  ulog1("buffer :%s",ts->buf);
-  ulog1("postion:%s",ts->pos);
-  ulog1("index  :%d",(int)(ts->pos-ts->buf));
   ulog1("token  :%d",ts->token);
   ulog1("symbol :%s",sym);
   ulog1("string :%s",str);

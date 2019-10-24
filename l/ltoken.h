@@ -2,6 +2,7 @@
 #define _LTOKEN_H_
 
 #include "ustring.h"
+#include "ustream.h"
 #include "vgc_obj.h"
 #include "lobj.h"
 
@@ -17,8 +18,8 @@ enum ltoken{
 };
 
 typedef struct _ltoken_state{
-  char*    buf;
-  char*    pos;
+  ustream* stream;
+  ubuffer* buff;
   int      token;
   vgc_str* str;
   ustring* sym;
@@ -30,7 +31,7 @@ typedef struct _ltoken_state{
   }        coord;
 } ltoken_state;
 
-#define LEOF ('\0')
+#define LEOF (-1)
 
 int ltoken_next(ltoken_state* ts,vgc_heap* heap);
 

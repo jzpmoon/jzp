@@ -1,16 +1,16 @@
 #include "ualloc.h"
 #include "ubuffer.h"
 
-ubuffer* ubuffer_new(int size,URI_DECL){
+ubuffer* ubuffer_new(int size){
   int _size = TYPE_SIZE_OF(ubuffer,char,size);
   ubuffer* buff;
   unew(buff,
        _size,
-       URI_RETVAL(UERR_OFM,NULL););
+       return NULL;);
   buff->pos   = 0;
   buff->limit = 0;
   buff->size  = size;
-  URI_RETVAL(UERR_SUCC,buff);
+  return buff;
 }
 
 int ubuffer_read_from_buff(ubuffer* to_buff,
@@ -53,17 +53,26 @@ int ubuffer_read_next(ubuffer* buff){
   return next;
 }
 
+int ubuffer_write_next(ubuffer* buff,int byte){
+  if(buff->pos < buff->limit){
+    buff->data[buff->pos++] = byte;
+    return 0;
+  }else{
+    return -1;
+  }
+}
+
 int ubuffer_look_ahead(ubuffer* buff){
   int next;
   if(buff->pos < buff->limit){
-    next = buff->data[buff->pos+1];
+    next = buff->data[buff->pos];
   }else{
     next = -1;
   }
   return next;
 }
 
-int ubuffer_seek(ubuffer* buff,int offset,int origin,URI_DECL){
+int ubuffer_seek(ubuffer* buff,int offset,int origin){
   int pos;
   if(origin == USEEK_SET){
     pos = 0;
@@ -72,7 +81,7 @@ int ubuffer_seek(ubuffer* buff,int offset,int origin,URI_DECL){
   }else if(origin == USEEK_END){
     pos = buff->limit;
   }else{
-    URI_RETVAL(UERR_ERR,-1);
+    return -1;
   }
   pos += offset;
   if(pos < 0){
@@ -81,5 +90,5 @@ int ubuffer_seek(ubuffer* buff,int offset,int origin,URI_DECL){
     pos = buff->limit;
   }
   buff->pos = pos;
-  URI_RETVAL(UERR_SUCC,0);
+  return 0;
 }
