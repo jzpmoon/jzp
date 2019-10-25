@@ -4,11 +4,12 @@
 #include "udef.h"
 #include "ustack.h"
 #include "ustring_table.h"
+#include "ubuffer.h"
 
 enum {
   gc_stack,
   gc_str,
-  gc_cfunc,
+  gc_cfun,
   gc_subr,
   gc_call,
   gc_context,
@@ -179,6 +180,9 @@ vgc_str* vgc_str_newc(vgc_heap*  heap,
 		      char*      charp,
 		      usize_t    str_len);
 
+vgc_str* vgc_str_new_by_buff(vgc_heap* heap,
+			     ubuffer*  buff);
+
 void vgc_str_log(vgc_str* str);
 
 #define vgc_str_bound_check(str,index) \
@@ -220,6 +224,24 @@ vgc_call_new(vgc_heap*  heap,
 	     vgc_stack* locals,
 	     vgc_call*  caller);
 
+typedef struct _vcontext{
+  VGCHEADER;
+  vgc_heap* heap;
+  /*vgc_stack*/
+  vslot stack;
+  /*vgc_call*/
+  vslot curr_call;
+} vcontext;
+
+typedef int (*vcfun_t)(vcontext* ctx);
+
+typedef struct _vgc_cfun{
+  VGCHEADER;
+  vcfun_t entry;
+} vgc_cfun;
+
+vgc_cfun* vgc_cfun_new(vgc_heap* heap,vcfun_t entry);
+
 typedef struct _vgc_objex_t{
   ustring* type_name;
 } vgc_objex_t;
@@ -245,6 +267,8 @@ vgc_objex* _vgc_objex_new(vgc_heap*    heap,
   (stype*)_vgc_objex_new(heap,sizeof(stype),slen,otype,atype)
 
 ustring* vstrtb_put(char* charp,int len);
+
+ustring* vstrtb_put_by_buff(ubuffer* buff);
 
 vgc_objex_t* vgc_objex_init(char* str);
 

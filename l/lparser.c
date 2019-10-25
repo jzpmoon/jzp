@@ -15,9 +15,6 @@ int ltoken_next_char(ltoken_state* ts){
   return c;
 }
 
-#define ltoken_new_line(ts) \
-  (ts)->coord.x=0;(ts)->coord.y++
-
 int ltoken_look_ahead(ltoken_state* ts){
   URI_DEFINE;
   int c;
@@ -31,12 +28,14 @@ int ltoken_look_ahead(ltoken_state* ts){
   return c;
 }
 
+#define ltoken_new_line(ts)			\
+  ((ts)->coord.x=0,(ts)->coord.y++)
+
 #define ltoken_mark(ts,c)			\
   if(ubuffer_write_next((ts)->buff,c) == -1){	\
     ubuffer_empty((ts)->buff);			\
     return (ts)->token = ltk_bad;		\
   }
-  
 
 void ltoken_skip_blank(ltoken_state* ts){
   int c;
@@ -57,10 +56,7 @@ void ltoken_skip_blank(ltoken_state* ts){
 
 int ltoken_lex_string(ltoken_state* ts,vgc_heap* heap){
   vgc_str* str;
-  char*    begin;
-  int      len;
   int      c;
-  ubuffer* buff = ts->buff;
   while(1){
     c = ltoken_next_char(ts);
     if(c == '"'){
@@ -71,11 +67,7 @@ int ltoken_lex_string(ltoken_state* ts,vgc_heap* heap){
     }
     ltoken_mark(ts,c);
   }
-  ubuffer_ready_read(buff);
-  begin = buff->data;
-  len   = ubuffer_stock(buff);
-  ubuffer_ready_write(buff);
-  str   = vgc_str_newc(heap,begin,len);
+  str = vgc_str_new_by_buff(heap,ts->buff);
   if(!str){
     uabort("lparse: new vgc_str error!");
   }
@@ -85,11 +77,8 @@ int ltoken_lex_string(ltoken_state* ts,vgc_heap* heap){
 
 int ltoken_lex_number(ltoken_state* ts){
   ustring* str;
-  char*    begin;
-  int      len;
   int      dot = 0;
   int      c;
-  ubuffer* buff = ts->buff;
   while(1){
     c = ltoken_look_ahead(ts);
     if(c == '.'){
@@ -104,11 +93,7 @@ int ltoken_lex_number(ltoken_state* ts){
     ltoken_mark(ts,c);
     ltoken_next_char(ts);
   }
-  ubuffer_ready_read(buff);
-  begin = buff->data;
-  len   = ubuffer_stock(buff);
-  ubuffer_ready_write(buff);
-  str   = vstrtb_put(begin,len);
+  str = vstrtb_put_by_buff(ts->buff);
   if(!str){
     uabort("lparse: vstrtb_put error!");
   }
@@ -119,10 +104,7 @@ int ltoken_lex_number(ltoken_state* ts){
 
 int ltoken_lex_identify(ltoken_state* ts){
   ustring* str;
-  char*    begin;
-  int      len;
   int      c;
-  ubuffer* buff = ts->buff;
   while(1){
     c = ltoken_look_ahead(ts);
     switch(c){
@@ -135,11 +117,7 @@ int ltoken_lex_identify(ltoken_state* ts){
     case '\t':
     case '\r':
     case LEOF:
-      ubuffer_ready_read(buff);
-      begin = buff->data;
-      len   = ubuffer_stock(buff);
-      ubuffer_ready_write(buff);
-      str   = vstrtb_put(begin,len);
+      str = vstrtb_put_by_buff(ts->buff);
       if(!str){
 	uabort("lparse: vstrtb_put error!");
       }

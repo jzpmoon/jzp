@@ -62,6 +62,19 @@ vgc_str* vgc_str_newc(vgc_heap*  heap,
   return str;
 }
 
+vgc_str* vgc_str_new_by_buff(vgc_heap* heap,
+			     ubuffer* buff){
+  char*    begin;
+  int      len;
+  vgc_str* str;
+  ubuffer_ready_read(buff);			
+  begin = buff->data;				
+  len   = ubuffer_stock(buff);		
+  ubuffer_ready_write(buff);			
+  str   = vgc_str_newc(heap,begin,len);
+  return str;
+}
+
 void vgc_str_log(vgc_str* str) {
   usize_t i = 0;
   while (i < str->str_len) {
@@ -84,6 +97,15 @@ vgc_subr* vgc_subr_new(vgc_heap*  heap,
     vgc_obj_flip(subr);
   }
   return subr;
+}
+
+vgc_cfun* vgc_cfunc_new(vgc_heap* heap,vcfun_t entry){
+  vgc_cfun* cfun = (vgc_cfun*)
+    vgc_heap_obj_new(heap,vgc_cfun,0,gc_cfun,area_active);
+  if(cfun){
+    cfun->entry = entry;
+  }
+  return cfun;
 }
 
 vgc_call* vgc_call_new(vgc_heap*  heap,
@@ -201,6 +223,18 @@ ustring* vstrtb_put(char* charp,int len){
 				   VGCHEAP_STRTB_LEN,
 				   charp,
 				   len);
+  return str;
+}
+
+ustring* vstrtb_put_by_buff(ubuffer* buff){
+  char*    begin;
+  int      len;
+  ustring* str;
+  ubuffer_ready_read(buff);
+  begin = buff->data;
+  len   = ubuffer_stock(buff);
+  ubuffer_ready_write(buff);
+  str   = vstrtb_put(begin,len);
   return str;
 }
 

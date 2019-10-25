@@ -1,1 +1,5 @@
-(hello 123 -123 "string" (hi (hi2)) )
+(defun-byte-code inc (x)
+  ((load x)
+   (push 1)
+   (add)
+   (return)))
