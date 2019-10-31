@@ -161,6 +161,8 @@ int vgc_stack_push(vgc_stack* stack,
 
 vslot vgc_stack_pop(vgc_stack* stack);
 
+vslot* vgc_stack_top_ref(vgc_stack* stack);
+
 vgc_stack* vgc_stack_expand(vgc_heap*  heap,
 			    vgc_stack* stack);
 
@@ -174,14 +176,17 @@ typedef struct _vgc_str{
 } vgc_str;
 
 vgc_str* vgc_str_new(vgc_heap*  heap,
+		     int        area_type,
 		     usize_t    str_len);
 
 vgc_str* vgc_str_newc(vgc_heap*  heap,
+		      int        area_type,
 		      char*      charp,
 		      usize_t    str_len);
 
-vgc_str* vgc_str_new_by_buff(vgc_heap* heap,
-			     ubuffer*  buff);
+vgc_str* vgc_str_new_by_buff(vgc_heap*  heap,
+			     int        area_type,
+			     ubuffer*   buff);
 
 void vgc_str_log(vgc_str* str);
 
@@ -257,14 +262,15 @@ typedef struct _vgc_objex{
   VGCHEADEREX
 } vgc_objex;
 
-vgc_objex* _vgc_objex_new(vgc_heap*    heap,
-			  usize_t      objex_size,
-			  usize_t      slot_len,
-			  vgc_objex_t* objex_type,
-			  int          area_type);
+vslot* _vgc_objex_new(vgc_heap*    heap,
+		      vgc_stack*   stack,
+		      usize_t      objex_size,
+		      usize_t      slot_len,
+		      vgc_objex_t* objex_type,
+		      int          area_type);
 
-#define vgc_objex_new(heap,stype,slen,otype,atype)		\
-  (stype*)_vgc_objex_new(heap,sizeof(stype),slen,otype,atype)
+#define vgc_objex_new(heap,stack,stype,slen,otype,atype)	\
+  _vgc_objex_new(heap,stack,sizeof(stype),slen,otype,atype)
 
 ustring* vstrtb_put(char* charp,int len);
 

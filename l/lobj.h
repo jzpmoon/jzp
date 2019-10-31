@@ -17,10 +17,13 @@ typedef struct _lsymbol{
 
 extern vgc_objex_t* lcons_type;
 
-lcons* lcons_new(vgc_heap* heap);
+vslot* lcons_new(vgc_heap* heap,
+		 vgc_stack* stack);
 
 extern vgc_objex_t* lsymbol_type;
 
-lsymbol* lsymbol_new(vgc_heap* heap,ustring* key);
+vslot* lsymbol_new(vgc_heap*  heap,
+		   vgc_stack* stack,
+		   ustring*   key);
 
 #endif

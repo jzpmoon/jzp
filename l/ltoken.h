@@ -35,7 +35,9 @@ typedef struct _ltoken_state{
 
 int ltoken_next(ltoken_state* ts,vgc_heap* heap);
 
-vslot lparser_parse(ltoken_state* ts,vgc_heap* heap);
+vslot* lparser_parse(ltoken_state* ts,
+		     vgc_heap* heap,
+		     vgc_stack* stack);
 
 void ltoken_log(ltoken_state* ts);
 

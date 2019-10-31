@@ -55,7 +55,7 @@ vinst_to_str(vgc_heap* heap,ulist* insts){
   usize_t  inst_count = 0;
   usize_t  byte_count = 0;
   usize_t  length     = vinst_full_length(insts);
-  vgc_str* str        = vgc_str_new(heap,length);
+  vgc_str* str        = vgc_str_new(heap,area_active,length);
   if(!str) return NULL;
   do{
     vinst* inst=node->value;
@@ -377,6 +377,11 @@ void bc_call(vcontext* ctx){
       uabort("out of memory!");
     bc_push(ctx,slot_call);
     ctx->curr_call = slot_call;
+  } else if(VGCTYPEOF(obj,gc_cfun)){
+    vgc_cfun* cfun = (vgc_cfun*)obj;
+    usize_t base   = stack->top;
+    cfun->entry(ctx);
+    bc_top(ctx,base);
   }else{
     uabort("cant't execute!");
   }

@@ -29,6 +29,14 @@ vslot vgc_stack_pop(vgc_stack* stack){
   return VSLOT_NULL;
 }
 
+vslot* vgc_stack_top_ref(vgc_stack* stack){
+  if(stack->top > 0){
+    return &stack->objs[stack->top - 1];
+  }else{
+    return NULL;
+  }
+}
+
 vgc_stack* vgc_stack_expand(vgc_heap*  heap,
 			    vgc_stack* stack) {
   usize_t new_len = stack->len > 0 ? stack->len*2 : 1;
@@ -43,10 +51,11 @@ vgc_stack* vgc_stack_expand(vgc_heap*  heap,
 }
 
 vgc_str* vgc_str_new(vgc_heap* heap,
+		     int        area_type,
 		     usize_t   str_len) {
   usize_t size = TYPE_SIZE_OF(vgc_str,char,str_len);
   vgc_str* str=(vgc_str*)
-    _vgc_heap_obj_new(heap,size,0,gc_str,area_active);
+    _vgc_heap_obj_new(heap,size,0,gc_str,area_type);
   if(str){
     str->str_len = str_len;
   }
@@ -54,9 +63,10 @@ vgc_str* vgc_str_new(vgc_heap* heap,
 }
 
 vgc_str* vgc_str_newc(vgc_heap*  heap,
+		      int        area_type,
 		      char*      charp,
 		      usize_t    str_len){
-  vgc_str* str = vgc_str_new(heap,str_len + 1);
+  vgc_str* str = vgc_str_new(heap,area_type,str_len + 1);
   if(str){
     memcpy(str->u.c,charp,str_len);
     str->u.c[str_len] = '\0';
@@ -64,8 +74,9 @@ vgc_str* vgc_str_newc(vgc_heap*  heap,
   return str;
 }
 
-vgc_str* vgc_str_new_by_buff(vgc_heap* heap,
-			     ubuffer* buff){
+vgc_str* vgc_str_new_by_buff(vgc_heap*  heap,
+			     int        area_type,
+			     ubuffer*   buff){
   char*    begin;
   int      len;
   vgc_str* str;
@@ -73,7 +84,7 @@ vgc_str* vgc_str_new_by_buff(vgc_heap* heap,
   begin = buff->data;				
   len   = ubuffer_stock(buff);		
   ubuffer_ready_write(buff);			
-  str   = vgc_str_newc(heap,begin,len);
+  str   = vgc_str_newc(heap,area_type,begin,len);
   return str;
 }
 
@@ -183,11 +194,12 @@ void vgc_obj_log(vgc_obj* obj){
   ulog1("top :%d",obj->top);
 }
 
-vgc_objex* _vgc_objex_new(vgc_heap*    heap,
-			  usize_t      objex_size,
-			  usize_t      slot_len,
-			  vgc_objex_t* objex_type,
-			  int          area_type){
+vslot* _vgc_objex_new(vgc_heap*    heap,
+		      vgc_stack*   stack,
+		      usize_t      objex_size,
+		      usize_t      slot_len,
+		      vgc_objex_t* objex_type,
+		      int          area_type){
   vgc_objex* objex = (vgc_objex*)
     _vgc_heap_obj_new(heap,
 		      objex_size,
@@ -195,9 +207,16 @@ vgc_objex* _vgc_objex_new(vgc_heap*    heap,
 		      gc_extend,
 		      area_type);
   if(objex){
+    vslot slot;
+    vslot_ref_set(slot,objex);
+    if(vgc_stack_push(stack,slot) == -1){
+      return NULL;
+    }
     objex->oet = objex_type;
+    return vgc_stack_top_ref(stack);
+  }else{
+    return NULL;
   }
-  return objex;
 }
 
 #define VGCHEAP_STRTB_LEN 17
