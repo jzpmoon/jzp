@@ -112,10 +112,15 @@ vgc_subr* vgc_subr_new(vgc_heap*  heap,
   return subr;
 }
 
-vgc_cfun* vgc_cfun_new(vgc_heap* heap,vcfun_t entry){
+vgc_cfun* vgc_cfun_new(vgc_heap* heap,
+		       usize_t para_len,
+		       vcfun_t entry,
+		       int area_type){
   vgc_cfun* cfun = (vgc_cfun*)
-    vgc_heap_obj_new(heap,vgc_cfun,0,gc_cfun,area_active);
+    vgc_heap_obj_new(heap,vgc_cfun,0,gc_cfun,area_type);
   if(cfun){
+    cfun->para_len = para_len;
+    cfun->local_len = 0;
     cfun->entry = entry;
   }
   return cfun;
@@ -124,18 +129,30 @@ vgc_cfun* vgc_cfun_new(vgc_heap* heap,vcfun_t entry){
 vgc_call* vgc_call_new(vgc_heap*  heap,
 		       usize_t    base,
 		       vgc_subr*  subr,
+		       vgc_cfun*  cfun,
 		       vgc_stack* locals,
 		       vgc_call*  caller) {
   vgc_call* call = (vgc_call*)
-    vgc_heap_obj_new(heap,vgc_call,3,gc_call,area_active);
+    vgc_heap_obj_new(heap,vgc_call,4,gc_call,area_active);
   if(call){
-    vgc_str* str = (vgc_str*)vslot_ref_get(subr->bc);
-    call->pc     = str->u.b;
-    call->base   = base;
-    vslot_ref_set(call->subr,subr);
-    vslot_ref_set(call->locals,locals);
-    vslot_ref_set(call->caller,caller);
-    vgc_obj_flip(call);
+    if(subr){
+      vgc_str* str = (vgc_str*)vslot_ref_get(subr->bc);
+      call->pc     = str->u.b;
+      call->base   = base;
+      vslot_ref_set(call->subr,subr);
+      vslot_ref_set(call->locals,locals);
+      vslot_ref_set(call->caller,caller);
+      vgc_obj_flip(call);
+    }else if(cfun){
+      call->pc   = NULL;
+      call->base = base;
+      call->subr = VSLOT_NULL;
+      vslot_ref_set(call->cfun,cfun);
+      vslot_ref_set(call->locals,locals);
+      vslot_ref_set(call->caller,caller);
+    }else{
+      return NULL;
+    }
   }
   return call;
 }

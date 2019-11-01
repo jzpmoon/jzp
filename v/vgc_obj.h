@@ -210,25 +210,6 @@ vgc_subr_new(vgc_heap*  heap,
 	     vgc_str*   bc,
 	     vgc_stack* consts);
 
-typedef struct _vgc_call{
-  VGCHEADER;
-  unsigned char* pc;
-  usize_t base;
-  /*vgc_subr*/
-  vslot subr;
-  /*vgc_stack*/
-  vslot locals;
-  /*vgc_call*/
-  vslot caller;
-} vgc_call;
-
-vgc_call*
-vgc_call_new(vgc_heap*  heap,
-	     usize_t    base,
-	     vgc_subr*  subr,
-	     vgc_stack* locals,
-	     vgc_call*  caller);
-
 typedef struct _vcontext{
   VGCHEADER;
   struct _vm* vm;
@@ -242,10 +223,37 @@ typedef int (*vcfun_t)(vcontext* ctx);
 
 typedef struct _vgc_cfun{
   VGCHEADER;
+  usize_t para_len;
+  usize_t local_len;
   vcfun_t entry;
 } vgc_cfun;
 
-vgc_cfun* vgc_cfun_new(vgc_heap* heap,vcfun_t entry);
+vgc_cfun* vgc_cfun_new(vgc_heap* heap,
+		       usize_t para_len,
+		       vcfun_t entry,
+		       int area_type);
+
+typedef struct _vgc_call{
+  VGCHEADER;
+  unsigned char* pc;
+  usize_t base;
+  /*vgc_subr*/
+  vslot subr;
+  /*vgc_cfun*/
+  vslot cfun;
+  /*vgc_stack*/
+  vslot locals;
+  /*vgc_call*/
+  vslot caller;
+} vgc_call;
+
+vgc_call*
+vgc_call_new(vgc_heap*  heap,
+	     usize_t    base,
+	     vgc_subr*  subr,
+	     vgc_cfun*  cfun,
+	     vgc_stack* locals,
+	     vgc_call*  caller);
 
 typedef struct _vgc_objex_t{
   ustring* type_name;

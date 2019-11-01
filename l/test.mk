@@ -1,5 +1,5 @@
 bin=test
-obj=test.o lobj.o lparser.o
+obj=test.o lobj.o lparser.o leval.o
 libu_path=../u/
 libv_path=../v/
 v_sobj=v

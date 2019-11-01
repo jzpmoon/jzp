@@ -1,10 +1,12 @@
 #include <stdio.h>
+#include "vm.h"
 #include "ltoken.h"
 #include "lobj.h"
+#include "leval.h"
 
 ltoken_state ts;
 
-int main(){
+int test_1(){
   URI_DEFINE;
   vgc_heap* heap;
   vgc_stack* stack;
@@ -51,4 +53,17 @@ int main(){
       break;
   }*/
   return 0;
+}
+
+int test_2(){
+  vm* vm = vm_new(1024*10,
+		  1028*10,
+		  100,
+		  100);
+  lstartup(vm);
+  return 0;
+}
+
+int main(){
+  test_2();
 }

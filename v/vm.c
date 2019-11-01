@@ -123,28 +123,35 @@ vm* vm_new(usize_t area_static,
   vgc_stack*   consts;
   uhash_table* symtb;
   vm*          vm;
+
   heap = vgc_heap_new(area_static,area_active);
   if(!heap){
     uabort("vm:create heap error!");
   }
+
   consts = vgc_stack_new(heap,consts_size);
   if(!consts){
     uabort("vm:create consts error!");
   }
+
   symtb = uhash_table_new(VM_SYMTB_SIZE);
   if(!symtb){
     uabort("vm:create symtb error!");
   }
+  
   unew(vm,
        sizeof(vm),
        uabort("vm:create vm error!"););
+  
+  vm->heap    = heap;
+  vm->symtb   = symtb;
+  vm->consts  = consts;
+  
   ctx = vcontext_new(vm,stack_size);
   if(!ctx){
     uabort("vm:create context error!");
   }
-  vm->heap    = heap;
-  vm->symtb   = symtb;
-  vm->consts  = consts;
+
   vm->context = ctx;
   return vm;
 }
@@ -336,15 +343,16 @@ vslot bc_constant(vcontext* ctx,
 }
 
 vgc_stack* bc_locals_new(vcontext* ctx,
-			 vgc_subr* subr){
+			 usize_t para_len,
+			 usize_t local_len){
   usize_t locals_len =
-    subr->para_len + subr->local_len;
+    para_len + local_len;
   usize_t i = 0;
   vgc_stack* locals =
     vgc_stack_new(ctx->vm->heap,locals_len);
   if(!locals)
     uabort("out of memory!");
-  while(i < subr->para_len){
+  while(i < para_len){
     vslot para = bc_pop(ctx);
     vgc_stack_push(locals,para);
     i++;
@@ -364,11 +372,12 @@ void bc_call(vcontext* ctx){
   if(VGCTYPEOF(obj,gc_subr)){
     vgc_subr* subr    = (vgc_subr*)obj;
     vgc_stack* locals =
-      bc_locals_new(ctx,subr);
+      bc_locals_new(ctx,subr->para_len,subr->local_len);
     vgc_call* call    =
       vgc_call_new(heap,
 		   stack->top,
 		   subr,
+		   NULL,
 		   locals,
 		   curr_call);
     vslot slot_call;
@@ -379,9 +388,22 @@ void bc_call(vcontext* ctx){
     ctx->curr_call = slot_call;
   } else if(VGCTYPEOF(obj,gc_cfun)){
     vgc_cfun* cfun = (vgc_cfun*)obj;
-    usize_t base   = stack->top;
+    vgc_stack* locals =
+      bc_locals_new(ctx,cfun->para_len,cfun->local_len);
+    vgc_call* call    =
+      vgc_call_new(heap,
+		   stack->top,
+		   NULL,
+		   cfun,
+		   locals,
+		   curr_call);
+    vslot slot_call;
+    vslot_ref_set(slot_call,call);
+    if(!call)
+      uabort("out of memory!");
+    bc_push(ctx,slot_call);
     cfun->entry(ctx);
-    bc_top(ctx,base);
+    bc_top(ctx,call->base);
   }else{
     uabort("cant't execute!");
   }
@@ -414,10 +436,10 @@ void bc_return_void(vcontext* ctx){
 #define NEXT2 do{op=FETCH;op+=FETCH<<8;}while(0)
 
 void vcontext_execute(vcontext* ctx,
-		      vgc_subr* subr){
-  vslot slot_subr;
-  vslot_ref_set(slot_subr,subr);
-  bc_push(ctx,slot_subr);
+		      vgc_obj* entry){
+  vslot slot_entry;
+  vslot_ref_set(slot_entry,entry);
+  bc_push(ctx,slot_entry);
   bc_call(ctx);
   while(1){
     int op;

@@ -19,9 +19,15 @@ int main(){
   ulist* insts=NULL;
   vgc_stack* stack;
   vgc_subr* subr;
-  vcontext* ctx;
-  vgc_heap* heap=vgc_heap_new(256,heap_size);
-  if(!heap) uabort("heap error!");
+  vgc_heap* heap;
+  vm* vm;
+
+  vm=vm_new(heap_size,heap_size,100,100);
+  if(!vm){
+    uabort("vm new error!");
+  }
+  
+  heap=vm->heap;
   
   INST(Bpush,1); /* 2 */
   INST(Bref,0); /* 3 */
@@ -38,7 +44,7 @@ int main(){
   INST(Bcall,-1); /* 1 */
   INST(Bretvoid,-1); /* 1 */
 
-  stack=vgc_stack_new( heap,4);
+  stack = vm->consts;
   subr=vgc_subr_new( heap,
 		    0,
 		    1,
@@ -56,9 +62,8 @@ int main(){
   vgc_stack_push(stack,slot_stk);
   vgc_stack_push(stack,slot_num1);
   vgc_stack_push(stack,slot_num2);
-  ctx=vcontext_new(heap,1024);
-  if(!ctx) uabort("ctx error!");
   /*vgc_collect(heap);*/
-  vcontext_execute(ctx,subr);
+
+  vcontext_execute(vm->context,(vgc_obj*)subr);
   return 0;
 }

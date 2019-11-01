@@ -42,7 +42,7 @@ vcontext*
 vcontext_new(struct _vm* vm,usize_t stack_size);
 
 void vcontext_execute(vcontext* ctx,
-		      vgc_subr* subr);
+		      vgc_obj* entry);
 
 #define VM_SYMTB_SIZE 17
 
