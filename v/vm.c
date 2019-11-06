@@ -96,26 +96,34 @@ vsymbol* vsymbol_new(ustring* name,usize_t index){
 vcontext*
 vcontext_new(struct _vm* vm,usize_t stack_size){
   vgc_heap* heap = vm->heap;
-  vgc_stack* stack;
+  vslot* stack;
   vcontext* ctx;
-  stack=vgc_stack_new(heap,stack_size);
+  stack = vgc_stack_new(heap,NULL,stack_size,area_static);
   if(!stack) return NULL;
-  ctx = (vcontext*)vgc_heap_obj_new(heap,
-				    vcontext,
-				    2,
-				    gc_context,
-				    area_static);
+  ctx = vgc_heap_obj_new(heap,
+			 stack,
+			 vcontext,
+			 2,
+			 gc_context,
+			 area_static);
   if(ctx){
-    ctx->vm = vm;
-    vslot_ref_set(ctx->stack,stack);
-    vslot_ref_set(ctx->curr_call,NULL);
+    ctx->vm        = vm;
+    ctx->stack     = *stack;
+    ctx->curr_call = VSLOT_NULL;
     vgc_obj_flip((vgc_obj*)ctx);
   }
   return ctx;
 }
 
-vm* vm_new(usize_t area_static,
-	   usize_t area_active,
+vslot* vcontext_args(vcontext* ctx,usize_t index){
+  vslot* curr_call = &ctx->curr_call;
+  vslot* locals = vslotp_ref_get(curr_call,vgc_call,locals);
+  vslot* arg = vslotp_ref_get(locals,vgc_stack,objs[index]);
+  return arg;
+}
+
+vm* vm_new(usize_t static_size,
+	   usize_t active_size,
 	   usize_t stack_size,
 	   usize_t consts_size){
   vgc_heap*    heap;
@@ -124,12 +132,12 @@ vm* vm_new(usize_t area_static,
   uhash_table* symtb;
   vm*          vm;
 
-  heap = vgc_heap_new(area_static,area_active);
+  heap = vgc_heap_new(static_size,active_size);
   if(!heap){
     uabort("vm:create heap error!");
   }
 
-  consts = vgc_stack_new(heap,consts_size);
+  consts = vgc_stack_new(heap,NULL,consts_size,area_static);
   if(!consts){
     uabort("vm:create consts error!");
   }

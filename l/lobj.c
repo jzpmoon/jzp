@@ -1,5 +1,4 @@
 #include <stddef.h>
-#include "ustream.h"
 #include "lobj.h"
 
 vgc_objex_t* lcons_type;

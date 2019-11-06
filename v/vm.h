@@ -44,6 +44,8 @@ vcontext_new(struct _vm* vm,usize_t stack_size);
 void vcontext_execute(vcontext* ctx,
 		      vgc_obj* entry);
 
+vslot* vcontext_args(vcontext* ctx,usize_t index);
+
 #define VM_SYMTB_SIZE 17
 
 typedef struct _vm{
@@ -53,8 +55,8 @@ typedef struct _vm{
   vcontext*    context;
 } vm;
 
-vm* vm_new(usize_t area_static,
-	   usize_t area_active,
+vm* vm_new(usize_t static_size,
+	   usize_t active_size,
 	   usize_t stack_size,
 	   usize_t consts_size);
 

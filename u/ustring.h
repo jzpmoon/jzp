@@ -10,6 +10,8 @@ typedef struct _ustring{
 int ustring_comp(ustring*s1,ustring* s2);
 ustring* ustring_new(
 	void* value,int len,int hscd);
+ustring* ustring_new_by_charp(
+	char* charp);
 unsigned int data_hscd(void* v,int len);
 unsigned int string_hscd(char* v);
 void ustring_dest(ustring* str);

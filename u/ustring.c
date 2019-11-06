@@ -37,6 +37,13 @@ ustring* ustring_new(
 	return NULL;
 }
 
+ustring* ustring_new_by_charp(char* charp){
+  unsigned int hscd = string_hscd(charp);
+  int len = strlen(charp);
+  ustring* string = ustring_new(charp,len,hscd);
+  return string;
+}
+
 void ustring_dest(ustring* str){
 	free(str->value);
 	free(str);

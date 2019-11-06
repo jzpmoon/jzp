@@ -1,6 +1,7 @@
 #ifndef _LOBJ_H_
 #define _LOBJ_H_
 
+#include "ustream.h"
 #include "vgc_obj.h"
 
 typedef struct _lcons{

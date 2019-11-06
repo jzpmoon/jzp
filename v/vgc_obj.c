@@ -3,11 +3,13 @@
 #include "uerror.h"
 #include "vgc_obj.h"
 
-vgc_stack* vgc_stack_new(vgc_heap* heap,
-			 usize_t   len) {
+vgc_stack* vgc_stack_new(vgc_heap*  heap,
+			 vgc_stack* stack,
+			 usize_t    len,
+			 int        area_type) {
   usize_t size = TYPE_SIZE_OF(vgc_stack,vslot,len);
   vgc_stack* stack = (vgc_stack*)
-    _vgc_heap_obj_new(heap,size,len,gc_stack,area_active);
+    _vgc_heap_obj_new(heap,stack,size,len,gc_stack,area_active);
   return stack;
 }
 
@@ -37,55 +39,47 @@ vslot* vgc_stack_top_ref(vgc_stack* stack){
   }
 }
 
-vgc_stack* vgc_stack_expand(vgc_heap*  heap,
-			    vgc_stack* stack) {
-  usize_t new_len = stack->len > 0 ? stack->len*2 : 1;
-  vgc_stack* new_stack = vgc_stack_new(heap,new_len);
-  if(new_stack){
-    int i;
-    for(i = 0;i < stack->len;i++){
-      vgc_stack_push(new_stack,stack->objs[i]);
-    }
-  }
-  return new_stack;
-}
-
-vgc_str* vgc_str_new(vgc_heap* heap,
-		     int        area_type,
-		     usize_t   str_len) {
+vslot* vgc_str_new(vgc_heap*  heap,
+		   vgc_stack* stack,
+		   usize_t    str_len,
+		   int        area_type) {
   usize_t size = TYPE_SIZE_OF(vgc_str,char,str_len);
-  vgc_str* str=(vgc_str*)
-    _vgc_heap_obj_new(heap,size,0,gc_str,area_type);
+  vgc_str* str = (vgc_str*)
+    _vgc_heap_obj_new(heap,stack,size,0,gc_str,area_type);
   if(str){
     str->str_len = str_len;
+    return vgc_stack_top_ref(stack);
   }
-  return str;
+  return NULL;
 }
 
-vgc_str* vgc_str_newc(vgc_heap*  heap,
-		      int        area_type,
-		      char*      charp,
-		      usize_t    str_len){
-  vgc_str* str = vgc_str_new(heap,area_type,str_len + 1);
-  if(str){
+vslot* vgc_str_newc(vgc_heap*  heap,
+		    vgc_stack* stack,
+		    char*      charp,
+		    usize_t    str_len,
+		    int        area_type){
+  vslot* slotp = vgc_str_new(heap,stack,str_len + 1,area_type);
+  if(slotp){
+    vgc_str* str = vslot_ref_get(*slotp);
     memcpy(str->u.c,charp,str_len);
     str->u.c[str_len] = '\0';
   }
-  return str;
+  return slotp;
 }
 
-vgc_str* vgc_str_new_by_buff(vgc_heap*  heap,
-			     int        area_type,
-			     ubuffer*   buff){
+vslot* vgc_str_new_by_buff(vgc_heap*  heap,
+			   vgc_stack* stack,
+			   ubuffer*   buff,
+			   int        area_type){
   char*    begin;
   int      len;
-  vgc_str* str;
+  vslot*   slotp;
   ubuffer_ready_read(buff);			
   begin = buff->data;				
   len   = ubuffer_stock(buff);		
   ubuffer_ready_write(buff);			
-  str   = vgc_str_newc(heap,area_type,begin,len);
-  return str;
+  slotp   = vgc_str_newc(heap,stack,begin,len,area_type);
+  return slotp;
 }
 
 void vgc_str_log(vgc_str* str) {
@@ -95,66 +89,72 @@ void vgc_str_log(vgc_str* str) {
   }
 }
 
-vgc_subr* vgc_subr_new(vgc_heap*  heap,
-		       usize_t    para_len,
-		       usize_t    local_len,
-		       vgc_str*   bc,
-		       vgc_stack* consts) {
-  vgc_subr* subr = (vgc_subr*)
-    vgc_heap_obj_new(heap,vgc_subr,2,gc_subr,area_active);
+vslot* vgc_subr_new(vgc_heap*  heap,
+		    vgc_stack* stack,
+		    usize_t    para_len,
+		    usize_t    local_len,
+		    vslot*     bc,
+		    vslot*     consts){
+  vgc_subr* subr =
+    vgc_heap_obj_new(heap,stack,vgc_subr,2,gc_subr,area_active);
   if(subr){
     subr->para_len  = para_len;
     subr->local_len = local_len;
-    vslot_ref_set(subr->bc,bc);
-    vslot_ref_set(subr->consts,consts);
+    subr->bc        = *bc;
+    subr->consts    = *consts;
     vgc_obj_flip(subr);
+    return vgc_stack_top_ref(stack);
   }
-  return subr;
+  return NULL;
 }
 
-vgc_cfun* vgc_cfun_new(vgc_heap* heap,
-		       usize_t para_len,
-		       vcfun_t entry,
-		       int area_type){
-  vgc_cfun* cfun = (vgc_cfun*)
+vslot* vgc_cfun_new(vgc_heap*  heap,
+		    vgc_stack* stack,
+		    usize_t    para_len,
+		    vcfun_t    entry,
+		    int        area_type){
+  vgc_cfun* cfun =
     vgc_heap_obj_new(heap,vgc_cfun,0,gc_cfun,area_type);
   if(cfun){
     cfun->para_len = para_len;
     cfun->local_len = 0;
     cfun->entry = entry;
+    return vgc_stack_top_ref(stack);
   }
-  return cfun;
+  return NULL;
 }
 
-vgc_call* vgc_call_new(vgc_heap*  heap,
-		       usize_t    base,
-		       vgc_subr*  subr,
-		       vgc_cfun*  cfun,
-		       vgc_stack* locals,
-		       vgc_call*  caller) {
-  vgc_call* call = (vgc_call*)
-    vgc_heap_obj_new(heap,vgc_call,4,gc_call,area_active);
+vslot* vgc_call_new(vgc_heap*  heap,
+		    vgc_stack* stack,
+		    usize_t    base,
+		    vslot*     subr,
+		    vslot*     cfun,
+		    vslot*     locals,
+		    vslot*     caller) {
+  vgc_call* call =
+    vgc_heap_obj_new(heap,stack,vgc_call,4,gc_call,area_active);
   if(call){
     if(subr){
       vgc_str* str = (vgc_str*)vslot_ref_get(subr->bc);
       call->pc     = str->u.b;
       call->base   = base;
-      vslot_ref_set(call->subr,subr);
-      vslot_ref_set(call->locals,locals);
-      vslot_ref_set(call->caller,caller);
-      vgc_obj_flip(call);
+      call->subr   = *subr;
+      call->locals = *locals;
+      call->caller = *caller;
     }else if(cfun){
-      call->pc   = NULL;
-      call->base = base;
-      call->subr = VSLOT_NULL;
-      vslot_ref_set(call->cfun,cfun);
-      vslot_ref_set(call->locals,locals);
-      vslot_ref_set(call->caller,caller);
+      call->pc     = NULL;
+      call->base   = base;
+      call->subr   = VSLOT_NULL;
+      call->cfun   = *cfun;
+      call->locals = *locals;
+      call->caller = *caller;
     }else{
       return NULL;
     }
+    vgc_obj_flip(call);
+    return vgc_stack_top_ref(stack);
   }
-  return call;
+  return NULL;
 }
 
 void vslot_log(vslot slot){
@@ -219,21 +219,17 @@ vslot* _vgc_objex_new(vgc_heap*    heap,
 		      int          area_type){
   vgc_objex* objex = (vgc_objex*)
     _vgc_heap_obj_new(heap,
+		      stack,
 		      objex_size,
 		      slot_len,
 		      gc_extend,
 		      area_type);
   if(objex){
-    vslot slot;
-    vslot_ref_set(slot,objex);
-    if(vgc_stack_push(stack,slot) == -1){
-      return NULL;
-    }
     objex->oet = objex_type;
+    vgc_obj_flip(objex);
     return vgc_stack_top_ref(stack);
-  }else{
-    return NULL;
   }
+  return NULL;
 }
 
 #define VGCHEAP_STRTB_LEN 17

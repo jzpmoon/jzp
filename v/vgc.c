@@ -199,15 +199,23 @@ vgc_obj* vgc_try_new(vgc_heap* heap,
   return new_obj;
 }
 
-vgc_obj* _vgc_heap_obj_new(vgc_heap* heap,
-			   usize_t   size,
-			   usize_t   len,
-			   int       obj_type,
-			   int       area_type) {
+vgc_obj* _vgc_heap_obj_new(vgc_heap*  heap,
+			   vgc_stack* stack,
+			   usize_t    size,
+			   usize_t    len,
+			   int        obj_type,
+			   int        area_type) {
   vgc_obj* new_obj = vgc_try_new(heap,size,len,obj_type,area_type);
-  if(!new_obj && area_type != area_static){
-    vgc_collect(heap);
-    new_obj = vgc_try_new(heap,size,len,obj_type,area_type);
+  if(area_type == area_active){
+    if(!new_obj){
+      vgc_collect(heap);
+      new_obj = vgc_try_new(heap,size,len,obj_type,area_type);
+    }
+    if(new_obj){
+      if(vgc_stack_push(stack,new_obj) == -1){
+	return NULL;
+      }
+    }
   }
   return new_obj;
 }
