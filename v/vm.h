@@ -24,9 +24,9 @@ typedef struct _vinst{
 vinst*
 vinst_new(usize_t code,usize_t operand);
 
-vgc_str*
-vinst_to_str(vgc_heap* heap,
-	     ulist* insts);
+vslot*
+vinst_to_str(vcontext* ctx,
+	     ulist*    insts);
 
 typedef struct _vsymbol{
   ustring* name;
@@ -46,6 +46,8 @@ void vcontext_execute(vcontext* ctx,
 
 vslot* vcontext_args(vcontext* ctx,usize_t index);
 
+void vcontext_cache_clean(vcontext* ctx);
+
 #define VM_SYMTB_SIZE 17
 
 typedef struct _vm{
@@ -60,7 +62,7 @@ vm* vm_new(usize_t static_size,
 	   usize_t stack_size,
 	   usize_t consts_size);
 
-int vm_obj_put(vm* vm,ustring* name,vgc_obj* obj);
+int vm_obj_put(vm* vm,ustring* name,vslot* obj);
 
 int vm_obj_get(vm* vm,ustring* name);
 

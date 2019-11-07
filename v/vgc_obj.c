@@ -8,9 +8,9 @@ vgc_stack* vgc_stack_new(vgc_heap*  heap,
 			 usize_t    len,
 			 int        area_type) {
   usize_t size = TYPE_SIZE_OF(vgc_stack,vslot,len);
-  vgc_stack* stack = (vgc_stack*)
-    _vgc_heap_obj_new(heap,stack,size,len,gc_stack,area_active);
-  return stack;
+  vgc_stack* new_stack = (vgc_stack*)
+    _vgc_heap_obj_new(heap,stack,size,len,gc_stack,area_type);
+  return new_stack;
 }
 
 int vgc_stack_push(vgc_stack* stack,
@@ -114,7 +114,7 @@ vslot* vgc_cfun_new(vgc_heap*  heap,
 		    vcfun_t    entry,
 		    int        area_type){
   vgc_cfun* cfun =
-    vgc_heap_obj_new(heap,vgc_cfun,0,gc_cfun,area_type);
+    vgc_heap_obj_new(heap,stack,vgc_cfun,0,gc_cfun,area_type);
   if(cfun){
     cfun->para_len = para_len;
     cfun->local_len = 0;
@@ -127,27 +127,29 @@ vslot* vgc_cfun_new(vgc_heap*  heap,
 vslot* vgc_call_new(vgc_heap*  heap,
 		    vgc_stack* stack,
 		    usize_t    base,
-		    vslot*     subr,
-		    vslot*     cfun,
-		    vslot*     locals,
-		    vslot*     caller) {
+		    vslot*     slotp_subr,
+		    vslot*     slotp_cfun,
+		    vslot*     slotp_locals,
+		    vslot*     slotp_caller) {
   vgc_call* call =
     vgc_heap_obj_new(heap,stack,vgc_call,4,gc_call,area_active);
   if(call){
-    if(subr){
-      vgc_str* str = (vgc_str*)vslot_ref_get(subr->bc);
-      call->pc     = str->u.b;
-      call->base   = base;
-      call->subr   = *subr;
-      call->locals = *locals;
-      call->caller = *caller;
-    }else if(cfun){
+    if(slotp_subr){
+      vgc_subr* subr = vslot_ref_get(*slotp_subr);
+      vgc_str* str   = vslot_ref_get(subr->bc);
+      call->pc       = str->u.b;
+      call->base     = base;
+      call->subr     = *slotp_subr;
+      call->cfun     = VSLOT_NULL;
+      call->locals   = *slotp_locals;
+      call->caller   = *slotp_caller;
+    }else if(slotp_cfun){
       call->pc     = NULL;
       call->base   = base;
       call->subr   = VSLOT_NULL;
-      call->cfun   = *cfun;
-      call->locals = *locals;
-      call->caller = *caller;
+      call->cfun   = *slotp_cfun;
+      call->locals = *slotp_locals;
+      call->caller = *slotp_caller;
     }else{
       return NULL;
     }

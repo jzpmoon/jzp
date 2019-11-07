@@ -45,6 +45,11 @@ typedef struct _vslot{
   } u;
 } vslot;
 
+typedef struct _vgc_stack{
+  VGCHEADER;
+  vslot objs[1];
+} vgc_stack;
+
 enum {
   area_static,
   area_active,
@@ -146,16 +151,8 @@ vslot vslot_ref_eq(vslot ref1,
 
 #define vslot_bool_set(slot,_bool)			        \
   ((slot).t=vslot_type_bool,(slot).u.bool=(_bool))
-
-#define vslotp_ref_get(slotp,type,field)			\
-  (&((type*)(slotp)->u.ref)->field)
-
+  
 void vslot_log(vslot slot);
-
-typedef struct _vgc_stack{
-  VGCHEADER;
-  vslot objs[1];
-} vgc_stack;
 
 vgc_stack* vgc_stack_new(vgc_heap*  heap,
 			 vgc_stack* stack,
@@ -220,6 +217,7 @@ vgc_subr_new(vgc_heap*  heap,
 typedef struct _vcontext{
   VGCHEADER;
   struct _vm* vm;
+  vgc_stack* cache;
   /*vgc_stack*/
   vslot stack;
   /*vgc_call*/
@@ -259,10 +257,10 @@ vslot*
 vgc_call_new(vgc_heap*  heap,
 	     vgc_stack* stack,
 	     usize_t    base,
-	     vslot*     subr,
-	     vslot*     cfun,
-	     vslot*     locals,
-	     vslot*     caller);
+	     vslot*     slotp_subr,
+	     vslot*     slotp_cfun,
+	     vslot*     slotp_locals,
+	     vslot*     slotp_caller);
 
 typedef struct _vgc_objex_t{
   ustring* type_name;

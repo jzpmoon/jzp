@@ -212,7 +212,9 @@ vgc_obj* _vgc_heap_obj_new(vgc_heap*  heap,
       new_obj = vgc_try_new(heap,size,len,obj_type,area_type);
     }
     if(new_obj){
-      if(vgc_stack_push(stack,new_obj) == -1){
+      vslot slot;
+      vslot_ref_set(slot,new_obj);
+      if(vgc_stack_push(stack,slot) == -1){
 	return NULL;
       }
     }
