@@ -15,11 +15,11 @@ int test_1(){
   ustream* stream;
   ubuffer* buff;
   
-  heap=vgc_heap_new(256,1024*10);
+  heap=vgc_heap_new(1024*10,1024*10);
   if(!heap){
     uabort("heap new error");
   }
-  stack=vgc_stack_new(heap,100);
+  stack=vgc_stack_new(heap,NULL,100,area_static);
   if(!stack){
     uabort("stack new error");
   }
@@ -65,5 +65,5 @@ int test_2(){
 }
 
 int main(){
-  test_2();
+  test_1();
 }

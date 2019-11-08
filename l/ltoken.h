@@ -21,7 +21,7 @@ typedef struct _ltoken_state{
   ustream* stream;
   ubuffer* buff;
   int      token;
-  vgc_str* str;
+  vslot*   str;
   ustring* sym;
   double   num;
   int      bool;
@@ -32,8 +32,6 @@ typedef struct _ltoken_state{
 } ltoken_state;
 
 #define LEOF (-1)
-
-int ltoken_next(ltoken_state* ts,vgc_heap* heap);
 
 vslot* lparser_parse(ltoken_state* ts,
 		     vgc_heap* heap,

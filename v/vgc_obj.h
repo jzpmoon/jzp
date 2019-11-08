@@ -107,6 +107,9 @@ enum {
   vslot_type_ref,
 };
 
+vslot* vslot_num_new(vgc_stack* stack,
+		     double num);
+
 vslot vslot_num_add(vslot  num1,
 		    vslot  num2);
 

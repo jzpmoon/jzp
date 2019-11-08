@@ -55,8 +55,9 @@ void ltoken_skip_blank(ltoken_state* ts){
 }
 
 int ltoken_lex_string(ltoken_state* ts,
-		      vgc_heap* heap){
-  vgc_str* str;
+		      vgc_heap*     heap,
+		      vgc_stack*    stack){
+  vslot* str;
   int      c;
   while(1){
     c = ltoken_next_char(ts);
@@ -69,8 +70,9 @@ int ltoken_lex_string(ltoken_state* ts,
     ltoken_mark(ts,c);
   }
   str = vgc_str_new_by_buff(heap,
-			    area_static,
-			    ts->buff);
+			    stack,
+			    ts->buff,
+			    area_active);
   if(!str){
     uabort("lparse: new vgc_str error!");
   }
@@ -134,7 +136,9 @@ int ltoken_lex_identify(ltoken_state* ts){
   }
 }
 
-int ltoken_next(ltoken_state* ts,vgc_heap* heap){
+int ltoken_next(ltoken_state* ts,
+		vgc_heap*     heap,
+		vgc_stack*    stack){
   int c;
   ltoken_skip_blank(ts);
   c = ltoken_next_char(ts);
@@ -146,7 +150,7 @@ int ltoken_next(ltoken_state* ts,vgc_heap* heap){
   case '\'':
     return ts->token = ltk_quote;
   case '"':
-    return ltoken_lex_string(ts,heap);
+    return ltoken_lex_string(ts,heap,stack);
   case '+':
   case '-':
     ltoken_mark(ts,c);
@@ -178,18 +182,13 @@ int ltoken_next(ltoken_state* ts,vgc_heap* heap){
 }
 
 vslot* lparser_atom_parse(ltoken_state* ts,
-			  vgc_heap* heap,
-			  vgc_stack* stack){
+			  vgc_heap*     heap,
+			  vgc_stack*    stack){
   int tk = ts->token;
   switch(tk){
   case ltk_string:
     {
-      vslot slot;
-      vslot_ref_set(slot,ts->str);
-      if(vgc_stack_push(stack,slot) == -1){
-	uabort("lparser_parse error!");
-      }
-      return vgc_stack_top_ref(stack);
+      return ts->str;
     }
   case ltk_identify:
     {
@@ -197,33 +196,32 @@ vslot* lparser_atom_parse(ltoken_state* ts,
 			       stack,
 			       ts->sym);
       if(!sym){
-	uabort("lparser_parse error!");
+	uabort("lparser_atom_parse error!");
       }
       return sym;
     }
   case ltk_number:
     {
-      vslot slot;
-      vslot_num_set(slot,ts->num);
-      if(vgc_stack_push(stack,slot) == -1){
-	uabort("lparser_parse error!");
+      vslot* num = vslot_num_new(stack,ts->num);
+      if(!num){
+	uabort("lparser_atom_parse error!");
       }
-      return vgc_stack_top_ref(stack);
+      return num;
     }
   default:
     ltoken_log(ts);
-    uabort("lparser_parse error!");
+    uabort("lparser_atom_parse error!");
   }
 }
 
 vslot* lparser_exp_parse(ltoken_state* ts,
-			 vgc_heap* heap,
-			 vgc_stack* stack){
+			 vgc_heap*     heap,
+			 vgc_stack*    stack){
   vslot* s_exp = NULL;
   vslot* cons = NULL;
   while(1){
     vslot* car;
-    int   tk = ltoken_next(ts,heap);
+    int   tk = ltoken_next(ts,heap,stack);
     switch(tk){
     case ltk_left:
       car = lparser_exp_parse(ts,heap,stack);
@@ -256,11 +254,11 @@ vslot* lparser_exp_parse(ltoken_state* ts,
  * exp   := exp exp | s-exp | atom
 */
 vslot* lparser_parse(ltoken_state* ts,
-		     vgc_heap* heap,
-		     vgc_stack* stack){
+		     vgc_heap*     heap,
+		     vgc_stack*    stack){
   vslot* s_exp;
   while(1){
-    int tk = ltoken_next(ts,heap);
+    int tk = ltoken_next(ts,heap,stack);
     switch(tk){
     case ltk_left:
       s_exp = lparser_exp_parse(ts,heap,stack);
@@ -281,7 +279,8 @@ void ltoken_log(ltoken_state* ts){
     sym = "";
   }
   if(ts->str){
-    str = ts->str->u.c;
+    vgc_str* vstr = vslot_ref_get(*ts->str);
+    str = vstr->u.c;
   }else{
     str = "";
   }

@@ -163,6 +163,16 @@ void vslot_log(vslot slot){
   ulog1("vslot type:%d",slot.t);
 }
 
+vslot* vslot_num_new(vgc_stack* stack,
+		     double     num){
+  vslot slot;
+  vslot_num_set(slot,num);
+  if(vgc_stack_push(stack,slot) == -1){
+    return NULL;
+  }
+  return vgc_stack_top_ref(stack);
+}
+
 vslot vslot_num_add(vslot num1,
 		    vslot num2){
   double _num1;

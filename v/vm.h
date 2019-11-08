@@ -42,9 +42,9 @@ vcontext*
 vcontext_new(struct _vm* vm,usize_t stack_size);
 
 void vcontext_execute(vcontext* ctx,
-		      vgc_obj* entry);
+		      vslot*    slotp_entry);
 
-vslot* vcontext_args(vcontext* ctx,usize_t index);
+vslot* vcontext_args_get(vcontext* ctx,usize_t index);
 
 void vcontext_cache_clean(vcontext* ctx);
 

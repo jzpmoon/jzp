@@ -455,10 +455,8 @@ void bc_return_void(vcontext* ctx){
 #define NEXT2 do{op=FETCH;op+=FETCH<<8;}while(0)
 
 void vcontext_execute(vcontext* ctx,
-		      vgc_obj* entry){
-  vslot slot_entry;
-  vslot_ref_set(slot_entry,entry);
-  bc_push(ctx,slot_entry);
+		      vslot*    slotp_entry){
+  bc_push(ctx,*slotp_entry);
   bc_call(ctx);
   while(1){
     int op;

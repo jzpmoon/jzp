@@ -69,6 +69,6 @@ int main(){
   vgc_stack_push(stack,slot_num2);
   /*vgc_collect(heap);*/
   vcontext_cache_clean(ctx);
-  vcontext_execute(vm->context,(vgc_obj*)subr);
+  vcontext_execute(vm->context,slotp_subr);
   return 0;
 }
