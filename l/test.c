@@ -60,10 +60,18 @@ int test_2(){
 		    1028*10,
 		    100,
 		    100);
-  lstartup(vm);
+  vgc_heap* heap = vm->heap;
+  vcontext* ctx = vm->context;
+  vgc_stack* stack = vslot_ref_get(ctx->stack);
+  vslot* slotp_str = vgc_str_newc(heap,stack,"./test.txt",10,area_active);
+  if(!slotp_str){
+    uabort("test_2:str new error!");
+  }
+  lstartup(vm,slotp_str);
   return 0;
 }
 
 int main(){
-  test_1();
+  test_2();
+  return 0;
 }

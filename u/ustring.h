@@ -16,5 +16,6 @@ unsigned int data_hscd(void* v,int len);
 unsigned int string_hscd(char* v);
 void ustring_dest(ustring* str);
 double ustring_to_number(ustring* str);
+void ustring_log(ustring* str);
 
 #endif

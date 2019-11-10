@@ -44,6 +44,8 @@ vslot* vcontext_args_get(vcontext* ctx,usize_t index);
 
 void vcontext_cache_clean(vcontext* ctx);
 
+int vcontext_call_return(vcontext* ctx,vslot* slotp);
+
 #define VVM_SYMTB_SIZE 17
 
 typedef struct _vvm{
@@ -58,8 +60,10 @@ vvm* vvm_new(usize_t static_size,
 	     usize_t stack_size,
 	     usize_t consts_size);
 
-int vvm_obj_put(vvm* vm,ustring* name,vslot* obj);
+int vvm_obj_put(vvm* vm,char* name,vslot* obj);
 
-int vvm_obj_get(vvm* vm,ustring* name);
+vslot* vvm_obj_get(vvm* vm,char* name);
+
+int vvm_obj_get_index(vvm* vm,char* name);
 
 #endif

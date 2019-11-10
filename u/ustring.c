@@ -1,6 +1,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>
+#include "uerror.h"
 #include "ualloc.h"
 #include "ustring.h"
 
@@ -62,4 +63,10 @@ int ustring_comp(ustring* s1,ustring* s2){
 
 double ustring_to_number(ustring* str){
   return atof(str->value);
+}
+
+void ustring_log(ustring* str){
+  ulog1("value:%s",str->value);
+  ulog1("len  :%d",str->len);
+  ulog1("hscd :%d",str->hash_code);
 }

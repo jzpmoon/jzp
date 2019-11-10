@@ -196,8 +196,11 @@ vslot* vgc_str_new_by_buff(vgc_heap*  heap,
 
 void vgc_str_log(vgc_str* str);
 
-#define vgc_str_bound_check(str,index) \
+#define vgc_str_bound_check(str,index)		\
   ((index)>=0&&(index)<(str)->str_len)
+
+#define vgc_str_charp_get(str)			\
+  (str)->u.c
 
 typedef struct _vgc_subr{
   VGCHEADER;
@@ -225,6 +228,8 @@ typedef struct _vcontext{
   vslot stack;
   /*vgc_call*/
   vslot curr_call;
+  /*vgc_obj*/
+  vslot retval;
 } vcontext;
 
 typedef int (*vcfun_t)(vcontext* ctx);

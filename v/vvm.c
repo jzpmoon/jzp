@@ -113,7 +113,7 @@ vcontext_new(struct _vvm* vm,usize_t stack_size){
   ctx = vgc_heap_obj_new(heap,
 			 NULL,
 			 vcontext,
-			 2,
+			 3,
 			 gc_context,
 			 area_static);
   if(ctx){
@@ -121,6 +121,7 @@ vcontext_new(struct _vvm* vm,usize_t stack_size){
     ctx->cache     = cache;
     vslot_ref_set(ctx->stack,stack);
     ctx->curr_call = VSLOT_NULL;
+    ctx->retval    = VSLOT_NULL;
     vgc_obj_flip((vgc_obj*)ctx);
   }
   return ctx;
@@ -142,9 +143,18 @@ vslot* vcontext_args_get(vcontext* ctx,usize_t index){
   vgc_call* curr_call = vslot_ref_get(ctx->curr_call);
   vgc_stack* locals = vslot_ref_get(curr_call->locals);
   if(!vgc_obj_ref_check(locals,index)){
-    uabort("locals out of bound!");
+    return NULL;
   }
   return &locals->objs[index];
+}
+
+int vcontext_call_return(vcontext* ctx,vslot* slotp){
+  if(slotp){
+    ctx->retval = *slotp;
+  }else{
+    ctx->retval = VSLOT_NULL;
+  }
+  return 0;
 }
 
 vvm* vvm_new(usize_t static_size,
@@ -202,18 +212,24 @@ int vvm_symtb_key_comp(void* k1,void* k2){
   return sym1->name - sym2->name;
 }
 
-int vvm_obj_put(vvm* vm,ustring* name,vslot* obj){
+int vvm_obj_put(vvm* vm,char* name,vslot* obj){
   vsymbol sym;
   vsymbol* new_sym;
   uhash_table* symtb = vm->symtb;
   vgc_stack*   consts = vm->consts;
-  int index = vgc_stack_push(consts,*obj);
+  ustring* str;
+  int index;
+  str = vstrtb_put(name,-1);
+  if(!str){
+    return -1;
+  }
+  index = vgc_stack_push(consts,*obj);
   if(index < 0){
     return -1;
   }
-  sym = vsymbol_init(name,index);
+  sym = vsymbol_init(str,index);
   new_sym = uhash_table_put(symtb,
-			    name->hash_code % VVM_SYMTB_SIZE,
+			    str->hash_code % VVM_SYMTB_SIZE,
 			    &sym,
 			    vvm_symtb_key_put,
 			    vvm_symtb_key_comp);
@@ -228,17 +244,34 @@ void* vvm_symtb_key_get(void* key){
   return key;
 }
 
-int vvm_obj_get(vvm* vm,ustring* name){
+vslot* vvm_obj_get(vvm* vm,char* name){
+  int index = vvm_obj_get_index(vm,name);
+  if(vgc_obj_ref_check(vm->consts,index)){
+    return &vm->consts->objs[index];
+  }else{
+    return NULL;
+  }
+}
+
+int vvm_obj_get_index(vvm* vm,char* name){
+  ustring* str;
   uhash_table* symtb = vm->symtb;
-  vsymbol* sym = uhash_table_get(symtb,
-				 name->hash_code % VVM_SYMTB_SIZE,
-				 name,
-				 vvm_symtb_key_get,
-				 vvm_symtb_key_comp);
-  if(!sym){
+  vsymbol sym;
+  vsymbol* get_sym;
+  str = vstrtb_put(name,-1);
+  if(!str){
     return -1;
   }
-  return sym->index;
+  sym = vsymbol_init(str,-1);
+  get_sym = uhash_table_get(symtb,
+			    str->hash_code % VVM_SYMTB_SIZE,
+			    &sym,
+			    vvm_symtb_key_get,
+			    vvm_symtb_key_comp);
+  if(!get_sym){
+    return -1;
+  }
+  return get_sym->index;
 }
 
 void bc_top(vcontext* ctx,usize_t top){
@@ -388,7 +421,7 @@ void bc_call(vcontext* ctx){
   vslot* slotp     = vcontext_cache(ctx,bc_pop(ctx));
   vgc_obj* obj;
   if(!vslot_is_ref(*slotp)){
-    uabort("can not execute!");
+    uabort("bc_call:not refrence can not execute!");
   }
   obj = vslot_ref_get(*slotp);
   if(VGCTYPEOF(obj,gc_subr)){
@@ -404,9 +437,10 @@ void bc_call(vcontext* ctx){
 		   locals,
 		   curr_call);
     if(!call)
-      uabort("out of memory!");
+      uabort("bc_call:subr out of memory!");
     bc_push(ctx,*call);
     ctx->curr_call = *call;
+    vcontext_cache_clean(ctx);
   } else if(VGCTYPEOF(obj,gc_cfun)){
     vgc_cfun* cfun = (vgc_cfun*)obj;
     vslot* locals  =
@@ -420,15 +454,16 @@ void bc_call(vcontext* ctx){
 		   locals,
 		   curr_call);
     if(!call)
-      uabort("out of memory!");
+      uabort("bc_call:cfun out of memory!");
     bc_push(ctx,*call);
     ctx->curr_call = *call;
+    vcontext_cache_clean(ctx);
     cfun->entry(ctx);
     bc_top(ctx,((vgc_call*)vslot_ref_get(*call))->base);
+    bc_push(ctx,ctx->retval);
   }else{
-    uabort("can not execute!");
+    uabort("bc_call:can not execute!");
   }
-  vcontext_cache_clean(ctx);
 }
 
 void bc_return(vcontext* ctx){

@@ -48,6 +48,13 @@ vslot* vgc_str_new(vgc_heap*  heap,
     _vgc_heap_obj_new(heap,stack,size,0,gc_str,area_type);
   if(str){
     str->str_len = str_len;
+    if(area_type == area_static){
+      vslot slot;
+      vslot_ref_set(slot,str);
+      if(vgc_stack_push(stack,slot) == -1){
+	return NULL;
+      }
+    }
     return vgc_stack_top_ref(stack);
   }
   return NULL;
@@ -119,6 +126,13 @@ vslot* vgc_cfun_new(vgc_heap*  heap,
     cfun->para_len = para_len;
     cfun->local_len = 0;
     cfun->entry = entry;
+    if(area_type == area_static){
+      vslot slot;
+      vslot_ref_set(slot,cfun);
+      if(vgc_stack_push(stack,slot) == -1){
+	return NULL;
+      }
+    }
     return vgc_stack_top_ref(stack);
   }
   return NULL;
@@ -239,6 +253,13 @@ vslot* _vgc_objex_new(vgc_heap*    heap,
   if(objex){
     objex->oet = objex_type;
     vgc_obj_flip(objex);
+    if(area_type == area_static){
+      vslot slot;
+      vslot_ref_set(slot,objex);
+      if(vgc_stack_push(stack,slot) == -1){
+	return NULL;
+      }
+    }
     return vgc_stack_top_ref(stack);
   }
   return NULL;
