@@ -35,4 +35,14 @@ struct _lcfun_infor{
 		cfun);						\
   }while(0)
 
+#define LVAR_INIT(VM,NAME,VAR)			\
+  do{						\
+    vslot* slotp;				\
+    slotp = (VAR);				\
+    if(!slotp){					\
+      uabort("LVAR_INIT:get var error!");	\
+    }						\
+    vvm_obj_put(VM,NAME,slotp);			\
+  } while(0)
+
 #endif

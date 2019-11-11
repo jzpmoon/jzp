@@ -3,6 +3,7 @@
 
 #include "ustream.h"
 #include "vgc_obj.h"
+#include "ltoken.h"
 
 typedef struct _lcons{
   VGCHEADEREX
@@ -39,5 +40,15 @@ vslot* lstream_new_by_file(vgc_heap*  heap,
 			   char* file_path);
 
 int lstream_dest(lstream* stream);
+
+typedef struct _lparser{
+  VGCHEADEREX;
+  ltoken_state* ts;
+} lparser;
+
+extern vgc_objex_t* lparser_type;
+
+vslot* lparser_new(vgc_heap*  heap,
+		   vgc_stack* stack);
 
 #endif

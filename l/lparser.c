@@ -1,5 +1,40 @@
 #include "uerror.h"
+#include "ualloc.h"
 #include "ltoken.h"
+#include "lobj.h"
+
+#define LTOKEN_BUFF_SIZE 100
+
+ltoken_state* ltoken_state_new(ustream* stream){
+  ltoken_state* ts;
+  ubuffer* buff;
+  buff = ubuffer_new(LTOKEN_BUFF_SIZE);
+  if(!buff){
+    goto err;
+  }
+
+  unew(ts,sizeof(ltoken_state),goto err;);
+  ts->buff = buff;
+  ltoken_state_init(ts,stream);
+  
+  return ts;
+ err:
+  ubuffer_dest(buff);
+  return NULL;
+}
+
+void ltoken_state_init(ltoken_state* ts,
+		       ustream* stream){
+  ts->stream = stream;
+  ubuffer_ready_write(ts->buff);
+  ts->token = ltk_bad;
+  ts->str = NULL;
+  ts->sym = NULL;
+  ts->num = 0;
+  ts->bool = 0;
+  ts->coord.x = 1;
+  ts->coord.y = 1;
+}
 
 int ltoken_next_char(ltoken_state* ts){
   URI_DEFINE;
@@ -322,7 +357,8 @@ void lparser_atom_log(vslot s_exp){
   }
 }
 
-void lparser_exp_log(vslot s_exp){
+void lparser_exp_log(vslot* slotp_s_exp){
+  vslot s_exp = *slotp_s_exp;
   lcons* cons;
   if(vslot_is_ref(s_exp)){
     vgc_obj* obj = vslot_ref_get(s_exp);
@@ -333,7 +369,7 @@ void lparser_exp_log(vslot s_exp){
 	ulog("(");
 	while(1){
 	  vslot slot;
-	  lparser_exp_log(cons->car);
+	  lparser_exp_log(&cons->car);
 	  slot = cons->cdr;
 	  if(vslot_is_ref(slot)){
 	    vgc_obj* obj = vslot_ref_get(slot);

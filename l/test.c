@@ -45,7 +45,7 @@ int test_1(){
   
   slot = lparser_parse(&ts,heap,stack);
 
-  lparser_exp_log(*slot);
+  lparser_exp_log(slot);
   /*while(1){
     token = ltoken_next(&ts,heap);
     ltoken_log(&ts);

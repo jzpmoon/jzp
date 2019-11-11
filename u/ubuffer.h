@@ -12,6 +12,9 @@ typedef struct _ubuffer{
 
 ubuffer* ubuffer_new(int size);
 
+#define ubuffer_dest(buff) \
+  ufree(buff)
+
 int ubuffer_read_from_buff(ubuffer* to_buff,
 			   ubuffer* from_buff);
 

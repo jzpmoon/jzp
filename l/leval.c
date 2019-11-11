@@ -1,15 +1,32 @@
 #include "lobj.h"
 #include "leval.h"
 
-LDEFUN(make_parser,"make-parser",1,{
+LDEFUN(s_exp_parse,"s-exp-parse",1,{
+    vvm* vm = ctx->vm;
+    vgc_stack* stack = vslot_ref_get(ctx->stack);
+    vslot* slotp_parser;
+    lparser* parser;
     vslot* slotp_stream;
     lstream* stream;
+    vslot* slotp_exp;
+    
     slotp_stream = vcontext_args_get(ctx,0);
     if(!slotp_stream){
-      uabort("make-parser:get args error!");
+      uabort("s-exp-parse:get args error!");
     }
     stream = vslot_ref_get(*slotp_stream);
-    ulog("make-parser");
+
+    slotp_parser = vvm_obj_get(vm,"s-exp-parser");
+    if(!slotp_parser){
+      uabort("s-exp-parse:get parser error!");
+    }
+    parser = vslot_ref_get(*slotp_parser);
+    
+    ltoken_state_init(parser->ts,stream->stream);
+
+    slotp_exp = lparser_parse(parser->ts,vm->heap,stack);
+    lparser_exp_log(slotp_exp);
+    
     vcontext_call_return(ctx,NULL);
     return 0;
   });
@@ -39,8 +56,16 @@ LDEFUN(make_stream,"make-stream",1,{
   });
 
 void leval_init(vvm* vm){
+  vgc_heap* heap = vm->heap;
+  vcontext* ctx = vm->context;
+  vgc_stack* stack = vslot_ref_get(ctx->stack);
+  vslot* slotp_parser;
+  
+  slotp_parser = lparser_new(heap,stack);
+  LVAR_INIT(vm,"s-exp-parser",slotp_parser);
+  
   LFUN_INIT(vm,make_stream);
-  LFUN_INIT(vm,make_parser);
+  LFUN_INIT(vm,s_exp_parse);
 }
 
 int lentry(vcontext* ctx){
@@ -48,7 +73,7 @@ int lentry(vcontext* ctx){
   vgc_stack* stack = vslot_ref_get(ctx->stack);
   vslot* slotp_args;
   vslot* slotp_make_stream;
-  vslot* slotp_make_parser;
+  vslot* slotp_s_exp_parse;
   
   slotp_args = vcontext_args_get(ctx,0);
   if(!slotp_args){
@@ -65,13 +90,13 @@ int lentry(vcontext* ctx){
   if(!slotp_make_stream){
     uabort("lentry:get make-stream error!");
   }
-  slotp_make_parser = vvm_obj_get(vm,"make-parser");
-  if(!slotp_make_parser){
-    uabort("lentry:get make-parser error!");
+  slotp_s_exp_parse = vvm_obj_get(vm,"s-exp-parse");
+  if(!slotp_s_exp_parse){
+    uabort("lentry:get s-exp-parse error!");
   }
   
   vcontext_execute(ctx,slotp_make_stream);
-  vcontext_execute(ctx,slotp_make_parser);
+  vcontext_execute(ctx,slotp_s_exp_parse);
   
   return 0;
 }

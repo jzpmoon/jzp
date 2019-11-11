@@ -84,3 +84,31 @@ vslot* lstream_new_by_file(vgc_heap*  heap,
   
   return slotp;
 }
+
+vgc_objex_t* lparser_type;
+
+vslot* lparser_new(vgc_heap*  heap,
+		   vgc_stack* stack){
+  vslot* slotp;
+  ltoken_state* ts;
+  if(!vgc_objex_is_init(lsymbol_type)){
+    lsymbol_type = vgc_objex_init("parser");
+  }
+
+  ts = ltoken_state_new(NULL);
+  if(!ts){
+    return NULL;
+  }
+  
+  slotp = vgc_objex_new(heap,
+			stack,
+			lparser,
+			0,
+			lparser_type,
+			area_static);
+  if(slotp){
+    lparser* parser = vslot_ref_get(*slotp);
+    parser->ts = ts;
+  }
+  return slotp;
+}
