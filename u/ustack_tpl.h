@@ -8,6 +8,7 @@
     int block_pos;				\
     int block_count;				\
     int block_limit;				\
+    int block_size;				\
   } ustack_##t;
 
 #ifndef ustack_push_tpl
@@ -20,7 +21,7 @@
   int ustack_pop_##t(ustack_##t* stack,t* data);
 #endif
 
-#define ustack_init(t,stack,limit)		\
-  stack = (ustack_##t){NULL,NULL,0,0,limit}
+#define ustack_init(t,stack,limit,size)			\
+  stack = (ustack_##t){NULL,NULL,0,0,limit,size}
 
 #endif

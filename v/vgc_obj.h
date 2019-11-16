@@ -35,6 +35,12 @@ typedef struct _vgc_obj{
   VGCHEADER;
 } vgc_obj,* vgc_objp;
 
+enum{
+  vslot_type_ref,
+  vslot_type_num,
+  vslot_type_bool,
+};
+
 typedef struct _vslot{
   int t;
   union {
@@ -43,6 +49,9 @@ typedef struct _vslot{
     vgc_obj* ref;
   } u;
 } vslot;
+
+#define vslot_is_ref(slot) ((slot).t == vslot_type_ref)
+#define vslot_ref_get(slot) ((slot).u.ref)
 
 enum{
   vgc_heap_area_static,
@@ -66,7 +75,8 @@ typedef struct _vgc_heap{
 } vgc_heap;
 
 vgc_heap* vgc_heap_new(usize_t area_static_size,
-		       usize_t area_active_size);
+		       usize_t area_active_size,
+		       usize_t root_set_size);
 
 int vgc_heap_data_new(vgc_heap* heap,
 		      usize_t obj_size,

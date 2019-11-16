@@ -8,7 +8,7 @@
 #define ublock_tpl(t)				\
   typedef struct _ublock_##t{			\
     struct _ublock_##t* next;			\
-    t ptr[BLOCK_SIZE];				\
+    t ptr[1];					\
   } ublock_##t;
 
 #define _IS_BLOCK_FULL(S)       \
@@ -29,6 +29,18 @@
     ulog1("ustack block_pos:  %d",stack->block_pos);		\
     ulog1("ustack block_count:%d",stack->block_count);		\
     ulog1("ustack block_limit:%d",stack->block_limit);		\
+    ulog1("ustack block_size:%d",stack->block_size);		\
+  }
+
+#define ublock_new_tpl(t)					\
+  static ublock_##t* ublock_new_##t(int block_size){		\
+    int total_size;						\
+    ublock_##t* block;						\
+    total_size = block_size > 0 ? block_size : BLOCK_SIZE;	\
+    total_size = TYPE_SIZE_OF(ublock_##t,t,block_size);		\
+    unew(block,total_size,return NULL;);			\
+    block->next = NULL;						\
+    return block;						\
   }
 
 #define ublock_push_tpl(t)					\
@@ -39,9 +51,10 @@
 	return NULL;						\
       }								\
       if(!(block=stack->cache_block)){				\
-	unew(block,						\
-	     sizeof(ublock_##t),				\
-	     return NULL;);					\
+	block = ublock_new_##t(stack->block_size);		\
+	if(!block){						\
+	  return NULL;						\
+	}							\
 	stack->block_count++;					\
       }								\
       block->next=stack->curr_block;				\
