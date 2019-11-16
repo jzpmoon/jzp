@@ -2,21 +2,20 @@
 #define _VGC_OBJ_H_
 
 #include "udef.h"
-#include "ustack.h"
+#include "ustack_tpl.h"
 #include "ustring_table.h"
 #include "ubuffer.h"
 
 enum {
-  gc_stack,
-  gc_str,
-  gc_cfun,
-  gc_subr,
-  gc_call,
-  gc_context,
-  gc_extend,
+  vgc_obj_type_stack,
+  vgc_obj_type_str,
+  vgc_obj_type_cfun,
+  vgc_obj_type_subr,
+  vgc_obj_type_call,
+  vgc_obj_type_extend,
 };
 
-#define VGCTYPEOF(O,T) \
+#define vgc_obj_typeof(O,T) \
   (((O)->mark.t==(T)))
 
 struct mark_t{
@@ -25,16 +24,16 @@ struct mark_t{
   unsigned char t : 6;
 };
 
-#define VGCHEADER	 \
-  struct _vgc_obj* addr; \
-  usize_t size;	         \
-  usize_t len;		 \
-  usize_t top;		 \
-  struct mark_t mark;
+#define VGCHEADER				\
+  struct _vgc_obj* _addr;			\
+  usize_t _size;				\
+  usize_t _len;					\
+  usize_t _top;					\
+  struct mark_t _mark
 
 typedef struct _vgc_obj{
   VGCHEADER;
-} vgc_obj;
+} vgc_obj,* vgc_objp;
 
 typedef struct _vslot{
   int t;
@@ -45,267 +44,47 @@ typedef struct _vslot{
   } u;
 } vslot;
 
-typedef struct _vgc_stack{
-  VGCHEADER;
-  vslot objs[1];
-} vgc_stack;
-
-enum {
-  area_static,
-  area_active,
+enum{
+  vgc_heap_area_static,
+  vgc_heap_area_active,
 };
+
+ustack_tpl(vgc_objp)
+ustack_tpl(vslot)
 
 typedef struct _vgc_heap{
-  vgc_obj* static_begin;
-  vgc_obj* static_end;
-  vgc_obj* static_index;
-  vgc_obj* active_begin;
-  vgc_obj* active_end;
-  vgc_obj* active_index;
-  vgc_obj* memory_begin;
-  vgc_obj* memory_end;
-  ustack   stack;
+  usize_t heap_size;
+  ustack_vslot root_set;
+  ustack_vgc_objp stack;
+  usize_t area_static_size;
+  vgc_obj* area_static_begin;
+  vgc_obj* area_static_index;
+  usize_t area_active_size;
+  vgc_obj* area_active_begin;
+  vgc_obj* area_active_index;
+  char heap_data[1];
 } vgc_heap;
 
-vgc_heap* vgc_heap_new(usize_t static_size,
-		       usize_t active_size);
+vgc_heap* vgc_heap_new(usize_t area_static_size,
+		       usize_t area_active_size);
 
-void vgc_collect(vgc_heap* heap);
+int vgc_heap_data_new(vgc_heap* heap,
+		      usize_t obj_size,
+		      usize_t ref_count,
+		      int area_type);
 
-vgc_obj*
-_vgc_heap_obj_new(vgc_heap*  heap,
-		  vgc_stack* stack,
-		  usize_t    size,
-		  usize_t    len,
-		  int        obj_type,
-		  int        area_type);
+#define vgc_obj_ref_count(type) \
+  (sizeof(((type*)0)->_u)/sizeof(vgc_obj*))
 
-#define vgc_heap_obj_new(heap,stack,stype,slen,otype,atype)		\
-  (stype*)_vgc_heap_obj_new(heap,stack,sizeof(stype),slen,otype,atype)
+#define vgc_heap_obj_new(heap,type,area_type) \
+  vgc_heap_data_new(heap,sizeof(type),vgc_obj_ref_count(type),area_type)
 
-#define vgc_obj_ref_list(obj)						\
-  ((vslot*)(((void*)(obj)+(obj)->size)-sizeof(vslot)*(obj)->len))
-
-#define vgc_obj_ref_check(obj,index)		\
-  ((index)>=0&&(index)<(obj)->len)
-
-#define vgc_obj_is_full(obj)			\
-  ((obj)->top>=(obj)->len)
-
-#define vgc_obj_is_empty(obj)			\
-  ((obj)->top<=0)
-
-#define vgc_obj_flip(obj)			\
-  (obj)->top=(obj)->len
-
-void vgc_obj_log(vgc_obj* obj);
-
-enum {
-  vslot_type_null,
-  vslot_type_num,
-  vslot_type_bool,
-  vslot_type_ref,
-};
-
-vslot* vslot_num_new(vgc_stack* stack,
-		     double num);
-
-vslot vslot_num_add(vslot  num1,
-		    vslot  num2);
-
-vslot vslot_num_eq(vslot  num1,
-		   vslot  num2);
-
-vslot vslot_ref_eq(vslot ref1,
-		   vslot ref2);
-
-#define VTRUE (1)
-
-#define VFALSE (0)
-
-#define VTRUEP(_bool) ((_bool).u.bool)
-
-#define VFALSEP(_bool) (!(_bool).u.bool)
-
-#define VSLOT_NULL ((vslot){vslot_type_null,{0}})
-
-#define vslot_is_ref(slot) ((slot).t==vslot_type_ref)
-
-#define vslot_is_null(slot) ((slot).t==vslot_type_null)
-
-#define vslot_is_num(slot) ((slot).t==vslot_type_num)
-
-#define vslot_is_bool(slot) ((slot).t==vslot_type_bool)
-
-#define vslot_ref_get(slot)			                \
-  ((void*)(slot).u.ref)
-
-#define vslot_num_get(slot)			                \
-  ((slot).u.num)
-
-#define vslot_bool_get(slot)			                \
-  ((slot).u.bool)
-
-#define vslot_ref_set(slot,obj)					\
-  ((slot).t=vslot_type_ref,(slot).u.ref=(vgc_obj*)(obj))
-
-#define vslot_num_set(slot,_num)		                \
-  ((slot).t=vslot_type_num,(slot).u.num=(_num))
-
-#define vslot_bool_set(slot,_bool)			        \
-  ((slot).t=vslot_type_bool,(slot).u.bool=(_bool))
-  
-void vslot_log(vslot slot);
-
-vgc_stack* vgc_stack_new(vgc_heap*  heap,
-			 vgc_stack* stack,
-			 usize_t    len,
-			 int        area_type);
-
-int vgc_stack_push(vgc_stack* stack,
-		   vslot      slot);
-
-vslot vgc_stack_pop(vgc_stack* stack);
-
-vslot* vgc_stack_top_ref(vgc_stack* stack);
-
-typedef struct _vgc_str{
+typedef struct _vgc_stack{
   VGCHEADER;
-  usize_t str_len;
-  union {
-    char c[1];
-    unsigned char b[1];
-  } u;
-} vgc_str;
+  vgc_obj* objs[1];
+} vgc_stack;
 
-vslot* vgc_str_new(vgc_heap*  heap,
-		   vgc_stack* stack,
-		   usize_t    str_len,
-		   int        area_type);
-
-vslot* vgc_str_newc(vgc_heap*  heap,
-		    vgc_stack* stack,
-		    char*      charp,
-		    usize_t    str_len,
-		    int        area_type);
-
-vslot* vgc_str_new_by_buff(vgc_heap*  heap,
-			   vgc_stack* stack,
-			   ubuffer*   buff,
-			   int        area_type);
-
-void vgc_str_log(vgc_str* str);
-
-#define vgc_str_bound_check(str,index)		\
-  ((index)>=0&&(index)<(str)->str_len)
-
-#define vgc_str_charp_get(str)			\
-  (str)->u.c
-
-typedef struct _vgc_subr{
-  VGCHEADER;
-  usize_t para_len;
-  usize_t local_len;
-  /*vgc_str*/
-  vslot bc;
-  /*vgc_stack*/
-  vslot consts;
-} vgc_subr;
-
-vslot*
-vgc_subr_new(vgc_heap*  heap,
-	     vgc_stack* stack,
-	     usize_t    para_len,
-	     usize_t    local_len,
-	     vslot*     bc,
-	     vslot*     consts);
-
-typedef struct _vcontext{
-  VGCHEADER;
-  struct _vvm* vm;
-  vgc_stack* cache;
-  /*vgc_stack*/
-  vslot stack;
-  /*vgc_call*/
-  vslot curr_call;
-  /*vgc_obj*/
-  vslot retval;
-} vcontext;
-
-typedef int (*vcfun_t)(vcontext* ctx);
-
-typedef struct _vgc_cfun{
-  VGCHEADER;
-  usize_t para_len;
-  usize_t local_len;
-  vcfun_t entry;
-} vgc_cfun;
-
-vslot* vgc_cfun_new(vgc_heap*  heap,
-		    vgc_stack* stack,
-		    usize_t    para_len,
-		    vcfun_t    entry,
-		    int        area_type);
-
-typedef struct _vgc_call{
-  VGCHEADER;
-  unsigned char* pc;
-  usize_t base;
-  /*vgc_subr*/
-  vslot subr;
-  /*vgc_cfun*/
-  vslot cfun;
-  /*vgc_stack*/
-  vslot locals;
-  /*vgc_call*/
-  vslot caller;
-} vgc_call;
-
-vslot*
-vgc_call_new(vgc_heap*  heap,
-	     vgc_stack* stack,
-	     usize_t    base,
-	     vslot*     slotp_subr,
-	     vslot*     slotp_cfun,
-	     vslot*     slotp_locals,
-	     vslot*     slotp_caller);
-
-#define vgc_call_is_subr(call) \
-  vslot_is_ref((call)->subr)
-#define vgc_call_is_cfun(call) \
-  vslot_is_ref((call)->cfun)
-
-typedef struct _vgc_objex_t{
-  ustring* type_name;
-} vgc_objex_t;
-
-#define VGCHEADEREX \
-  VGCHEADER	    \
-  vgc_objex_t* oet;
-
-#define VGCTYPEOFEX(objex,type)			\
-  ((objex)->oet==(type))
-
-typedef struct _vgc_objex{
-  VGCHEADEREX
-} vgc_objex;
-
-vslot* _vgc_objex_new(vgc_heap*    heap,
-		      vgc_stack*   stack,
-		      usize_t      objex_size,
-		      usize_t      slot_len,
-		      vgc_objex_t* objex_type,
-		      int          area_type);
-
-#define vgc_objex_new(heap,stack,stype,slen,otype,atype)	\
-  _vgc_objex_new(heap,stack,sizeof(stype),slen,otype,atype)
-
-ustring* vstrtb_put(char* charp,int len);
-
-ustring* vstrtb_put_by_buff(ubuffer* buff);
-
-vgc_objex_t* vgc_objex_init(char* str);
-
-#define vgc_objex_is_init(otype) ((otype) != NULL)
+int vgc_stack_new(vgc_heap* heap,
+		  usize_t stack_size);
 
 #endif

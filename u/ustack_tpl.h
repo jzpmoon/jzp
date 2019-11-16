@@ -11,13 +11,16 @@
   } ustack_##t;
 
 #ifndef ustack_push_tpl
-#define ustack_push_tpl(t) \
+#define ustack_push_tpl(t)				\
   int ustack_push_##t(ustack_##t* stack,t data);
 #endif
 
 #ifndef ustack_pop_tpl
-#define ustack_pop_tpl(t) \
+#define ustack_pop_tpl(t)				\
   int ustack_pop_##t(ustack_##t* stack,t* data);
 #endif
+
+#define ustack_init(t,stack,limit)		\
+  stack = (ustack_##t){NULL,NULL,0,0,limit}
 
 #endif
