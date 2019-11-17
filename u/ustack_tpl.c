@@ -3,23 +3,21 @@
 #include "ualloc.h"
 #include "uerror.h"
 
-#define BLOCK_SIZE 4*1024
-
 #define ublock_tpl(t)				\
   typedef struct _ublock_##t{			\
     struct _ublock_##t* next;			\
     t ptr[1];					\
   } ublock_##t;
 
-#define _IS_BLOCK_FULL(S)       \
-  ((S)->block_pos>=BLOCK_SIZE||	\
+#define _IS_BLOCK_FULL(S)			\
+  ((S)->block_pos>=(S)->block_size||		\
    !(S)->curr_block)
-#define _IS_STACK_FULL(S)       \
-  ((S)->block_count==		\
+#define _IS_STACK_FULL(S)			\
+  ((S)->block_count==				\
    (S)->block_limit)
-#define _IS_BLOCK_EMPTY(S)      \
+#define _IS_BLOCK_EMPTY(S)			\
   ((S)->block_pos==0)
-#define _IS_STACK_EMPTY(S)      \
+#define _IS_STACK_EMPTY(S)			\
   (!(S)->curr_block)
 
 #define ustack_log_tpl(t)					\
@@ -34,11 +32,9 @@
 
 #define ublock_new_tpl(t)					\
   static ublock_##t* ublock_new_##t(int block_size){		\
-    int total_size;						\
+    int size = TYPE_SIZE_OF(ublock_##t,t,block_size);		\
     ublock_##t* block;						\
-    total_size = block_size > 0 ? block_size : BLOCK_SIZE;	\
-    total_size = TYPE_SIZE_OF(ublock_##t,t,block_size);		\
-    unew(block,total_size,return NULL;);			\
+    unew(block,size,return NULL;);				\
     block->next = NULL;						\
     return block;						\
   }
@@ -90,7 +86,7 @@
 	  stack->cache_block=block;			\
 	}						\
 	if(stack->curr_block)				\
-	  stack->block_pos=BLOCK_SIZE;			\
+	  stack->block_pos=stack->block_size;		\
       }							\
     }							\
     return stack->curr_block;				\
