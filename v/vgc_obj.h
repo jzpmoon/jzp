@@ -8,7 +8,7 @@
 
 enum {
   vgc_obj_type_array,
-  vgc_obj_type_str,
+  vgc_obj_type_string,
   vgc_obj_type_cfun,
   vgc_obj_type_subr,
   vgc_obj_type_call,
@@ -34,6 +34,15 @@ struct mark_t{
 typedef struct _vgc_obj{
   VGCHEADER;
 } vgc_obj,* vgc_objp;
+
+#define vgc_obj_log(obj)			\
+  do{						\
+    ulog("*******vgc_obj_log");			\
+    ulog1("type:%d",obj->_mark.t);		\
+    ulog1("size:%d",obj->_size);		\
+    ulog1("len: %d",obj->_len);			\
+    ulog1("top: %d",obj->_top);			\
+  } while(0)
 
 enum{
   vslot_type_ref,
@@ -64,10 +73,12 @@ enum{
 };
 
 ustack_tpl(vgc_objp)
+ustack_log_decl_tpl(vgc_objp)
 ustack_push_decl_tpl(vgc_objp)
 ustack_pop_decl_tpl(vgc_objp)
 
 ustack_tpl(vslot)
+ustack_log_decl_tpl(vslot)
 ustack_push_decl_tpl(vslot)
 ustack_pop_decl_tpl(vslot)
 
@@ -121,5 +132,17 @@ typedef struct _vgc_array{
 int vgc_array_new(vgc_heap* heap,
 		  usize_t len,
 		  int area_type);
+
+typedef struct _vgc_string{
+  VGCHEADER;
+  union{
+    char c[1];
+    unsigned char b[1];
+  } u;
+} vgc_string;
+
+int vgc_string_new(vgc_heap* heap,
+		   usize_t len,
+		   int area_type);
 
 #endif

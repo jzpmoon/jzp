@@ -15,6 +15,8 @@
 
 #define BLOCK_SIZE 4*1024
 
+#define ustack_log_decl_tpl(t)			\
+  void ustack_log_##t(ustack_##t* stack);
 
 #define ustack_push_decl_tpl(t)				\
   int ustack_push_##t(ustack_##t* stack,t data);
