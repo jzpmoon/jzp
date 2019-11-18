@@ -1,5 +1,5 @@
 bin=test_gc
-obj=vgc.o test_gc.o
+obj=vgc.o test_gc.o vgc_obj.o
 lib_path=../u/
 sobj=libu.so
 CFLAGS=-std=c89 -Wall $(DEBUG_MODE)

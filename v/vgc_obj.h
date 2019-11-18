@@ -7,7 +7,7 @@
 #include "ubuffer.h"
 
 enum {
-  vgc_obj_type_stack,
+  vgc_obj_type_array,
   vgc_obj_type_str,
   vgc_obj_type_cfun,
   vgc_obj_type_subr,
@@ -50,8 +50,13 @@ typedef struct _vslot{
   } u;
 } vslot;
 
+#define vslot_define_begin struct{
+#define vslot_define(name) vslot name;
+#define vslot_define_end } _u;
 #define vslot_is_ref(slot) ((slot).t == vslot_type_ref)
 #define vslot_ref_get(slot) ((slot).u.ref)
+#define vslot_ref_set(slot,obj) \
+  (slot.t = vslot_type_ref,slot.u.ref = obj)
 
 enum{
   vgc_heap_area_static,
@@ -59,18 +64,25 @@ enum{
 };
 
 ustack_tpl(vgc_objp)
-ustack_tpl(vslot)
+ustack_push_decl_tpl(vgc_objp)
+ustack_pop_decl_tpl(vgc_objp)
 
+ustack_tpl(vslot)
+ustack_push_decl_tpl(vslot)
+ustack_pop_decl_tpl(vslot)
+
+typedef struct _vgc_heap_area{
+  vgc_obj* area_begin;
+  vgc_obj* area_index;
+  usize_t area_size;
+} vgc_heap_area;
+  
 typedef struct _vgc_heap{
   usize_t heap_size;
   ustack_vslot root_set;
   ustack_vgc_objp stack;
-  usize_t area_static_size;
-  vgc_obj* area_static_begin;
-  vgc_obj* area_static_index;
-  usize_t area_active_size;
-  vgc_obj* area_active_begin;
-  vgc_obj* area_active_index;
+  vgc_heap_area area_static;
+  vgc_heap_area area_active;
   char heap_data[1];
 } vgc_heap;
 
@@ -81,20 +93,33 @@ vgc_heap* vgc_heap_new(usize_t area_static_size,
 int vgc_heap_data_new(vgc_heap* heap,
 		      usize_t obj_size,
 		      usize_t ref_count,
+		      int obj_type,
 		      int area_type);
 
 #define vgc_obj_ref_count(type) \
   (sizeof(((type*)0)->_u)/sizeof(vgc_obj*))
 
-#define vgc_heap_obj_new(heap,type,area_type) \
-  vgc_heap_data_new(heap,sizeof(type),vgc_obj_ref_count(type),area_type)
+#define vgc_heap_obj_new(heap,type,obj_type,area_type)		\
+  vgc_heap_data_new						\
+  (heap,sizeof(type),vgc_obj_ref_count(type),obj_typearea_type)
 
-typedef struct _vgc_stack{
+#define vgc_heap_stack_push(heap,slot)			\
+  if(ustack_push_vslot(&(heap)->root_set,slot)){	\
+    uabort("vgc_heap_stack: overflow!");		\
+  }
+
+#define vgc_heap_stack_pop(heap,slotp)			\
+  if(ustack_pop_vslot(&(heap)->root_set,slotp)){	\
+    uabort("vgc_heap_stack: empty!");			\
+  }
+
+typedef struct _vgc_array{
   VGCHEADER;
   vgc_obj* objs[1];
-} vgc_stack;
+} vgc_array;
 
-int vgc_stack_new(vgc_heap* heap,
-		  usize_t stack_size);
+int vgc_array_new(vgc_heap* heap,
+		  usize_t len,
+		  int area_type);
 
 #endif
