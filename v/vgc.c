@@ -39,11 +39,11 @@ ustack_pop_tpl(vgc_objp)
 #define vgc_obj_slot_list(obj)			\
   (vslot*)((char*)obj + obj->_size -		\
 	   (sizeof(vslot) * obj->_len))
-#define vgc_area_of(area,obj)					\
+#define vgc_area_of_obj(area,obj)				\
   ((obj) >= (area)->area_begin &&				\
    (obj) < (vgc_obj*)((char*)(area)->area_begin + (area)->area_size))
 #define vgc_obj_is_static(heap,obj)		\
-  vgc_area_of(&heap->area_static,obj)
+  vgc_area_of_obj(&heap->area_static,obj)
 
 vgc_heap* vgc_heap_new(usize_t area_static_size,
 		       usize_t area_active_size,

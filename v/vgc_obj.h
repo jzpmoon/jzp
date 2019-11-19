@@ -112,7 +112,7 @@ int vgc_heap_data_new(vgc_heap* heap,
 
 #define vgc_heap_obj_new(heap,type,obj_type,area_type)		\
   vgc_heap_data_new						\
-  (heap,sizeof(type),vgc_obj_ref_count(type),obj_typearea_type)
+  (heap,sizeof(type),vgc_obj_ref_count(type),obj_type,area_type)
 
 #define vgc_heap_stack_push(heap,slot)			\
   if(ustack_push_vslot(&(heap)->root_set,slot)){	\
@@ -123,6 +123,24 @@ int vgc_heap_data_new(vgc_heap* heap,
   if(ustack_pop_vslot(&(heap)->root_set,slotp)){	\
     uabort("vgc_heap_stack: empty!");			\
   }
+
+#define vgc_pop_obj(heap,obj,obj_type)		\
+  do{						\
+    vslot __slot;				\
+    vgc_heap_stack_pop(heap,&__slot);		\
+    obj = (obj_type*)vslot_ref_get(__slot);	\
+  } while(0)
+
+#define vgc_obj_slot_get(heap,obj,slot)		\
+  vgc_heap_stack_push(heap,(obj)->_u.slot);
+  
+#define vgc_obj_slot_set(heap,obj,slot)		\
+  vgc_heap_stack_pop(heap,&((obj)->_u.slot));
+
+typedef struct _vcontext{
+  vgc_heap* heap;
+  struct _vgc_call* calling;
+} vcontext;
 
 typedef struct _vgc_array{
   VGCHEADER;
@@ -144,5 +162,54 @@ typedef struct _vgc_string{
 int vgc_string_new(vgc_heap* heap,
 		   usize_t len,
 		   int area_type);
+
+typedef int(*vcfun_ft)(vcontext*);
+
+typedef struct _vgc_cfun{
+  VGCHEADER;
+  vcfun_ft entry;
+  vslot_define_begin
+  vslot_define_end
+} vgc_cfun;
+
+int vgc_cfun_new(vgc_heap* heap,
+		 vcfun_ft entry,
+		 int area_type);
+
+typedef struct _vgc_subr{
+  VGCHEADER;
+  usize_t params_count;
+  usize_t locals_count;
+  vslot_define_begin
+  vslot_define(consts)
+  vslot_define(bytecode)
+  vslot_define_end
+} vgc_subr;
+
+int vgc_subr_new(vgc_heap* heap,
+		 usize_t params_count,
+		 usize_t locals_count,
+		 int area_type);
+
+enum {
+  vgc_call_type_cfun,
+  vgc_call_type_subr,
+};
+
+typedef struct _vgc_call{
+  VGCHEADER;
+  int call_type;
+  usize_t base;
+  char* pc;
+  vslot_define_begin
+  vslot_define(cfun)
+  vslot_define(subr)
+  vslot_define(caller)
+  vslot_define_end
+} vgc_call;
+
+int vgc_call_new(vgc_heap* heap,
+		 int call_type,
+		 usize_t base);
 
 #endif
