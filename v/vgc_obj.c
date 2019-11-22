@@ -27,6 +27,7 @@ int vgc_cfun_new(vgc_heap* heap,
   }
   vgc_pop_obj(heap,cfun,vgc_cfun);
   cfun->entry = entry;
+  vgc_push_obj(heap,cfun);
   return 0;
 }
 
@@ -43,6 +44,7 @@ int vgc_subr_new(vgc_heap* heap,
   subr->locals_count = locals_count;
   vgc_obj_slot_set(heap,subr,bytecode);
   vgc_obj_slot_set(heap,subr,consts);
+  vgc_push_obj(heap,subr);
   return 0;
 }
 
@@ -68,5 +70,6 @@ int vgc_call_new(vgc_heap* heap,
     vgc_pop_obj(heap,bytecode,vgc_string);
     call->pc = bytecode->u.c;
   }
+  vgc_push_obj(heap,call);
   return 0;
 }

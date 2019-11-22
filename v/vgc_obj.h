@@ -35,6 +35,9 @@ typedef struct _vgc_obj{
   VGCHEADER;
 } vgc_obj,* vgc_objp;
 
+#define vgc_obj_ref_check(obj,index) \
+  (index < 0 || index >= (obj)->_len)
+
 #define vgc_obj_log(obj)			\
   do{						\
     ulog("*******vgc_obj_log");			\
@@ -48,6 +51,7 @@ enum{
   vslot_type_ref,
   vslot_type_num,
   vslot_type_bool,
+  vslot_type_null,
 };
 
 typedef struct _vslot{
@@ -62,10 +66,14 @@ typedef struct _vslot{
 #define vslot_define_begin struct{
 #define vslot_define(name) vslot name;
 #define vslot_define_end } _u;
+#define vslot_is_num(slot) ((slot).t == vslot_type_num)
+#define vslot_is_bool(slot) ((slot).t == vslot_type_bool)
 #define vslot_is_ref(slot) ((slot).t == vslot_type_ref)
 #define vslot_ref_get(slot) ((slot).u.ref)
 #define vslot_ref_set(slot,obj) \
   (slot.t = vslot_type_ref,slot.u.ref = obj)
+#define VTRUEP(SLOT) ((SLOT).bool)
+#define VSLOT_NULL (vslot){vslot_type_null,0}
 
 enum{
   vgc_heap_area_static,
@@ -124,6 +132,18 @@ int vgc_heap_data_new(vgc_heap* heap,
     uabort("vgc_heap_stack: empty!");			\
   }
 
+vslot vgc_heap_stack_get(vgc_heap* heap,usize_t index);
+void vgc_heap_stack_set(vgc_heap* heap,usize_t index,vslot slot);
+usize_t vgc_heap_stack_top_get(vgc_heap* heap);
+void vgc_heap_stack_top_set(vgc_heap* heap,usize_t index);
+
+#define vgc_push_obj(heap,obj)			\
+  do{						\
+    vslot __slot;				\
+    vslot_ref_set(__slot,(vgc_obj*)obj);	\
+    vgc_heap_stack_push(heap,__slot);		\
+  } while(0)
+
 #define vgc_pop_obj(heap,obj,obj_type)		\
   do{						\
     vslot __slot;				\
@@ -140,6 +160,8 @@ int vgc_heap_data_new(vgc_heap* heap,
 typedef struct _vcontext{
   vgc_heap* heap;
   struct _vgc_call* calling;
+  uhash_table* symtb;
+  struct _vgc_array* consts;
 } vcontext;
 
 typedef struct _vgc_array{
@@ -211,5 +233,8 @@ typedef struct _vgc_call{
 int vgc_call_new(vgc_heap* heap,
 		 int call_type,
 		 usize_t base);
+
+#define vgc_call_is_cfun(call)				\
+  ((call)->call_type == vgc_call_type_cfun)
 
 #endif

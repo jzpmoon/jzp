@@ -289,3 +289,35 @@ int vgc_heap_data_new(vgc_heap* heap,
   }
   return 0;
 }
+
+vslot vgc_heap_stack_get(vgc_heap* heap,usize_t index){
+  ustack_vslot* root_set = &heap->root_set;
+  if(index < -root_set->block_pos || index >= root_set->block_pos){
+    uabort("vgc_heap_stack:index over of bound!");
+  }
+  if(index > 0){
+    return root_set->curr_block->ptr[index];
+  }
+  return root_set->curr_block->ptr[root_set->block_pos + index - 1];
+}
+
+void vgc_heap_stack_set(vgc_heap* heap,usize_t index,vslot slot){
+  ustack_vslot* root_set = &heap->root_set;
+  if(index < 0 || index >= root_set->block_pos){
+    uabort("vgc_heap_stack:index over of bound!");
+  }
+  root_set->curr_block->ptr[index] = slot;
+}
+
+int vgc_heap_stack_top_get(vgc_heap* heap){
+  ustack_vslot* root_set = &heap->root_set;
+  return root_set->block_pos;
+}
+
+void vgc_heap_stack_top_set(vgc_heap* heap,usize_t index){
+  ustack_vslot* root_set = &heap->root_set;
+  if(index < 0 || index > root_set->block_pos){
+    uabort("vgc_heap_stack:index over of bound!");
+  }
+  root_set->block_pos = index;
+}
