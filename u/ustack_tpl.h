@@ -37,4 +37,10 @@
     (stack)->block_size = UBLOCK_SIZE_GET(size);	\
   } while(0)
 
+#define ustack_decl_tpl(t)			\
+  ustack_tpl(t)					\
+    ustack_log_decl_tpl(t)			\
+    ustack_push_decl_tpl(t)			\
+    ustack_pop_decl_tpl(t)
+
 #endif

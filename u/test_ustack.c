@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "ustack_int.h"
+#include "ustack.h"
 
 ustack_int stack;
 

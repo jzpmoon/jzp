@@ -2,7 +2,6 @@ lib_name=libu.so
 obj_list=uhash_table.o   \
          ulist.o         \
          ustack.o      	 \
-         ustack_int.o    \
          ustring.o       \
          ustring_table.o \
 	 uerror.o        \

@@ -103,3 +103,12 @@
     }						\
     return -1;					\
   }
+
+#define ustack_def_tpl(t)			\
+  ublock_tpl(t)					\
+    ustack_log_tpl(t)				\
+    ublock_new_tpl(t)				\
+    ublock_push_tpl(t)				\
+    ustack_push_tpl(t)				\
+    ublock_pop_tpl(t)				\
+    ustack_pop_tpl(t)
