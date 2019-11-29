@@ -28,7 +28,6 @@ struct mark_t{
   struct _vgc_obj* _addr;			\
   usize_t _size;				\
   usize_t _len;					\
-  usize_t _top;					\
   struct mark_t _mark
 
 typedef struct _vgc_obj{
@@ -44,7 +43,6 @@ typedef struct _vgc_obj{
     ulog1("type:%d",obj->_mark.t);		\
     ulog1("size:%d",obj->_size);		\
     ulog1("len: %d",obj->_len);			\
-    ulog1("top: %d",obj->_top);			\
   } while(0)
 
 enum{
@@ -72,6 +70,8 @@ typedef struct _vslot{
 #define vslot_ref_get(slot) ((slot).u.ref)
 #define vslot_ref_set(slot,obj) \
   (slot.t = vslot_type_ref,slot.u.ref = obj)
+#define vslot_null_set(slot) \
+  (slot.t = vslot_type_null)
 #define VTRUEP(SLOT) ((SLOT).bool)
 #define VSLOT_NULL (vslot){vslot_type_null,0}
 
@@ -80,16 +80,9 @@ enum{
   vgc_heap_area_active,
 };
 
-ustack_tpl(vgc_objp)
-ustack_log_decl_tpl(vgc_objp)
-ustack_push_decl_tpl(vgc_objp)
-ustack_pop_decl_tpl(vgc_objp)
-
-ustack_tpl(vslot)
-ustack_log_decl_tpl(vslot)
-ustack_push_decl_tpl(vslot)
-ustack_pop_decl_tpl(vslot)
-
+ustack_decl_tpl(vslot)
+ustack_decl_tpl(vgc_objp)
+  
 typedef struct _vgc_heap_area{
   vgc_obj* area_begin;
   vgc_obj* area_index;
@@ -115,12 +108,12 @@ int vgc_heap_data_new(vgc_heap* heap,
 		      int obj_type,
 		      int area_type);
 
-#define vgc_obj_ref_count(type) \
-  (sizeof(((type*)0)->_u)/sizeof(vgc_obj*))
+#define vgc_obj_slot_count(type) \
+  (sizeof(((type*)0)->_u)/sizeof(vslot))
 
 #define vgc_heap_obj_new(heap,type,obj_type,area_type)		\
   vgc_heap_data_new						\
-  (heap,sizeof(type),vgc_obj_ref_count(type),obj_type,area_type)
+  (heap,sizeof(type),vgc_obj_slot_count(type),obj_type,area_type)
 
 #define vgc_heap_stack_push(heap,slot)			\
   if(ustack_push_vslot(&(heap)->root_set,slot)){	\
@@ -157,6 +150,8 @@ void vgc_heap_stack_top_set(vgc_heap* heap,usize_t index);
 #define vgc_obj_slot_set(heap,obj,slot)		\
   vgc_heap_stack_pop(heap,&((obj)->_u.slot));
 
+int vgc_obj_set(vgc_heap* heap,int index,int field_index);
+
 typedef struct _vcontext{
   vgc_heap* heap;
   struct _vgc_call* calling;
@@ -166,7 +161,7 @@ typedef struct _vcontext{
 
 typedef struct _vgc_array{
   VGCHEADER;
-  vgc_obj* objs[1];
+  vslot objs[1];
 } vgc_array;
 
 int vgc_array_new(vgc_heap* heap,

@@ -2,21 +2,8 @@
 #include "ustack_tpl.c"
 #include "vgc_obj.h"
 
-ublock_tpl(vslot)
-ustack_log_tpl(vslot)
-ublock_new_tpl(vslot)
-ublock_push_tpl(vslot)
-ustack_push_tpl(vslot)
-ublock_pop_tpl(vslot)
-ustack_pop_tpl(vslot)
-
-ublock_tpl(vgc_objp)
-ustack_log_tpl(vgc_objp)
-ublock_new_tpl(vgc_objp)
-ublock_push_tpl(vgc_objp)
-ustack_push_tpl(vgc_objp)
-ublock_pop_tpl(vgc_objp)
-ustack_pop_tpl(vgc_objp)
+ustack_def_tpl(vslot)
+ustack_def_tpl(vgc_objp)
   
 #define vgc_obj_unmark(obj)			\
   ((obj)->_mark.m = 0)
@@ -95,7 +82,7 @@ void vgc_collect_mark(vgc_heap* heap,vgc_obj* begin_obj){
     {
       vslot* obj_slot_list = vgc_obj_slot_list(obj);
       int i = 0;
-      while(i < obj->_top){
+      while(i < obj->_len){
 	vslot slot = obj_slot_list[i];
 	if(vslot_is_ref(slot)){
 	  vgc_obj* ref_obj = vslot_ref_get(slot);
@@ -145,7 +132,7 @@ void vgc_collect_update_addr(vgc_heap* heap,vgc_obj* begin_obj){
     {
       vslot* obj_slot_list = vgc_obj_slot_list(obj);
       int i = 0;
-      while(i < obj->_top){
+      while(i < obj->_len){
 	vslot slot = obj_slot_list[i];
 	if(vslot_is_ref(slot)){
 	  vgc_obj* ref_obj = vslot_ref_get(slot);
@@ -231,7 +218,6 @@ int vgc_collect(vgc_heap* heap){
     (obj)->_addr = NULL;			\
     (obj)->_size = size;			\
     (obj)->_len = len;				\
-    (obj)->_top = 0;				\
     (obj)->_mark.m = 0;				\
     (obj)->_mark.a = 0;				\
     (obj)->_mark.t = type;			\
@@ -320,4 +306,34 @@ void vgc_heap_stack_top_set(vgc_heap* heap,usize_t index){
     uabort("vgc_heap_stack:index over of bound!");
   }
   root_set->block_pos = index;
+}
+
+int vgc_obj_set(vgc_heap* heap,int index,int field_index){
+  ustack_vslot* root_set = &heap->root_set;
+  ublock_vslot* block = root_set->curr_block;
+  vslot slot_obj;
+  vgc_obj* obj;
+  vslot* slot_list;
+  vslot slot_val;
+  int stack_index = index;
+  if(index < 0){
+    stack_index = root_set->block_pos + index;
+  }
+  if(stack_index < 0 && stack_index >= root_set->block_pos){
+    uabort("vgc_obj_set:index over of bound!");
+  }
+  slot_obj = block->ptr[stack_index];
+  if(!vslot_is_ref(slot_obj)){
+    uabort("vgc_obj_set:obj not a ref!");
+  }
+  obj = vslot_ref_get(slot_obj);
+  if(vgc_obj_ref_check(obj,field_index)){
+    uabort("vgc_obj_set:field index out of bound!!");
+  }
+  slot_list = vgc_obj_slot_list(obj);
+  if(ustack_pop_vslot(root_set,&slot_val)){
+    uabort("vgc_obj_set:stack empty!");
+  }
+  slot_list[field_index] = slot_val;
+  return 0;
 }

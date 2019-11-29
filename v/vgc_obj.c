@@ -8,7 +8,19 @@ int vgc_array_new(vgc_heap* heap,
 		  usize_t len,
 		  int area_type){
   usize_t size = TYPE_SIZE_OF(vgc_array,vslot,len);
-  return vgc_heap_data_new(heap,size,len,vgc_obj_type_array,area_type);
+  int i = 0;
+  if(vgc_heap_data_new
+     (heap,size,len,vgc_obj_type_array,area_type)){
+    return -1;
+  }
+  while(i < len){
+    vslot slot;
+    vslot_null_set(slot);
+    vgc_heap_stack_push(heap,slot);
+    vgc_obj_set(heap,-2,i);
+    i++;
+  }
+  return 0;
 }
 
 int vgc_string_new(vgc_heap* heap,
