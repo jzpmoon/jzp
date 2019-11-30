@@ -1,3 +1,4 @@
+#include <string.h>
 #include "ualloc.h"
 #include "ustack_tpl.c"
 #include "vgc_obj.h"
@@ -23,9 +24,6 @@ ustack_def_tpl(vgc_objp)
   ((obj)->_mark.m)
 #define vgc_obj_mark(obj)			\
   ((obj)->_mark.m = 1)
-#define vgc_obj_slot_list(obj)			\
-  (vslot*)((char*)obj + obj->_size -		\
-	   (sizeof(vslot) * obj->_len))
 #define vgc_area_of_obj(area,obj)				\
   ((obj) >= (area)->area_begin &&				\
    (obj) < (vgc_obj*)((char*)(area)->area_begin + (area)->area_size))
@@ -85,7 +83,7 @@ void vgc_collect_mark(vgc_heap* heap,vgc_obj* begin_obj){
       while(i < obj->_len){
 	vslot slot = obj_slot_list[i];
 	if(vslot_is_ref(slot)){
-	  vgc_obj* ref_obj = vslot_ref_get(slot);
+	  vgc_obj* ref_obj = vslot_ref_get(slot,vgc_obj);
 	  if(ustack_push_vgc_objp(stack,ref_obj)){
 	    uabort("vgc_collect_mark:stack overflow!");
 	  }
@@ -135,7 +133,7 @@ void vgc_collect_update_addr(vgc_heap* heap,vgc_obj* begin_obj){
       while(i < obj->_len){
 	vslot slot = obj_slot_list[i];
 	if(vslot_is_ref(slot)){
-	  vgc_obj* ref_obj = vslot_ref_get(slot);
+	  vgc_obj* ref_obj = vslot_ref_get(slot,vgc_obj);
 	  vslot_ref_set(obj_slot_list[i],ref_obj->_addr);
 	  if(ustack_push_vgc_objp(stack,ref_obj)){
 	    uabort("vgc_collect_mark:stack overflow!");
@@ -189,7 +187,7 @@ int vgc_collect(vgc_heap* heap){
   for(i = 0;i < root_set->block_pos;i++){
     vslot slot = block->ptr[i];
     if(vslot_is_ref(slot)){
-      vgc_obj* obj = vslot_ref_get(slot);
+      vgc_obj* obj = vslot_ref_get(slot,vgc_obj);
       vgc_collect_mark(heap,obj);
     }
   }
@@ -201,7 +199,7 @@ int vgc_collect(vgc_heap* heap){
   for(i = 0;i < root_set->block_pos;i++){
     vslot slot = block->ptr[i];
     if(vslot_is_ref(slot)){
-      vgc_obj* obj = vslot_ref_get(slot);
+      vgc_obj* obj = vslot_ref_get(slot,vgc_obj);
       vslot_ref_set(block->ptr[i],obj->_addr);
       vgc_collect_update_addr(heap,obj);
     }
@@ -306,34 +304,4 @@ void vgc_heap_stack_top_set(vgc_heap* heap,usize_t index){
     uabort("vgc_heap_stack:index over of bound!");
   }
   root_set->block_pos = index;
-}
-
-int vgc_obj_set(vgc_heap* heap,int index,int field_index){
-  ustack_vslot* root_set = &heap->root_set;
-  ublock_vslot* block = root_set->curr_block;
-  vslot slot_obj;
-  vgc_obj* obj;
-  vslot* slot_list;
-  vslot slot_val;
-  int stack_index = index;
-  if(index < 0){
-    stack_index = root_set->block_pos + index;
-  }
-  if(stack_index < 0 && stack_index >= root_set->block_pos){
-    uabort("vgc_obj_set:index over of bound!");
-  }
-  slot_obj = block->ptr[stack_index];
-  if(!vslot_is_ref(slot_obj)){
-    uabort("vgc_obj_set:obj not a ref!");
-  }
-  obj = vslot_ref_get(slot_obj);
-  if(vgc_obj_ref_check(obj,field_index)){
-    uabort("vgc_obj_set:field index out of bound!!");
-  }
-  slot_list = vgc_obj_slot_list(obj);
-  if(ustack_pop_vslot(root_set,&slot_val)){
-    uabort("vgc_obj_set:stack empty!");
-  }
-  slot_list[field_index] = slot_val;
-  return 0;
 }

@@ -8,18 +8,20 @@ int vgc_array_new(vgc_heap* heap,
 		  usize_t len,
 		  int area_type){
   usize_t size = TYPE_SIZE_OF(vgc_array,vslot,len);
+  vgc_array* array;
+  vslot* slot_list;
   int i = 0;
   if(vgc_heap_data_new
      (heap,size,len,vgc_obj_type_array,area_type)){
     return -1;
   }
+  vgc_pop_obj(heap,array,vgc_array);
+  slot_list = vgc_obj_slot_list(array);
   while(i < len){
-    vslot slot;
-    vslot_null_set(slot);
-    vgc_heap_stack_push(heap,slot);
-    vgc_obj_set(heap,-2,i);
+    vslot_null_set(slot_list[i]);
     i++;
   }
+  vgc_push_obj(heap,array);
   return 0;
 }
 
@@ -27,7 +29,14 @@ int vgc_string_new(vgc_heap* heap,
 		   usize_t len,
 		   int area_type){
   usize_t size = TYPE_SIZE_OF(vgc_string,char,len);
-  return vgc_heap_data_new(heap,size,len,vgc_obj_type_string,area_type);
+  vgc_string* string;
+  if(vgc_heap_data_new(heap,size,len,vgc_obj_type_string,area_type)){
+    return -1;
+  }
+  vgc_pop_obj(heap,string,vgc_string);
+  string->len = len;
+  vgc_push_obj(heap,string);
+  return 0;
 }
 
 int vgc_cfun_new(vgc_heap* heap,
@@ -84,4 +93,37 @@ int vgc_call_new(vgc_heap* heap,
   }
   vgc_push_obj(heap,call);
   return 0;
+}
+
+vslot vslot_num_add(vslot slot1,vslot slot2){
+  double num1 = vslot_num_get(slot1);
+  double num2 = vslot_num_get(slot2);
+  double sum = num1 + num2;
+  vslot slot3;
+  vslot_num_set(slot3,sum);
+  return slot3;
+}
+
+vslot vslot_num_eq(vslot slot1,vslot slot2){
+  double num1 = vslot_num_get(slot1);
+  double num2 = vslot_num_get(slot2);
+  vslot bool;
+  if(num1 == num2){
+    vslot_bool_set(bool,1);
+  }else{
+    vslot_bool_set(bool,0);
+  }
+  return bool;
+}
+
+vslot vslot_ref_eq(vslot slot1,vslot slot2){
+  vgc_obj* ref1 = vslot_ref_get(slot1,vgc_obj);
+  vgc_obj* ref2 = vslot_ref_get(slot2,vgc_obj);
+  vslot bool;
+  if(ref1 == ref2){
+    vslot_bool_set(bool,1);
+  }else{
+    vslot_bool_set(bool,0);
+  }
+  return bool;
 }

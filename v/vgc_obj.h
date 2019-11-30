@@ -16,7 +16,7 @@ enum {
 };
 
 #define vgc_obj_typeof(O,T) \
-  (((O)->mark.t==(T)))
+  (((O)->_mark.t==(T)))
 
 struct mark_t{
   unsigned char m : 1;
@@ -67,13 +67,22 @@ typedef struct _vslot{
 #define vslot_is_num(slot) ((slot).t == vslot_type_num)
 #define vslot_is_bool(slot) ((slot).t == vslot_type_bool)
 #define vslot_is_ref(slot) ((slot).t == vslot_type_ref)
-#define vslot_ref_get(slot) ((slot).u.ref)
+#define vslot_bool_get(slot) ((slot).u.bool)
+#define vslot_bool_set(slot,val) \
+  (slot.t = vslot_type_bool,slot.u.bool = val)
+#define vslot_num_get(slot) ((slot).u.num)
+#define vslot_num_set(slot,val) \
+  (slot.t = vslot_type_num,slot.u.num = val)
+#define vslot_ref_get(slot,obj_type) ((obj_type*)(slot).u.ref)
 #define vslot_ref_set(slot,obj) \
   (slot.t = vslot_type_ref,slot.u.ref = obj)
 #define vslot_null_set(slot) \
   (slot.t = vslot_type_null)
-#define VTRUEP(SLOT) ((SLOT).bool)
-#define VSLOT_NULL (vslot){vslot_type_null,0}
+#define VTRUEP(SLOT) ((SLOT).u.bool)
+
+vslot vslot_num_add(vslot slot1,vslot slot2);
+vslot vslot_num_eq(vslot slot1,vslot slot2);
+vslot vslot_ref_eq(vslot slot1,vslot slot2);
 
 enum{
   vgc_heap_area_static,
@@ -141,7 +150,7 @@ void vgc_heap_stack_top_set(vgc_heap* heap,usize_t index);
   do{						\
     vslot __slot;				\
     vgc_heap_stack_pop(heap,&__slot);		\
-    obj = (obj_type*)vslot_ref_get(__slot);	\
+    obj = vslot_ref_get(__slot,obj_type);	\
   } while(0)
 
 #define vgc_obj_slot_get(heap,obj,slot)		\
@@ -150,7 +159,12 @@ void vgc_heap_stack_top_set(vgc_heap* heap,usize_t index);
 #define vgc_obj_slot_set(heap,obj,slot)		\
   vgc_heap_stack_pop(heap,&((obj)->_u.slot));
 
-int vgc_obj_set(vgc_heap* heap,int index,int field_index);
+#define vgc_obj_slot_list(obj)			\
+  (vslot*)((char*)obj + obj->_size -		\
+	   (sizeof(vslot) * obj->_len))
+
+#define vgc_obj_ref_get(obj,slot,obj_type)	\
+  vslot_ref_get(obj->_u.slot,obj_type)
 
 typedef struct _vcontext{
   vgc_heap* heap;
@@ -170,6 +184,7 @@ int vgc_array_new(vgc_heap* heap,
 
 typedef struct _vgc_string{
   VGCHEADER;
+  int len;
   union{
     char c[1];
     unsigned char b[1];
@@ -179,6 +194,9 @@ typedef struct _vgc_string{
 int vgc_string_new(vgc_heap* heap,
 		   usize_t len,
 		   int area_type);
+
+#define vgc_str_bound_check(obj,index) \
+  (index >= 0 && index < obj->len)
 
 typedef int(*vcfun_ft)(vcontext*);
 

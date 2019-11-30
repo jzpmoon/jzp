@@ -20,9 +20,8 @@ typedef struct _vinst{
 vinst*
 vinst_new(usize_t code,usize_t operand);
 
-vslot*
-vinst_to_str(vcontext* ctx,
-	     ulist* insts);
+int vinst_to_str(vcontext* ctx,
+		 ulist* insts);
 
 typedef struct _vsymbol{
   ustring* name;
