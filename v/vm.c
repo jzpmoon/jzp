@@ -61,7 +61,6 @@ int vinst_to_str(vcontext* ctx,ulist* insts){
     uabort("vinst_to_str:vgc_string new error!");
   }
   vgc_pop_obj(ctx->heap,str,vgc_string);
-  
   do{
     vinst* inst=node->value;
     switch(inst->code){
@@ -147,9 +146,11 @@ vslot bc_locals(vcontext* ctx,
   vgc_subr* subr = vgc_obj_ref_get(calling,subr,vgc_subr);
   usize_t count = subr->params_count + subr->locals_count;
   usize_t base = calling->base;
-  if(index < base - count || index >= base)
+  vslot slot;
+  if(index >= count)
     uabort("vm:local varable error!");
-  return vgc_heap_stack_get(ctx->heap,index);
+  slot = vgc_heap_stack_get(ctx->heap,base - count + index);
+  return slot;
 }
 
 void bc_store(vcontext* ctx,
@@ -175,7 +176,7 @@ void bc_ref(vcontext* ctx,
   vgc_pop_obj(heap,obj,vgc_obj);
   if(!obj)
     uabort("vm:refrence null object!");
-  if(!vgc_obj_ref_check(obj,index))
+  if(vgc_obj_ref_check(obj,index))
     uabort("vm:ref obj error!");
   slot_list = vgc_obj_slot_list(obj);
   slot = slot_list[index];
@@ -194,7 +195,7 @@ void bc_set(vcontext* ctx,
   obj = vslot_ref_get(slot_obj,vgc_obj);
   if(!obj)
     uabort("vm:set null object!");
-  if(!vgc_obj_ref_check(obj,index))
+  if(vgc_obj_ref_check(obj,index))
     uabort("vm:set obj error!");
   slot_list = vgc_obj_slot_list(obj);
   slot_list[index] = slot_val;
@@ -221,6 +222,7 @@ void bc_eq(vcontext* ctx){
   vslot bool;
   vgc_heap_stack_pop(ctx->heap,&slot1);
   vgc_heap_stack_pop(ctx->heap,&slot2);
+  
   if(vslot_is_num(slot1) &&
      vslot_is_num(slot2)){
     bool = vslot_num_eq(slot1,slot2);
@@ -228,6 +230,7 @@ void bc_eq(vcontext* ctx){
 	   vslot_is_ref(slot2)){
     bool = vslot_ref_eq(slot1,slot2);
   }else{
+    vgc_heap_stack_log(ctx->heap);
     uabort("vm:eq type error!");
   }
   vgc_heap_stack_push(ctx->heap,bool);
@@ -240,7 +243,7 @@ void bc_jmp(vcontext* ctx,
   vgc_string* bytecode = vgc_obj_ref_get(subr,bytecode,vgc_string);
   if(!vgc_str_bound_check(bytecode,offset))
     uabort("vm:jmp error!");
-  calling->pc = bytecode->u.c + offset;
+  calling->pc = bytecode->u.b + offset;
 }
 
 void bc_jmpi(vcontext* ctx,
@@ -248,8 +251,9 @@ void bc_jmpi(vcontext* ctx,
   vslot slot;
   vgc_heap* heap = ctx->heap;
   vgc_heap_stack_pop(heap,&slot);
-  if(vslot_is_bool(slot) && VTRUEP(slot))
+  if(vslot_is_bool(slot) && VTRUEP(slot)){
     bc_jmp(ctx,offset);
+  }
 }
 
 vslot bc_constant(vcontext* ctx,
@@ -257,7 +261,7 @@ vslot bc_constant(vcontext* ctx,
   vgc_call* calling = ctx->calling;
   vgc_subr* subr = vgc_obj_ref_get(calling,subr,vgc_subr);
   vgc_array* consts = vgc_obj_ref_get(subr,consts,vgc_array);
-  if(!vgc_obj_ref_check(consts,index))
+  if(vgc_obj_ref_check(consts,index))
     uabort("vm:constant error!");
   return consts->objs[index];
 }
@@ -272,7 +276,6 @@ void bc_call(vcontext* ctx){
   }
   obj = vslot_ref_get(slot,vgc_obj);
   if(vgc_obj_typeof(obj,vgc_obj_type_subr)){
-    vslot slot_call;
     vgc_call* call;
     usize_t base = vgc_heap_stack_top_get(heap);
     vgc_push_obj(heap,ctx->calling);
@@ -282,14 +285,14 @@ void bc_call(vcontext* ctx){
 		    base)){
       uabort("bc_call:subr out of memory!");
     }
-    slot_call = vgc_heap_stack_get(heap,-1);
-    call = vslot_ref_get(slot_call,vgc_call);
+    vgc_pop_obj(heap,call,vgc_call);
     ctx->calling = call;
+    vgc_push_obj(heap,call);
   } else if(vgc_obj_typeof(obj,vgc_obj_type_cfun)){
-    vslot slot_call;
     vgc_call* call;
     vgc_cfun* cfun;
     usize_t base = vgc_heap_stack_top_get(heap);
+    ulog("bc_call:call subr");
     vgc_push_obj(heap,ctx->calling);
     vgc_push_obj(heap,obj);
     if(vgc_call_new(heap,
@@ -297,8 +300,7 @@ void bc_call(vcontext* ctx){
 		    base)){
       uabort("bc_call:cfun out of memory!");
     }
-    slot_call = vgc_heap_stack_get(heap,-1);
-    call = vslot_ref_get(slot_call,vgc_call);
+    vgc_pop_obj(heap,call,vgc_call);
     ctx->calling = call;
     cfun = vgc_obj_ref_get(call,cfun,vgc_cfun);
     (cfun->entry)(ctx);

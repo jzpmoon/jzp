@@ -80,6 +80,12 @@ typedef struct _vslot{
   (slot.t = vslot_type_null)
 #define VTRUEP(SLOT) ((SLOT).u.bool)
 
+#define vslot_log(slot)				\
+  ulog1("slot type:%d",slot.t);			\
+  ulog1("slot num:%f",slot.u.num);		\
+  ulog1("slot bool:%d",slot.u.bool);		\
+  ulog1("slot ref:%lld",(long long)slot.u.ref);
+
 vslot vslot_num_add(vslot slot1,vslot slot2);
 vslot vslot_num_eq(vslot slot1,vslot slot2);
 vslot vslot_ref_eq(vslot slot1,vslot slot2);
@@ -116,6 +122,8 @@ int vgc_heap_data_new(vgc_heap* heap,
 		      usize_t ref_count,
 		      int obj_type,
 		      int area_type);
+
+void vgc_heap_stack_log(vgc_heap* heap);
 
 #define vgc_obj_slot_count(type) \
   (sizeof(((type*)0)->_u)/sizeof(vslot))
@@ -195,6 +203,8 @@ int vgc_string_new(vgc_heap* heap,
 		   usize_t len,
 		   int area_type);
 
+void vgc_string_log(vgc_heap* heap);
+
 #define vgc_str_bound_check(obj,index) \
   (index >= 0 && index < obj->len)
 
@@ -235,7 +245,7 @@ typedef struct _vgc_call{
   VGCHEADER;
   int call_type;
   usize_t base;
-  char* pc;
+  unsigned char* pc;
   vslot_define_begin
   vslot_define(cfun)
   vslot_define(subr)

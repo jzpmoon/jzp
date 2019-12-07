@@ -279,10 +279,10 @@ vslot vgc_heap_stack_get(vgc_heap* heap,usize_t index){
   if(index < -root_set->block_pos || index >= root_set->block_pos){
     uabort("vgc_heap_stack:index over of bound!");
   }
-  if(index > 0){
+  if(index >= 0){
     return root_set->curr_block->ptr[index];
   }
-  return root_set->curr_block->ptr[root_set->block_pos + index - 1];
+  return root_set->curr_block->ptr[root_set->block_pos + index];
 }
 
 void vgc_heap_stack_set(vgc_heap* heap,usize_t index,vslot slot){
@@ -304,4 +304,21 @@ void vgc_heap_stack_top_set(vgc_heap* heap,usize_t index){
     uabort("vgc_heap_stack:index over of bound!");
   }
   root_set->block_pos = index;
+}
+
+void vgc_heap_stack_log(vgc_heap* heap){
+  ustack_vslot* root_set = &heap->root_set;
+  ublock_vslot* block = root_set->curr_block;
+  int i = 0;
+  ulog1("stack top:%d",root_set->block_pos);
+  while(i < root_set->block_pos){
+    vslot slot = block->ptr[i];
+    ulog1("stack->[%d]",i);
+    vslot_log(slot);
+    if(vslot_is_ref(slot)){
+      vgc_obj* obj = vslot_ref_get(slot,vgc_obj);
+      vgc_obj_log(obj);
+    }
+    i++;
+  }
 }
