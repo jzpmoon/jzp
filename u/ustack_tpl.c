@@ -3,12 +3,6 @@
 #include "ualloc.h"
 #include "uerror.h"
 
-#define ublock_tpl(t)				\
-  typedef struct _ublock_##t{			\
-    struct _ublock_##t* next;			\
-    t ptr[1];					\
-  } ublock_##t;
-
 #define _IS_BLOCK_FULL(S)			\
   ((S)->block_pos>=(S)->block_size||		\
    !(S)->curr_block)
@@ -105,10 +99,9 @@
   }
 
 #define ustack_def_tpl(t)			\
-  ublock_tpl(t)					\
-    ustack_log_tpl(t)				\
-    ublock_new_tpl(t)				\
-    ublock_push_tpl(t)				\
-    ustack_push_tpl(t)				\
-    ublock_pop_tpl(t)				\
-    ustack_pop_tpl(t)
+  ustack_log_tpl(t)				\
+  ublock_new_tpl(t)				\
+  ublock_push_tpl(t)				\
+  ustack_push_tpl(t)				\
+  ublock_pop_tpl(t)				\
+  ustack_pop_tpl(t)

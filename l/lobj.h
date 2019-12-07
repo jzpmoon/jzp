@@ -6,49 +6,34 @@
 #include "ltoken.h"
 
 typedef struct _lcons{
-  VGCHEADEREX
+  VGCHEADEREX;
   vslot car;
   vslot cdr;
-} lcons;
+} lobj_cons;
 
-extern vgc_objex_t* lcons_type;
+vslot* lobj_cons_new(vgc_heap* heap);
 
-vslot* lcons_new(vgc_heap* heap,
-		 vgc_stack* stack);
-
-typedef struct _lsymbol{
-  VGCHEADEREX
+typedef struct _lobj_symbol{
+  VGCHEADEREX;
   ustring* key;
-  vslot    val;
-} lsymbol;
+} lobj_symbol;
 
-extern vgc_objex_t* lsymbol_type;
+vslot* lobj_symbol_new(vgc_heap* heap,
+		       ustring* key);
 
-vslot* lsymbol_new(vgc_heap*  heap,
-		   vgc_stack* stack,
-		   ustring*   key);
-
-typedef struct _lstream{
+typedef struct _lobj_stream{
   VGCHEADEREX;
   ustream* stream;
-} lstream;
+} lobj_stream;
 
-extern vgc_objex_t* lstream_type;
+vslot* lobj_stream_new_by_file(vgc_heap* heap,
+			       char* file_path);
 
-vslot* lstream_new_by_file(vgc_heap*  heap,
-			   vgc_stack* stack,
-			   char* file_path);
-
-int lstream_dest(lstream* stream);
-
-typedef struct _lparser{
+typedef struct _lobj_parser{
   VGCHEADEREX;
   ltoken_state* ts;
-} lparser;
+} lobj_parser;
 
-extern vgc_objex_t* lparser_type;
-
-vslot* lparser_new(vgc_heap*  heap,
-		   vgc_stack* stack);
+vslot* lobj_parser_new(vgc_heap* heap);
 
 #endif

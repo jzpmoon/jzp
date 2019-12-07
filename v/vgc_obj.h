@@ -77,7 +77,7 @@ typedef struct _vslot{
 #define vslot_ref_set(slot,obj) \
   (slot.t = vslot_type_ref,slot.u.ref = obj)
 #define vslot_null_set(slot) \
-  (slot.t = vslot_type_null)
+  ((slot).t = vslot_type_null)
 #define VTRUEP(SLOT) ((SLOT).u.bool)
 
 #define vslot_log(slot)				\
@@ -174,10 +174,14 @@ void vgc_heap_stack_top_set(vgc_heap* heap,usize_t index);
 #define vgc_obj_ref_get(obj,slot,obj_type)	\
   vslot_ref_get(obj->_u.slot,obj_type)
 
+#define VCONTEXT_SYMTB_SIZE 17
+#define VCONTEXT_STRTB_SIZE 17
+
 typedef struct _vcontext{
   vgc_heap* heap;
   struct _vgc_call* calling;
-  uhash_table* symtb;
+  uhash_table* objtb;
+  ustring_table* symtb;
   ustring_table* strtb;
   struct _vgc_array* consts;
 } vcontext;
@@ -265,14 +269,17 @@ typedef struct _vgc_obj_ex_t{
   char* type_name;
 } vgc_objex_t;
 
+#define VGCHEADEREX \
+  VGCHEADER;	    \
+  vgc_objex_t* oet
+
 typedef struct _vgc_extend{
-  VGCHEADER;
-  vgc_objex_t* oet;
+  VGCHEADEREX;
   vslot_define_begin
   vslot_define_end
 } vgc_extend;
 
-int vgc_extend_new(vgc_heap* heap,
-		   vgc_objex_t* oet);
+vslot* vgc_extend_new(vgc_heap* heap,
+		      vgc_objex_t* oet);
 
 #endif

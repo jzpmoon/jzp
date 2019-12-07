@@ -11,4 +11,8 @@ ustring* ustring_table_put(ustring_table* strtb,
 			   char*          charp,
 			   int            len);
 
+ustring* ustring_table_add(ustring_table* strtb,
+			   int            tblen,
+			   char*          charp,
+			   int            len);
 #endif

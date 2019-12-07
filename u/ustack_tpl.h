@@ -3,6 +3,12 @@
 
 #include "ualloc.h"
 
+#define ublock_tpl(t)				\
+  typedef struct _ublock_##t{			\
+    struct _ublock_##t* next;			\
+    t ptr[1];					\
+  } ublock_##t;
+
 #define ustack_tpl(t)				\
   typedef struct _ustack_##t{			\
     struct _ublock_##t* curr_block;		\
@@ -38,9 +44,10 @@
   } while(0)
 
 #define ustack_decl_tpl(t)			\
+  ublock_tpl(t)					\
   ustack_tpl(t)					\
-    ustack_log_decl_tpl(t)			\
-    ustack_push_decl_tpl(t)			\
-    ustack_pop_decl_tpl(t)
+  ustack_log_decl_tpl(t)			\
+  ustack_push_decl_tpl(t)			\
+  ustack_pop_decl_tpl(t)
 
 #endif

@@ -1,70 +1,38 @@
 #include <stddef.h>
 #include "lobj.h"
 
-vgc_objex_t* lcons_type;
-
-vslot* lcons_new(vgc_heap* heap,vgc_stack* stack){
+vslot* lobj_cons_new(vgc_heap* heap){
+  static vgc_obj_ex_t cons_t = {"cons"};
   vslot* slotp;
-  if(!vgc_objex_is_init(lcons_type)){
-    lcons_type = vgc_objex_init("cons");
-  }
-  slotp = vgc_objex_new(heap,
-			stack,
-			lcons,
-			2,
-			lcons_type,
-			area_active);
+  slotp = vgc_extend_new(heap,cons_type);
   if(slotp){
-    lcons* cons = (lcons*)
-      vslot_ref_get(*slotp);
-    cons->car = VSLOT_NULL;
-    cons->cdr = VSLOT_NULL;
+    lobj_cons* cons = vslot_ref_get(*slotp,lobj_cons);
+    vslot_null_set(cons->car);
+    vslot_null_set(cons->cdr);
   }
   return slotp;
 }
 
-vgc_objex_t* lsymbol_type;
-
-vslot* lsymbol_new(vgc_heap*  heap,
-		   vgc_stack* stack,
-		   ustring*   key){
+vslot* lobj_symbol_new(vgc_heap* heap,
+		       ustring* key){
+  static vgc_obj_ex_t symbol_type = {"symbol"};
   vslot* slotp;
-  if(!vgc_objex_is_init(lsymbol_type)){
-    lsymbol_type = vgc_objex_init("symbol");
-  }
-  slotp = vgc_objex_new(heap,
-			stack,
-			lsymbol,
-			1,
-			lsymbol_type,
-			area_active);
+  slotp = vgc_extend_new(heap,symbol_type);
   if(slotp){
-    lsymbol* symbol = (lsymbol*)
-      vslot_ref_get(*slotp);
+    lobj_symbol* symbol = vslot_ref_get(*slotp,lobj_symbol);
     symbol->key = key;
-    symbol->val = VSLOT_NULL;
   }
   return slotp;
 }
 
-vgc_objex_t* lstream_type;
-
-vslot* lstream_new_by_file(vgc_heap*  heap,
-			   vgc_stack* stack,
-			   char* file_path){
+vslot* lobj_stream_new_by_file(vgc_heap* heap,
+			       char* file_path){
   URI_DEFINE;
+  static vgc_obj_ex_t stream_type = {"stream"};
   vslot* slotp;
   FILE* file;
   ustream* stream;
-  if(!vgc_objex_is_init(lstream_type)){
-    lstream_type = vgc_objex_init("stream");
-  }
-  slotp = vgc_objex_new(heap,
-			stack,
-			lstream,
-			0,
-			lstream_type,
-			area_active);
+  slotp = vgc_extend_new(heap,stream_type);
   if(!slotp){
     uabort("lstream new error!");
   }
@@ -79,35 +47,24 @@ vslot* lstream_new_by_file(vgc_heap*  heap,
   uabort(URI_DESC);
   URI_END;
 
-  ((lstream*)vslot_ref_get(*slotp))
-    ->stream = stream;
+  (vslot_ref_get(*slotp,lobj_stream))->stream = stream;
   
   return slotp;
 }
 
-vgc_objex_t* lparser_type;
-
-vslot* lparser_new(vgc_heap*  heap,
-		   vgc_stack* stack){
+vslot* lobj_parser_new(vgc_heap* heap){
+  static vgc_obj_ex_t parser_type = {"parser"};
   vslot* slotp;
   ltoken_state* ts;
-  if(!vgc_objex_is_init(lsymbol_type)){
-    lsymbol_type = vgc_objex_init("parser");
-  }
 
   ts = ltoken_state_new(NULL);
   if(!ts){
     return NULL;
   }
   
-  slotp = vgc_objex_new(heap,
-			stack,
-			lparser,
-			0,
-			lparser_type,
-			area_static);
+  slotp = vgc_extend_new(heap,parser_type);
   if(slotp){
-    lparser* parser = vslot_ref_get(*slotp);
+    lobj_parser* parser = vslot_ref_get(*slotp,lobj_parser);
     parser->ts = ts;
   }
   return slotp;

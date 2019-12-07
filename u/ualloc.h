@@ -10,6 +10,8 @@
 #define unew(ptr,size,err)			\
   uif(!((ptr)=malloc(size)),err,(void)0;)
 
+#define ualloc(size) malloc(size)
+
 #define ufree(ptr) free(ptr)
 
 #define BOUNDARY (sizeof(void*))

@@ -90,37 +90,84 @@ int vinst_to_str(vcontext* ctx,ulist* insts){
   return 0;
 }
 
-vsymbol* vsymbol_new(ustring* name,usize_t index){
-  vsymbol* sym;
-  unew(sym,sizeof(vsymbol),return NULL;);
-  sym->name  = name;
-  sym->index = index;
-  return sym;
-}
-
+#define VCONTEXT_OBJTB_SIZE 17
 #define VCONTEXT_SYMTB_SIZE 17
+#define VCONTEXT_STRTB_SIZE 17
 #define VCONTEXT_CONSTS_SIZE 10
 
 vcontext* vcontext_new(vgc_heap* heap){
   vcontext* ctx;
-  uhash_table* symtb;
+  uhash_table* objtb;
+  ustring_table* symtb;
+  ustring_table* strtb;
   vgc_array* consts;
+
   unew(ctx,
        sizeof(vcontext),
        uabort("vcontext_new:new error!"););
+  
+  objtb = uhash_table_new(VCONTEXT_OBJTB_SIZE);
+  if(!objtb){
+    uabort("vcontext_new:objtb new error!");
+  }
+  
   symtb = uhash_table_new(VCONTEXT_SYMTB_SIZE);
   if(!symtb){
     uabort("vcontext_new:symtb new error!");
   }
+
+  strtb = uhash_table_new(VCONTEXT_STRTB_SIZE);
+  if(!strtb){
+    uabort("vcontext_new:strtb new error!");
+  }
+
   if(vgc_array_new(heap,VCONTEXT_CONSTS_SIZE,vgc_heap_area_static)){
     uabort("vcontext_new:consts new error!");
   }
   vgc_pop_obj(heap,consts,vgc_array);
+
   ctx->heap = heap;
   ctx->calling = NULL;
+  ctx->objtb = objtb;
   ctx->symtb = symtb;
+  ctx->strtb = strtb;
   ctx->consts = consts;
   return ctx;
+}
+
+vsymbol* vsymbol_new(ustring* name,vslot slot){
+  vsymbol* symbol = ualloc(sizeof(vsymbol));
+  if(symbol){
+    symbol->name = name;
+    symbol->slot = slot;
+  }
+  return symbol;
+}
+
+static void* vobjtb_key_put(void* key){
+  vsymbol* symbol = (void*)key;
+  vsymbol* new_symbol = vsymbol_new(symbol->name,symbol->slot);
+  if(!new_symbol){
+    uabort("vobjtb key put error!");
+  }
+  return new_symbol;
+}
+
+static int vobjtb_key_comp(void* k1,void* k2){
+  vsymbol* sym1 = (vsymbol*)k1;
+  vsymbol* sym2 = (vsymbol*)k2;
+  return (sym1->name - sym2->name);
+}
+
+vsymbol* vcontext_obj_put(vcontext* ctx,ustring* name,vslot obj){
+  vsymbol symbol = (vsymbol){name,obj};
+  vsymbol* new_symbol = 
+    uhash_table_put(ctx->objtb,
+		    name->hash_code % VCONTEXT_OBJTB_SIZE,
+		    (void*)&symbol,
+		    vobjtb_key_put,
+		    vobjtb_key_comp);
+  return new_symbol;
 }
 
 void bc_top(vcontext* ctx,usize_t top){

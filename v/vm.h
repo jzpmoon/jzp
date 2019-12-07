@@ -28,15 +28,10 @@ typedef struct _vsymbol{
   vslot slot;
 } vsymbol;
 
-#define vsymbol_init(name,index) \
-  ((vsymbol){name,index})
-
-vsymbol* vsymbol_new(ustring* name,usize_t index);
-
 vcontext* vcontext_new(vgc_heap* heap);
 
 void vcontext_execute(vcontext* ctx);
 
-ustring* vcontext_str_put(vcontext* ctx,char* charp);
+vsymbol* vcontext_obj_put(vcontext* ctx,ustring* name,vslot obj);
 
 #endif

@@ -141,15 +141,16 @@ vslot vslot_ref_eq(vslot slot1,vslot slot2){
   return bool;
 }
 
-int vgc_extend_new(vgc_heap* heap,
-		   vgc_objex_t* oet){
+vslot* vgc_extend_new(vgc_heap* heap,
+		      vgc_objex_t* oet){
   vgc_extend* extend;
+  ustack_vslot* root_set = &heap->root_set;
   if(vgc_heap_obj_new
      (heap,vgc_extend,vgc_obj_type_extend,vgc_heap_area_active)){
-    return -1;
+    return NULL;
   }
   vgc_pop_obj(heap,extend,vgc_extend);
   extend->oet = oet;
   vgc_push_obj(heap,extend);
-  return 0;
+  return &(root_set->curr_block->ptr[root_set->block_pos-1]);
 }
