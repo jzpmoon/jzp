@@ -23,43 +23,18 @@ static ustring* ltoken_state_string_finish(ltoken_state* ts){
   return str;
 }
 
-ltoken_state* ltoken_state_new(ustream* stream,
-			       ustring_table* symtb,
-			       int symtb_size,
-			       ustring_table* strtb,
-			       int strtb_size){
-  ltoken_state* ts;
-  ubuffer* buff;
-  buff = ubuffer_new(LTOKEN_BUFF_SIZE);
-  if(!buff){
-    goto err;
-  }
-
-  unew(ts,sizeof(ltoken_state),goto err;);
-  ts->buff = buff;
-  ts->symtb = symtb;
-  ts->symtb_size = symtb_size;
-  ts->strtb = strtb;
-  ts->strtb_size = strtb_size;
-  ltoken_state_init(ts,stream);
-  
-  return ts;
- err:
-  ubuffer_dest(buff);
-  return NULL;
+static void* last_attr_key_put(void* key){
+  return key;
 }
 
-void ltoken_state_init(ltoken_state* ts,
-		       ustream* stream){
-  ts->stream = stream;
-  ubuffer_ready_write(ts->buff);
-  ts->token = ltk_bad;
-  ts->str = NULL;
-  ts->sym = NULL;
-  ts->num = 0;
-  ts->bool = 0;
-  ts->coord.x = 1;
-  ts->coord.y = 1;
+static void* last_attr_key_get(void* key){
+  return key;
+}
+
+static int last_attr_key_comp(void* k1,void* k2){
+  last_attr* attr1 = (last_attr*)k1;
+  last_attr* attr2 = (last_attr*)k2;
+  return ustring_comp(attr1->name,attr2->name);
 }
 
 int ltoken_next_char(ltoken_state* ts){
@@ -248,7 +223,14 @@ last_obj* lparser_atom_parse(ltoken_state* ts){
     }
   case ltk_identify:
     {
-      last_symbol* sym = last_symbol_new(ts->sym);
+      last_attr* attr;
+      last_symbol* sym;
+      attr = uhash_table_get(ts->attrtb,
+			     ts->sym->hash_code % ts->attrtb_size,
+			     ts->sym,
+			     last_attr_key_get,
+			     last_attr_key_comp);
+      sym = last_symbol_new(ts->sym,attr);
       if(!sym){
 	uabort("lparser_atom_parse error!");
       }
@@ -390,11 +372,12 @@ last_cons* last_cons_new(last_obj* car,last_obj* cdr){
   return cons;
 }
 
-last_symbol* last_symbol_new(ustring* name){
+last_symbol* last_symbol_new(ustring* name,last_attr* attr){
   last_symbol* symbol = ualloc(sizeof(last_symbol));
   if(symbol){
     symbol->t = lastk_symbol;
     symbol->name = name;
+    symbol->attr = attr;
   }
   return symbol;
 }
@@ -415,4 +398,56 @@ last_string* last_string_new(ustring* string){
     str->string = string;
   }
   return str;
+}
+
+void ltoken_state_init(ltoken_state* ts,
+		       ustream* stream){
+  ts->stream = stream;
+  ubuffer_ready_write(ts->buff);
+  ts->token = ltk_bad;
+  ts->str = NULL;
+  ts->sym = NULL;
+  ts->num = 0;
+  ts->bool = 0;
+  ts->coord.x = 1;
+  ts->coord.y = 1;
+}
+
+#define LATTR_TABLE_SIZE 17
+
+ltoken_state* ltoken_state_new(ustream* stream,
+			       ustring_table* symtb,
+			       int symtb_size,
+			       ustring_table* strtb,
+			       int strtb_size){
+  ltoken_state* ts;
+  ubuffer* buff;
+  uhash_table* attrtb;
+  
+  buff = ubuffer_new(LTOKEN_BUFF_SIZE);
+  if(!buff){
+    goto err;
+  }
+  
+  attrtb = uhash_table_new(LATTR_TABLE_SIZE);
+  if(!attrtb){
+    goto err;
+  }
+
+  unew(ts,sizeof(ltoken_state),goto err;);
+  
+  ts->buff = buff;
+  ts->symtb = symtb;
+  ts->symtb_size = symtb_size;
+  ts->strtb = strtb;
+  ts->strtb_size = strtb_size;
+  ts->attrtb = attrtb;
+  ts->attrtb_size = LATTR_TABLE_SIZE;
+  
+  ltoken_state_init(ts,stream);
+  
+  return ts;
+ err:
+  ubuffer_dest(buff);
+  return NULL;
 }
