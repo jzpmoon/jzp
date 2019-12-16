@@ -25,7 +25,7 @@ int vinst_to_str(vcontext* ctx,
 
 typedef struct _vsymbol{
   ustring* name;
-  usize_t index;
+  vslot slot;
 } vsymbol;
 
 #define vsymbol_init(name,index) \
@@ -36,5 +36,7 @@ vsymbol* vsymbol_new(ustring* name,usize_t index);
 vcontext* vcontext_new(vgc_heap* heap);
 
 void vcontext_execute(vcontext* ctx);
+
+ustring* vcontext_str_put(vcontext* ctx,char* charp);
 
 #endif

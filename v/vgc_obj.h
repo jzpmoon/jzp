@@ -178,6 +178,7 @@ typedef struct _vcontext{
   vgc_heap* heap;
   struct _vgc_call* calling;
   uhash_table* symtb;
+  ustring_table* strtb;
   struct _vgc_array* consts;
 } vcontext;
 
@@ -259,5 +260,19 @@ int vgc_call_new(vgc_heap* heap,
 
 #define vgc_call_is_cfun(call)				\
   ((call)->call_type == vgc_call_type_cfun)
+
+typedef struct _vgc_obj_ex_t{
+  char* type_name;
+} vgc_objex_t;
+
+typedef struct _vgc_extend{
+  VGCHEADER;
+  vgc_objex_t* oet;
+  vslot_define_begin
+  vslot_define_end
+} vgc_extend;
+
+int vgc_extend_new(vgc_heap* heap,
+		   vgc_objex_t* oet);
 
 #endif

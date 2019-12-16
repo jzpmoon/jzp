@@ -140,3 +140,16 @@ vslot vslot_ref_eq(vslot slot1,vslot slot2){
   }
   return bool;
 }
+
+int vgc_extend_new(vgc_heap* heap,
+		   vgc_objex_t* oet){
+  vgc_extend* extend;
+  if(vgc_heap_obj_new
+     (heap,vgc_extend,vgc_obj_type_extend,vgc_heap_area_active)){
+    return -1;
+  }
+  vgc_pop_obj(heap,extend,vgc_extend);
+  extend->oet = oet;
+  vgc_push_obj(heap,extend);
+  return 0;
+}
