@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "vm.h"
-#include "ltoken.h"
+#include "lparser.h"
 
 ltoken_state ts;
 

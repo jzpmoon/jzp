@@ -1,6 +1,6 @@
 #include "uerror.h"
 #include "ualloc.h"
-#include "ltoken.h"
+#include "lparser.h"
 #include "lobj.h"
 
 #define LTOKEN_BUFF_SIZE 100
@@ -449,5 +449,25 @@ ltoken_state* ltoken_state_new(ustream* stream,
   return ts;
  err:
   ubuffer_dest(buff);
+  return NULL;
+}
+
+LDEFATTR(add,"+",{
+    return 0;
+})
+
+vdfg* last2dfg(last_obj* ast_obj){
+  switch(ast_obj->t){
+  case lastk_cons:
+    break;
+  case lastk_symbol:
+    break;
+  case lastk_number:
+    break;
+  case lastk_string:
+    break;
+  default:
+    uabort("ast type error!");
+  }
   return NULL;
 }
