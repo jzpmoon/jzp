@@ -55,12 +55,12 @@ int vinst_to_str(vcontext* ctx,ulist* insts){
   usize_t  byte_count = 0;
   usize_t  length     = vinst_full_length(insts);
   vgc_string* str;
-  if(vgc_string_new(ctx->heap,
-		    length,
-		    vgc_heap_area_active)){
+  str = vgc_string_new(ctx->heap,
+		       length,
+		       vgc_heap_area_active);
+  if(!str){
     uabort("vinst_to_str:vgc_string new error!");
   }
-  vgc_pop_obj(ctx->heap,str,vgc_string);
   do{
     vinst* inst=node->value;
     switch(inst->code){
@@ -120,11 +120,12 @@ vcontext* vcontext_new(vgc_heap* heap){
   if(!strtb){
     uabort("vcontext_new:strtb new error!");
   }
-
-  if(vgc_array_new(heap,VCONTEXT_CONSTS_SIZE,vgc_heap_area_static)){
+  consts = vgc_array_new(heap,
+			 VCONTEXT_CONSTS_SIZE,
+			 vgc_heap_area_static);
+  if(!consts){
     uabort("vcontext_new:consts new error!");
   }
-  vgc_pop_obj(heap,consts,vgc_array);
 
   ctx->heap = heap;
   ctx->calling = NULL;
@@ -327,27 +328,26 @@ void bc_call(vcontext* ctx){
     usize_t base = vgc_heap_stack_top_get(heap);
     vgc_push_obj(heap,ctx->calling);
     vgc_push_obj(heap,obj);
-    if(vgc_call_new(heap,
-		    vgc_call_type_subr,
-		    base)){
+    call = vgc_call_new(heap,
+			vgc_call_type_subr,
+			base);
+    if(!call){
       uabort("bc_call:subr out of memory!");
     }
-    vgc_pop_obj(heap,call,vgc_call);
     ctx->calling = call;
     vgc_push_obj(heap,call);
   } else if(vgc_obj_typeof(obj,vgc_obj_type_cfun)){
     vgc_call* call;
     vgc_cfun* cfun;
     usize_t base = vgc_heap_stack_top_get(heap);
-    ulog("bc_call:call subr");
     vgc_push_obj(heap,ctx->calling);
     vgc_push_obj(heap,obj);
-    if(vgc_call_new(heap,
-		    vgc_call_type_cfun,
-		    base)){
+    call = vgc_call_new(heap,
+			vgc_call_type_cfun,
+			base);
+    if(!call){
       uabort("bc_call:cfun out of memory!");
     }
-    vgc_pop_obj(heap,call,vgc_call);
     ctx->calling = call;
     cfun = vgc_obj_ref_get(call,cfun,vgc_cfun);
     (cfun->entry)(ctx);

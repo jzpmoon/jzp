@@ -12,6 +12,7 @@ int main(){
   vcontext* ctx = NULL;
   ulist* insts = NULL;
   vgc_array* consts;
+  vgc_subr* subr;
   vslot subr_slot;
   vslot slot;
   heap = vgc_heap_new(512,1024*4,-1);
@@ -43,9 +44,11 @@ int main(){
     uabort("new vinst_to_str error!");
   }
   vgc_push_obj(heap,consts);
-  if(vgc_subr_new(heap,2,0,vgc_heap_area_active)){
+  subr = vgc_subr_new(heap,2,0,vgc_heap_area_active);
+  if(!subr){
     uabort("new vgc_subr error!");
   }
+  vgc_push_obj(heap,subr);
   subr_slot = vgc_heap_stack_get(heap,-1);
   consts->objs[1] = subr_slot;
   ulog("execute");

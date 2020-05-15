@@ -117,19 +117,19 @@ vgc_heap* vgc_heap_new(usize_t area_static_size,
 		       usize_t area_active_size,
 		       usize_t root_set_size);
 
-int vgc_heap_data_new(vgc_heap* heap,
-		      usize_t obj_size,
-		      usize_t ref_count,
-		      int obj_type,
-		      int area_type);
+vgc_obj* vgc_heap_data_new(vgc_heap* heap,
+			   usize_t obj_size,
+			   usize_t ref_count,
+			   int obj_type,
+			   int area_type);
 
 void vgc_heap_stack_log(vgc_heap* heap);
 
 #define vgc_obj_slot_count(type) \
   (sizeof(((type*)0)->_u)/sizeof(vslot))
 
-#define vgc_heap_obj_new(heap,type,obj_type,area_type)		\
-  vgc_heap_data_new						\
+#define vgc_heap_obj_new(heap,type,obj_type,area_type)			\
+  (type*)vgc_heap_data_new						\
   (heap,sizeof(type),vgc_obj_slot_count(type),obj_type,area_type)
 
 #define vgc_heap_stack_push(heap,slot)			\
@@ -191,9 +191,9 @@ typedef struct _vgc_array{
   vslot objs[1];
 } vgc_array;
 
-int vgc_array_new(vgc_heap* heap,
-		  usize_t len,
-		  int area_type);
+vgc_array* vgc_array_new(vgc_heap* heap,
+			 usize_t array_length,
+			 int area_type);
 
 typedef struct _vgc_string{
   VGCHEADER;
@@ -204,9 +204,9 @@ typedef struct _vgc_string{
   } u;
 } vgc_string;
 
-int vgc_string_new(vgc_heap* heap,
-		   usize_t len,
-		   int area_type);
+vgc_string* vgc_string_new(vgc_heap* heap,
+			   usize_t string_length,
+			   int area_type);
 
 void vgc_string_log(vgc_heap* heap);
 
@@ -222,9 +222,9 @@ typedef struct _vgc_cfun{
   vslot_define_end
 } vgc_cfun;
 
-int vgc_cfun_new(vgc_heap* heap,
-		 vcfun_ft entry,
-		 int area_type);
+vgc_cfun* vgc_cfun_new(vgc_heap* heap,
+		       vcfun_ft entry,
+		       int area_type);
 
 typedef struct _vgc_subr{
   VGCHEADER;
@@ -236,10 +236,10 @@ typedef struct _vgc_subr{
   vslot_define_end
 } vgc_subr;
 
-int vgc_subr_new(vgc_heap* heap,
-		 usize_t params_count,
-		 usize_t locals_count,
-		 int area_type);
+vgc_subr* vgc_subr_new(vgc_heap* heap,
+		       usize_t params_count,
+		       usize_t locals_count,
+		       int area_type);
 
 enum {
   vgc_call_type_cfun,
@@ -258,9 +258,9 @@ typedef struct _vgc_call{
   vslot_define_end
 } vgc_call;
 
-int vgc_call_new(vgc_heap* heap,
-		 int call_type,
-		 usize_t base);
+vgc_call* vgc_call_new(vgc_heap* heap,
+		       int call_type,
+		       usize_t base);
 
 #define vgc_call_is_cfun(call)				\
   ((call)->call_type == vgc_call_type_cfun)
@@ -279,7 +279,7 @@ typedef struct _vgc_extend{
   vslot_define_end
 } vgc_extend;
 
-vslot* vgc_extend_new(vgc_heap* heap,
-		      vgc_objex_t* oet);
+vgc_extend* vgc_extend_new(vgc_heap* heap,
+			   vgc_objex_t* oet);
 
 #endif

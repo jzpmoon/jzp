@@ -225,11 +225,11 @@ int vgc_collect(vgc_heap* heap){
   ((char*)(area)->area_begin + (area)->area_size -	\
    (char*)(area)->area_index)
 
-int vgc_heap_data_try_new(vgc_heap* heap,
-			  usize_t obj_size,
-			  usize_t ref_count,
-			  int obj_type,
-			  int area_type){
+vgc_obj* vgc_heap_data_try_new(vgc_heap* heap,
+			       usize_t obj_size,
+			       usize_t ref_count,
+			       int obj_type,
+			       int area_type){
   vgc_heap_area* heap_area;
   vgc_obj* next_obj;
   vgc_obj* last_obj;
@@ -248,30 +248,35 @@ int vgc_heap_data_try_new(vgc_heap* heap,
   ulog1("require memory:%d",align_obj_size);
   ulog1("remain memory :%ld",vgc_area_remain(heap_area));
   if(next_obj <= last_obj){
-    vslot slot;
     new_obj = heap_area->area_index;
     vgc_obj_init(new_obj,align_obj_size,ref_count,obj_type);
     heap_area->area_index = next_obj;
-    vslot_ref_set(slot,new_obj);
-    vgc_heap_stack_push(heap,slot);
-    return 0;
+    return new_obj;
   }else{
-    return -1;
+    return NULL;
   }
 }
 
-int vgc_heap_data_new(vgc_heap* heap,
-		      usize_t obj_size,
-		      usize_t ref_count,
-		      int obj_type,
-		      int area_type){
-  if(vgc_heap_data_try_new
-     (heap,obj_size,ref_count,obj_type,area_type)){
+vgc_obj* vgc_heap_data_new(vgc_heap* heap,
+			   usize_t obj_size,
+			   usize_t ref_count,
+			   int obj_type,
+			   int area_type){
+  vgc_obj* new_obj;
+  new_obj = vgc_heap_data_try_new(heap,
+				  obj_size,
+				  ref_count,
+				  obj_type,
+				  area_type);
+  if(!new_obj){
     vgc_collect(heap);
-    return vgc_heap_data_try_new
-      (heap,obj_size,ref_count,obj_type,area_type);
+    new_obj = vgc_heap_data_try_new(heap,
+				    obj_size,
+				    ref_count,
+				    obj_type,
+				    area_type);
   }
-  return 0;
+  return new_obj;
 }
 
 vslot vgc_heap_stack_get(vgc_heap* heap,usize_t index){
