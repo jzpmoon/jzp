@@ -13,7 +13,7 @@ typedef struct _last_obj{
 
 last_obj* lparser_parse(ltoken_state* ts);
 
-typedef int (*last_attr_ft)(last_obj* ast_obj);
+typedef vdfg* (*last_attr_ft)(last_obj* ast_obj);
 
 typedef struct _last_attr{
   char* sname;
@@ -60,18 +60,21 @@ last_string* last_string_new(ustring* string);
 
 void last_obj_log(last_obj* ast_obj);
 
-#define LDEFATTR(aname,sname,body)		    \
-  int _last_attr_action_##aname(last_obj* ast_obj){ \
-    body					    \
-  }						    \
-  static last_attr _last_attr_infor_##aname =	    \
+#define last_car(cons) \
+  (cons)->car
+
+#define LDEFATTR(aname,sname,body)		      \
+  vdfg* _last_attr_action_##aname(last_obj* ast_obj){ \
+    body					      \
+      }						      \
+  static last_attr _last_attr_infor_##aname =	      \
     {sname,NULL,_last_attr_action_##aname};
 
 #define LATTR_INIT(ts,aname)						\
   do{									\
     ustring* str = ustring_table_put(ts->symtb,				\
 				     ts->symtb_size,			\
-				     _last_attr_action_##aname.sname,	\
+				     _last_attr_infor_##aname.sname,	\
 				     -1);				\
     if(!str){uabort("init attr error!");}				\
     _last_attr_infor_##aname.name = str;				\
@@ -82,6 +85,6 @@ void last_obj_log(last_obj* ast_obj);
 		    last_attr_key_comp);				\
   }while(0)
 
-vdfg* last2dfg(last_obj* ast_obj);
+vdfg* last2dfg(ltoken_state* ts,last_obj* ast_obj);
 
 #endif

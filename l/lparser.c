@@ -400,6 +400,15 @@ last_string* last_string_new(ustring* string){
   return str;
 }
 
+LDEFATTR(subr,"subr",{
+    
+    return NULL;
+})
+
+void ltoken_state_attr_init(ltoken_state* ts){
+  LATTR_INIT(ts,subr);
+}
+
 void ltoken_state_init(ltoken_state* ts,
 		       ustream* stream){
   ts->stream = stream;
@@ -445,6 +454,7 @@ ltoken_state* ltoken_state_new(ustream* stream,
   ts->attrtb_size = LATTR_TABLE_SIZE;
   
   ltoken_state_init(ts,stream);
+  ltoken_state_attr_init(ts);
   
   return ts;
  err:
@@ -452,13 +462,18 @@ ltoken_state* ltoken_state_new(ustream* stream,
   return NULL;
 }
 
-LDEFATTR(add,"+",{
-    return 0;
-})
-
-vdfg* last2dfg(last_obj* ast_obj){
+vdfg* last2dfg(ltoken_state* ts,last_obj* ast_obj){
   switch(ast_obj->t){
-  case lastk_cons:
+  case lastk_cons:{
+    last_obj* obj = last_car((last_cons*)ast_obj);
+    if(obj->t == lastk_symbol){
+      last_symbol* sym = (last_symbol*)obj;
+      if(sym->attr){
+	last_attr* attr = sym->attr;
+	return (attr->action)(ast_obj);
+      }
+    }
+  }
     break;
   case lastk_symbol:
     break;
