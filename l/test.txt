@@ -1,6 +1,6 @@
-(defun-byte-code inc (x)
-  ((load x)
-   (push 1)
-   (add)
-   (return)))
+(subr inc (x)
+  (load x)
+  (push 1)
+  (add)
+  (return))
 

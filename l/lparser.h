@@ -82,7 +82,7 @@ void last_obj_log(last_obj* ast_obj);
 		    str->hash_code % ts->attrtb_size,			\
 		    &_last_attr_infor_##aname,				\
 		    last_attr_key_put,					\
-		    last_attr_key_comp);				\
+		    last_attr_put_comp);				\
   }while(0)
 
 vdfg* last2dfg(ltoken_state* ts,last_obj* ast_obj);

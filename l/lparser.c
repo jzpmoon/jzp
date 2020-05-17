@@ -31,10 +31,16 @@ static void* last_attr_key_get(void* key){
   return key;
 }
 
-static int last_attr_key_comp(void* k1,void* k2){
+static int last_attr_put_comp(void* k1,void* k2){
   last_attr* attr1 = (last_attr*)k1;
   last_attr* attr2 = (last_attr*)k2;
   return ustring_comp(attr1->name,attr2->name);
+}
+
+static int last_attr_get_comp(void* k1,void* k2){
+  ustring* sym = (ustring*)k1;
+  last_attr* attr = (last_attr*)k2;
+  return ustring_comp(sym,attr->name);
 }
 
 int ltoken_next_char(ltoken_state* ts){
@@ -131,9 +137,9 @@ int ltoken_lex_number(ltoken_state* ts){
   }
   str = ltoken_state_symbol_finish(ts);
   if(!str){
-    uabort("lparse: vstrtb put error!");
+    uabort("lparse: symtb put error!");
   }
-  ts->sym = str;
+  ts->id = str;
   ts->num = ustring_to_number(str);
   return ts->token = ltk_number;
 }
@@ -155,9 +161,9 @@ int ltoken_lex_identify(ltoken_state* ts){
     case LEOF:
       str = ltoken_state_symbol_finish(ts);
       if(!str){
-	uabort("lparse: strtb put error!");
+	uabort("lparse: symtb put error!");
       }
-      ts->sym = str;
+      ts->id = str;
       return ts->token = ltk_identify;
     default:
       ltoken_mark(ts,c);
@@ -226,11 +232,11 @@ last_obj* lparser_atom_parse(ltoken_state* ts){
       last_attr* attr;
       last_symbol* sym;
       attr = uhash_table_get(ts->attrtb,
-			     ts->sym->hash_code % ts->attrtb_size,
-			     ts->sym,
+			     ts->id->hash_code % ts->attrtb_size,
+			     ts->id,
 			     last_attr_key_get,
-			     last_attr_key_comp);
-      sym = last_symbol_new(ts->sym,attr);
+			     last_attr_get_comp);
+      sym = last_symbol_new(ts->id,attr);
       if(!sym){
 	uabort("lparser_atom_parse error!");
       }
@@ -303,7 +309,7 @@ last_obj* lparser_parse(ltoken_state* ts){
 void ltoken_log(ltoken_state* ts){
   char* sym;
   char* str;
-  sym = ts->sym->value;
+  sym = ts->id->value;
   str = ts->str->value;
   ulog ("********token state begin");
   ulog1("token  :%d",ts->token);
@@ -401,7 +407,7 @@ last_string* last_string_new(ustring* string){
 }
 
 LDEFATTR(subr,"subr",{
-    
+    ulog("attr subr");
     return NULL;
 })
 
@@ -415,7 +421,7 @@ void ltoken_state_init(ltoken_state* ts,
   ubuffer_ready_write(ts->buff);
   ts->token = ltk_bad;
   ts->str = NULL;
-  ts->sym = NULL;
+  ts->id = NULL;
   ts->num = 0;
   ts->bool = 0;
   ts->coord.x = 1;

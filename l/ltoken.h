@@ -21,7 +21,7 @@ typedef struct _ltoken_state{
   ubuffer* buff;
   int token;
   ustring* str;
-  ustring* sym;
+  ustring* id;
   double num;
   int bool;
   ustring_table* symtb;
