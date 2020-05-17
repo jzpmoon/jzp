@@ -1,5 +1,5 @@
 bin=libv.so
-obj=vm.o vgc.o vgc_obj.o
+obj=vm.o vgc.o vgc_obj.o vpass.o
 lib_path=../u/
 sobj=u
 somk=libu.mk

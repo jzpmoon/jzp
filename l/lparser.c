@@ -407,9 +407,67 @@ last_string* last_string_new(ustring* string){
 }
 
 LDEFATTR(subr,"subr",{
-    ulog("attr subr");
+    last_obj* next;
+    last_obj* obj;
+    last_symbol* subr_name;
+    last_cons* args;
+    vdfg_graph* dfg;
+    
+    next = last_cdr(ast_obj);
+    if(next->t != lastk_cons){
+      uabort("subr error!");
+    }
+    obj = last_car(next);
+    if(obj->t != lastk_symbol){
+      uabort("subr name invalid!");
+    }
+    subr_name = (last_symbol*)obj;
+
+    next = last_cdr(next);
+    if(next->t != lastk_cons){
+      uabort("subr error!");
+    }
+    obj = last_car(next);
+    if(obj->t != lastk_cons){
+      uabort("subr args invalid!");
+    }
+    args = (last_cons*)obj;
+    
+    ulog1("attr subr:%s",subr_name->name->value);
+    dfg = vdfg_graph_new();
+    if(!dfg){
+      uabort("subr new dfg error!");
+    }
+    dfg->name = subr_name->name;
+    
+    next = last_cdr(next);
+    while(next){
+      last_symbol* inst_name;
+      if(next->t != lastk_cons){
+	uabort("subr error!");
+      }
+      obj = last_car(next);
+      if(obj->t != lastk_cons){
+	uabort("subr error!");
+      }
+      obj = last_car(obj);
+      if(obj->t != lastk_symbol){
+	uabort("subr inst invalid!");
+      }
+      inst_name = (last_symbol*)obj;
+      if(inst_name->attr){
+	last_attr* attr = inst_name->attr;
+	vdfg* inst = (attr->action)(ast_obj);
+	dfg->dfgs = ulist_append(dfg->dfgs,inst);
+      }
+      ulog1("inst: %s",inst_name->name->value);
+      next = last_cdr(next);
+    }
+
+    
+    
     return NULL;
-})
+  })
 
 void ltoken_state_attr_init(ltoken_state* ts){
   LATTR_INIT(ts,subr);
@@ -471,7 +529,7 @@ ltoken_state* ltoken_state_new(ustream* stream,
 vdfg* last2dfg(ltoken_state* ts,last_obj* ast_obj){
   switch(ast_obj->t){
   case lastk_cons:{
-    last_obj* obj = last_car((last_cons*)ast_obj);
+    last_obj* obj = last_car(ast_obj);
     if(obj->t == lastk_symbol){
       last_symbol* sym = (last_symbol*)obj;
       if(sym->attr){

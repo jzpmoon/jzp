@@ -61,7 +61,13 @@ last_string* last_string_new(ustring* string);
 void last_obj_log(last_obj* ast_obj);
 
 #define last_car(cons) \
-  (cons)->car
+  ((last_cons*)cons)->car
+
+#define last_cdr(cons) \
+  ((last_cons*)cons)->cdr
+
+#define last_cdar(cons) \
+  last_car(last_cdr(cons))
 
 #define LDEFATTR(aname,sname,body)		      \
   vdfg* _last_attr_action_##aname(last_obj* ast_obj){ \
