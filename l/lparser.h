@@ -13,7 +13,7 @@ typedef struct _last_obj{
 
 last_obj* lparser_parse(ltoken_state* ts);
 
-typedef vdfg* (*last_attr_ft)(last_obj* ast_obj);
+typedef vps_t* (*last_attr_ft)(last_obj* ast_obj);
 
 typedef struct _last_attr{
   char* sname;
@@ -69,11 +69,11 @@ void last_obj_log(last_obj* ast_obj);
 #define last_cdar(cons) \
   last_car(last_cdr(cons))
 
-#define LDEFATTR(aname,sname,body)		      \
-  vdfg* _last_attr_action_##aname(last_obj* ast_obj){ \
-    body					      \
-      }						      \
-  static last_attr _last_attr_infor_##aname =	      \
+#define LDEFATTR(aname,sname,body)			\
+  vps_t* _last_attr_action_##aname(last_obj* ast_obj){	\
+    body						\
+      }							\
+  static last_attr _last_attr_infor_##aname =		\
     {sname,NULL,_last_attr_action_##aname};
 
 #define LATTR_INIT(ts,aname)						\
@@ -91,6 +91,6 @@ void last_obj_log(last_obj* ast_obj);
 		    last_attr_put_comp);				\
   }while(0)
 
-vdfg* last2dfg(ltoken_state* ts,last_obj* ast_obj);
+vps_t* last2vps(ltoken_state* ts,last_obj* ast_obj);
 
 #endif

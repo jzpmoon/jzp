@@ -12,17 +12,6 @@ enum vbyte_code{
   #undef DF
 };
 
-typedef struct _vinst{
-  usize_t code;
-  usize_t operand;
-} vinst;
-
-vinst*
-vinst_new(usize_t code,usize_t operand);
-
-int vinst_to_str(vcontext* ctx,
-		 ulist* insts);
-
 typedef struct _vsymbol{
   ustring* name;
   vslot slot;

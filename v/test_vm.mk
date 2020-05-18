@@ -1,5 +1,5 @@
 bin=test_vm
-obj=vm.o vgc.o vgc_obj.o test_vm.o
+obj=vm.o vgc.o vgc_obj.o test_vm.o vpass.o
 lib_path=../u/
 sobj=u
 CFLAGS=-std=c89 -Wall $(DEBUG_MODE)

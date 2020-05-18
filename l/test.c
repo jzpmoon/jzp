@@ -12,7 +12,7 @@ int test_1(){
   ustream* stream;
   ltoken_state* ts;
   last_obj* ast_obj;
-  vdfg* dfg;
+  vps_t* p;
 
   heap = vgc_heap_new(1024,
 		      1024*10,
@@ -48,7 +48,7 @@ int test_1(){
   ast_obj = lparser_parse(ts);
   last_obj_log(ast_obj);
 
-  dfg = last2dfg(ts,ast_obj);
+  p = last2vps(ts,ast_obj);
   
   return 0;
 }

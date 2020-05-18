@@ -457,7 +457,7 @@ LDEFATTR(subr,"subr",{
       inst_name = (last_symbol*)obj;
       if(inst_name->attr){
 	last_attr* attr = inst_name->attr;
-	vdfg* inst = (attr->action)(ast_obj);
+	vps_t* inst = (attr->action)(ast_obj);
 	dfg->dfgs = ulist_append(dfg->dfgs,inst);
       }
       ulog1("inst: %s",inst_name->name->value);
@@ -468,6 +468,14 @@ LDEFATTR(subr,"subr",{
     
     return NULL;
   })
+
+#define DF(ocode,name,value,len)		\
+  LDEFATTR(ocode,name,{				\
+      vdfg_block* block = vdfg_block_new();	\
+      if(!block) {				\
+	uabort("dfg block new error!");		\
+      }						\
+    })						\
 
 void ltoken_state_attr_init(ltoken_state* ts){
   LATTR_INIT(ts,subr);
@@ -526,7 +534,7 @@ ltoken_state* ltoken_state_new(ustream* stream,
   return NULL;
 }
 
-vdfg* last2dfg(ltoken_state* ts,last_obj* ast_obj){
+vps_t* last2vps(ltoken_state* ts,last_obj* ast_obj){
   switch(ast_obj->t){
   case lastk_cons:{
     last_obj* obj = last_car(ast_obj);

@@ -1,8 +1,9 @@
 #include <stddef.h>
 
-#include "vm.h"
 #include "ualloc.h"
 #include "uerror.h"
+#include "vpass.h"
+#include "vm.h"
 
 #define INST(code,operand) \
   insts=ulist_append(insts,&((vinst){code,operand}))

@@ -3,19 +3,44 @@
 
 #include "ulist.h"
 #include "vgc_obj.h"
+#include "vm.h"
+
+#define VPSHEADER \
+  int t;
 
 #define VDFGHEADER \
-  int t; \
+  VPSHEADER	   \
   ulist* link
 
 enum{
-     vdfgk_block,
-     vdfgk_graph,
+     vpsk_dt,
+     vpsk_dfg,
+     vdfgk_blk,
+     vdfgk_grp,
 };
 
-typedef struct _vdfg{
+typedef struct _vps_t{
+  VPSHEADER;
+} vps_t;
+
+typedef struct _vps_data{
+  VPSHEADER;
+  ustring* name;
+  vgc_obj* value;
+} vps_data;
+
+typedef struct _vps_dfg{
   VDFGHEADER;
-} vdfg;
+} vps_dfg;
+
+typedef struct _vinst{
+  usize_t opcode;
+  usize_t operand;
+  union {
+    vps_data* data;
+    vps_dfg* code;
+  } u;
+} vinst;
 
 typedef struct _vdfg_block{
   VDFGHEADER;
@@ -26,11 +51,17 @@ typedef struct _vdfg_graph{
   VDFGHEADER;
   ustring* name;
   ulist* dfgs;
-  vdfg* entry;
+  vps_dfg* entry;
 } vdfg_graph;
+
+vinst*
+vinst_new(usize_t code,usize_t operand);
+
+int vinst_to_str(vcontext* ctx,
+		 ulist* insts);
 
 vdfg_graph* vdfg_graph_new();
 
-vgc_string* vpass_dfg2bin(vdfg* dfg);
+vgc_string* vps_dfg2bin(vps_dfg* dfg);
 
 #endif
