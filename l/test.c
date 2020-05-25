@@ -12,7 +12,7 @@ int test_1(){
   ustream* stream;
   ltoken_state* ts;
   last_obj* ast_obj;
-  vps_t* p;
+  vps_mod* p;
 
   heap = vgc_heap_new(1024,
 		      1024*10,

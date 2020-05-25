@@ -23,26 +23,6 @@ static ustring* ltoken_state_string_finish(ltoken_state* ts){
   return str;
 }
 
-static void* last_attr_key_put(void* key){
-  return key;
-}
-
-static void* last_attr_key_get(void* key){
-  return key;
-}
-
-static int last_attr_put_comp(void* k1,void* k2){
-  last_attr* attr1 = (last_attr*)k1;
-  last_attr* attr2 = (last_attr*)k2;
-  return ustring_comp(attr1->name,attr2->name);
-}
-
-static int last_attr_get_comp(void* k1,void* k2){
-  ustring* sym = (ustring*)k1;
-  last_attr* attr = (last_attr*)k2;
-  return ustring_comp(sym,attr->name);
-}
-
 int ltoken_next_char(ltoken_state* ts){
   URI_DEFINE;
   int c;
@@ -406,81 +386,6 @@ last_string* last_string_new(ustring* string){
   return str;
 }
 
-LDEFATTR(subr,"subr",{
-    last_obj* next;
-    last_obj* obj;
-    last_symbol* subr_name;
-    last_cons* args;
-    vdfg_graph* dfg;
-    
-    next = last_cdr(ast_obj);
-    if(next->t != lastk_cons){
-      uabort("subr error!");
-    }
-    obj = last_car(next);
-    if(obj->t != lastk_symbol){
-      uabort("subr name invalid!");
-    }
-    subr_name = (last_symbol*)obj;
-
-    next = last_cdr(next);
-    if(next->t != lastk_cons){
-      uabort("subr error!");
-    }
-    obj = last_car(next);
-    if(obj->t != lastk_cons){
-      uabort("subr args invalid!");
-    }
-    args = (last_cons*)obj;
-    
-    ulog1("attr subr:%s",subr_name->name->value);
-    dfg = vdfg_graph_new();
-    if(!dfg){
-      uabort("subr new dfg error!");
-    }
-    dfg->name = subr_name->name;
-    
-    next = last_cdr(next);
-    while(next){
-      last_symbol* inst_name;
-      if(next->t != lastk_cons){
-	uabort("subr error!");
-      }
-      obj = last_car(next);
-      if(obj->t != lastk_cons){
-	uabort("subr error!");
-      }
-      obj = last_car(obj);
-      if(obj->t != lastk_symbol){
-	uabort("subr inst invalid!");
-      }
-      inst_name = (last_symbol*)obj;
-      if(inst_name->attr){
-	last_attr* attr = inst_name->attr;
-	vps_t* inst = (attr->action)(ast_obj);
-	dfg->dfgs = ulist_append(dfg->dfgs,inst);
-      }
-      ulog1("inst: %s",inst_name->name->value);
-      next = last_cdr(next);
-    }
-
-    
-    
-    return NULL;
-  })
-
-#define DF(ocode,name,value,len)		\
-  LDEFATTR(ocode,name,{				\
-      vdfg_block* block = vdfg_block_new();	\
-      if(!block) {				\
-	uabort("dfg block new error!");		\
-      }						\
-    })						\
-
-void ltoken_state_attr_init(ltoken_state* ts){
-  LATTR_INIT(ts,subr);
-}
-
 void ltoken_state_init(ltoken_state* ts,
 		       ustream* stream){
   ts->stream = stream;
@@ -534,7 +439,8 @@ ltoken_state* ltoken_state_new(ustream* stream,
   return NULL;
 }
 
-vps_t* last2vps(ltoken_state* ts,last_obj* ast_obj){
+vps_mod* last2vps(ltoken_state* ts,last_obj* ast_obj){
+  vps_mod* vps =NULL;
   switch(ast_obj->t){
   case lastk_cons:{
     last_obj* obj = last_car(ast_obj);
@@ -542,7 +448,11 @@ vps_t* last2vps(ltoken_state* ts,last_obj* ast_obj){
       last_symbol* sym = (last_symbol*)obj;
       if(sym->attr){
 	last_attr* attr = sym->attr;
-	return (attr->action)(ast_obj);
+	vps = vps_mod_new();
+	if(!vps){
+	  uabort("ast2vps vps_mod_new error!");
+	}
+	(attr->action)(vps,ast_obj);
       }
     }
   }
@@ -556,5 +466,5 @@ vps_t* last2vps(ltoken_state* ts,last_obj* ast_obj){
   default:
     uabort("ast type error!");
   }
-  return NULL;
+  return vps;
 }

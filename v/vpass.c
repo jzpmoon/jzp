@@ -110,6 +110,21 @@ vdfg_graph* vdfg_graph_new(){
   return g;
 }
 
+vps_mod* vps_mod_new(){
+  vps_mod* mod = ualloc(sizeof(vps_mod));
+  if(mod){
+    mod->data = uhash_table_new(VPS_MOD_DATA_TABLE_SIZE);
+    if(!mod->data){
+      uabort("new hash table data error!");
+    }
+    mod->code = uhash_table_new(VPS_MOD_CODE_TABLE_SIZE);
+    if(!mod->code){
+      uabort("new hash table code error!");
+    }
+  }
+  return mod;
+}
+
 vgc_string* vpass_dfg2bin(vps_dfg* dfg){
   return NULL;
 }
