@@ -1,0 +1,5 @@
+;;cover
+
+(cover
+	(title (数学分析原理))
+	(author (Walter Rudin)))
