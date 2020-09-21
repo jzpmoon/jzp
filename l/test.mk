@@ -1,18 +1,19 @@
 bin=test
-obj=test.o lparser.o lattr.o
-libu_path=../u/
+obj=test.o
+libl_path=./
 libv_path=../v/
+libu_path=../u/
+l_sobj=l
 v_sobj=v
-v_somk=libv.mk
 u_sobj=u
-u_somk=libu.mk
+l_somk=libl.mk
 CFLAGS=-std=c89 -Wall $(DEBUG_MODE)
 
-$(bin):$(obj) $(v_sobj)
-	$(CC) $(obj) -L$(libv_path) -l$(v_sobj) -L$(libu_path) -l$(u_sobj) -Wl,-rpath='$$ORIGIN/$(libv_path):$$ORIGIN/$(libu_path)' -o $(bin)
+$(bin):$(obj) $(l_sobj)
+	$(CC) $(obj) -L$(libl_path) -l$(l_sobj) -L$(libv_path) -l$(v_sobj) -L$(libu_path) -l$(u_sobj) -Wl,-rpath='$$ORIGIN/$(libl_path):$$ORIGIN/$(libv_path):$$ORIGIN/$(libu_path)' -o $(bin)
 .c.o:
 	$(CC) -c -o $@ $< -I $(libv_path) -I $(libu_path) $(CFLAGS)
-$(v_sobj):
-	make -C $(libv_path) -f $(v_somk) DEBUG_MODE=$(DEBUG_MODE)
+$(l_sobj):
+	make -f $(l_somk) DEBUG_MODE=$(DEBUG_MODE)
 clean:
-	make -C $(libv_path) -f $(v_somk) clean;rm -f $(bin) $(obj)
+	make -f $(l_somk) clean;rm -f $(bin) $(obj)
