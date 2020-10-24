@@ -52,15 +52,47 @@ LDEFATTR(subr,"subr",{
       inst_name = (last_symbol*)obj;
       if(inst_name->attr){
 	last_attr* attr = inst_name->attr;
+	(attr->action)(dfg,obj);
       }
-      ulog1("inst: %s",inst_name->name->value);
       next = last_cdr(next);
     }
+  })
+
+/*
+ * define attribute load
+ */
+LDEFATTR(load,"load",{
+    ulog("load");
+  })
+
+/*
+ * define attribute push
+ */
+LDEFATTR(push,"push",{
+    ulog("push");
+  })
+
+/*
+ * define attribute add
+ */
+LDEFATTR(add,"add",{
+    ulog("add");
+  })
+
+/*
+ * define attribute return
+ */
+LDEFATTR(return,"return",{
+    ulog("return");
   })
 
 /*
  * declare attribute
  */
 LDECLATTR(base,{
-	LATTR_INIT(ts,subr);
-})
+    LATTR_INIT(ts,subr);
+    LATTR_INIT(ts,load);
+    LATTR_INIT(ts,push);
+    LATTR_INIT(ts,add);
+    LATTR_INIT(ts,return);
+  })
