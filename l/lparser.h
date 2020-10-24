@@ -77,6 +77,11 @@ void last_obj_log(last_obj* ast_obj);
   static last_attr _last_attr_infor_##aname =		\
     {sname,NULL,_last_attr_action_##aname};
 
+#define LDECLATTR(afname,body)				\
+  void _lattr_file_init_##afname(ltoken_state* ts){	\
+    body						\
+  }
+
 #define LATTR_INIT(ts,aname)						\
   do{									\
     ustring* str = ustring_table_put(ts->symtb,				\
