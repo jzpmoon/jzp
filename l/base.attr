@@ -52,10 +52,11 @@ LDEFATTR(subr,"subr",{
       inst_name = (last_symbol*)obj;
       if(inst_name->attr){
 	last_attr* attr = inst_name->attr;
-	(attr->action)(dfg,obj);
+	(attr->action)((vps_t*)dfg,obj);
       }
       next = last_cdr(next);
     }
+    return NULL;
   })
 
 /*
@@ -63,6 +64,7 @@ LDEFATTR(subr,"subr",{
  */
 LDEFATTR(load,"load",{
     ulog("load");
+    return NULL;
   })
 
 /*
@@ -70,6 +72,7 @@ LDEFATTR(load,"load",{
  */
 LDEFATTR(push,"push",{
     ulog("push");
+    return NULL;
   })
 
 /*
@@ -77,6 +80,7 @@ LDEFATTR(push,"push",{
  */
 LDEFATTR(add,"add",{
     ulog("add");
+    return NULL;
   })
 
 /*
@@ -84,6 +88,7 @@ LDEFATTR(add,"add",{
  */
 LDEFATTR(return,"return",{
     ulog("return");
+    return NULL;
   })
 
 /*

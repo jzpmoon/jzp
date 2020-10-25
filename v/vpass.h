@@ -13,24 +13,25 @@
   ulist* link
 
 enum{
-     vpsk_mod,
-     vpsk_dt,
-     vpsk_dfg,
-     vdfgk_blk,
-     vdfgk_grp,
+  vpsk_dt,
+  vpsk_mod,
+  vpsk_inst,
+  vpsk_dfg,
+  vdfgk_blk,
+  vdfgk_grp,
 };
 
 enum{
-     vinstk_imm,
-     vinstk_data,
-     vinstk_code,
-     vinstk_non,
+  vinstk_imm,
+  vinstk_data,
+  vinstk_code,
+  vinstk_non,
 };
 
 enum{
-     vdtk_arr,
-     vdtk_num,
-     vdtk_int,
+  vdtk_arr,
+  vdtk_num,
+  vdtk_int,
 };
 
 typedef struct _vps_t{
@@ -48,20 +49,27 @@ typedef struct _vps_data{
   } u;
 } vps_data;
 
-typedef struct _vps_dfg{
-  VDFGHEADER;
-} vps_dfg;
+typedef struct _vps_mod{
+  VPSHEADER;
+  uhash_table* data;
+  uhash_table* code;
+} vps_mod;
 
 typedef struct _vinst{
+  VPSHEADER;
   int inst_type;
   usize_t opcode;
   usize_t operand;
   ustring* label;
   union {
     vps_data* data;
-    vps_dfg* code;
+    struct _vps_dfg* code;
   } u;
 } vinst;
+
+typedef struct _vps_dfg{
+  VDFGHEADER;
+} vps_dfg;
 
 typedef struct _vdfg_block{
   VDFGHEADER;
@@ -74,12 +82,6 @@ typedef struct _vdfg_graph{
   ulist* dfgs;
   vps_dfg* entry;
 } vdfg_graph;
-
-typedef struct _vps_mod{
-  VPSHEADER;
-  uhash_table* data;
-  uhash_table* code;
-} vps_mod;
 
 #define VPS_MOD_DATA_TABLE_SIZE 17
 #define VPS_MOD_CODE_TABLE_SIZE 17

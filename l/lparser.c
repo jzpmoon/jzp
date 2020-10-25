@@ -452,7 +452,7 @@ vps_mod* last2vps(ltoken_state* ts,last_obj* ast_obj){
 	if(!vps){
 	  uabort("ast2vps vps_mod_new error!");
 	}
-	(attr->action)(vps,ast_obj);
+	(attr->action)((vps_t*)vps,ast_obj);
       }
     }
   }
