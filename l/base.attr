@@ -6,7 +6,8 @@ LDEFATTR(subr,"subr",{
     last_obj* obj;
     last_symbol* subr_name;
     last_cons* args;
-    vdfg_graph* dfg;
+    vdfg_graph* grp;
+    vdfg_block* blk;
     
     next = last_cdr(ast_obj);
     if(next->t != lastk_cons){
@@ -29,14 +30,20 @@ LDEFATTR(subr,"subr",{
     args = (last_cons*)obj;
     
     ulog1("attr subr:%s",subr_name->name->value);
-    dfg = vdfg_graph_new();
-    if(!dfg){
+    grp = vdfg_graph_new();
+    if(!grp){
       uabort("subr new dfg error!");
     }
-    dfg->name = subr_name->name;
+    grp->name = subr_name->name;
+    blk = vdfg_block_new();
+    if(!blk){
+      uabort("subr new blk error!");
+    }
+    vdfg_graph_append(grp,blk);
     
     next = last_cdr(next);
     while(next){
+      last_obj* car;
       last_symbol* inst_name;
       if(next->t != lastk_cons){
 	uabort("subr error!");
@@ -45,34 +52,73 @@ LDEFATTR(subr,"subr",{
       if(obj->t != lastk_cons){
 	uabort("subr error!");
       }
-      obj = last_car(obj);
-      if(obj->t != lastk_symbol){
+      car = last_car(obj);
+      if(car->t != lastk_symbol){
 	uabort("subr inst invalid!");
       }
-      inst_name = (last_symbol*)obj;
+      inst_name = (last_symbol*)car;
       if(inst_name->attr){
 	last_attr* attr = inst_name->attr;
-	(attr->action)((vps_t*)dfg,obj);
+	vps_t* inst = (attr->action)(vps,obj);
+	if(inst == NULL || inst->t != vpsk_inst){
+	  uabort("not a inst!");
+	}
+	vdfg_block_append(blk,inst);
       }
       next = last_cdr(next);
     }
-    return NULL;
+    return (vps_t*)vps;
   })
 
 /*
  * define attribute load
  */
 LDEFATTR(load,"load",{
+    vinst* inst;
+    last_obj* obj;
+    last_symbol* sym;
+    last_obj* next;
+    last_obj_log(ast_obj);
+    next = last_cdr(ast_obj);
+    if(next->t != lastk_cons){
+      uabort("load inst error!");
+    }
+    obj = last_car(next);
+    if(obj->t != lastk_symbol){
+      uabort("load inst error!");
+    }
+    sym = (last_symbol*)obj;
+    inst = vinst_new(vinstk_data,Bload,-1,sym->name,NULL,NULL);
     ulog("load");
-    return NULL;
+    return (vps_t*)inst;
   })
 
 /*
  * define attribute push
  */
 LDEFATTR(push,"push",{
-    ulog("push");
-    return NULL;
+    vinst* inst;
+    last_obj* obj;
+    last_obj* next;
+    last_obj_log(ast_obj);
+    next = last_cdr(ast_obj);
+    if(next->t != lastk_cons){
+      uabort("load inst error!");
+    }
+    obj = last_car(next);
+    if(obj->t == lastk_symbol){
+      last_symbol* sym = (last_symbol*)obj;
+      inst = vinst_new(vinstk_data,Bload,-1,sym->name,NULL,NULL);
+    }else if(obj->t == lastk_number){
+      last_number* num = (last_number*)obj;
+      vps_data* data = vps_num_new(NULL,num->dnum);
+      vps_mod_data_put((vps_mod*)vps,data);
+      inst = vinst_new(vinstk_imm,Bload,-1,NULL,data,NULL);
+    }else{
+      uabort("load inst error!");
+    }
+    ulog("load");
+    return (vps_t*)inst;
   })
 
 /*

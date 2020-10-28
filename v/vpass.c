@@ -2,11 +2,22 @@
 #include "vpass.h"
 
 vinst*
-vinst_new(usize_t code,usize_t operand){
-  vinst* inst;
-  unew(inst,sizeof(vinst),uabort("vinst:new error!"););
-  inst->opcode  = code;
-  inst->operand = operand;
+vinst_new(int instk,
+	  usize_t opcode,
+	  usize_t operand,
+	  ustring* label,
+	  vps_data* data,
+	  vps_dfg* code){
+  vinst* inst = ualloc(sizeof(vinst));
+  if(inst){
+    inst->t = vpsk_inst;
+    inst->instk = instk;
+    inst->opcode  = opcode;
+    inst->operand = operand;
+    inst->label = label;
+    inst->u.data = data;
+    inst->u.code = code;
+  }
   return inst;
 }
 
@@ -88,6 +99,17 @@ int vinst_to_str(vcontext* ctx,ulist* insts){
   return 0;
 }
 
+vps_data* vps_num_new(ustring* name,
+		      double num){
+  vps_data* data = ualloc(sizeof(vps_data));
+  if(data){
+    data->dtk = vdtk_num;
+    data->name = name;
+    data->u.number = num;
+  }
+  return data;
+}
+
 vdfg_block* vdfg_block_new(){
   vdfg_block* b = ualloc(sizeof(vdfg_block));
   if(b){
@@ -104,6 +126,7 @@ vdfg_graph* vdfg_graph_new(){
     g->t = vdfgk_grp;
     g->link = NULL;
     g->name = NULL;
+    g->datas = NULL;
     g->dfgs = NULL;
     g->entry = NULL;
   }
@@ -123,6 +146,33 @@ vps_mod* vps_mod_new(){
     }
   }
   return mod;
+}
+
+void* vps_mod_key_put(void* data){
+  return data;
+}
+
+int vps_mod_comp(void* data1,void* data2){
+  if(data1 > data2){
+    return 1;
+  }else if(data1 < data2){
+    return -1;
+  }else{
+    return 0;
+  }
+}
+
+void vps_mod_data_put(vps_mod* mod,vps_data* data){
+  ustring* name = data->name;
+  unsigned int hscd = 0;
+  if(name){
+    hscd = name->hash_code;
+  }
+  uhash_table_put(mod->data,
+		  hscd,
+		  data,
+		  vps_mod_key_put,
+		  vps_mod_comp);
 }
 
 vgc_string* vpass_dfg2bin(vps_dfg* dfg){
