@@ -14,5 +14,7 @@ $(lib_name):$(obj_list)
 	$(CC) $(obj_list) -o $(lib_name) -shared
 .c.o:
 	$(CC) -c -o $@ $< $(CFLAGS) -fPIC
+install:
+	cp $(lib_name) ~/../usr/lib/
 clean:
 	rm -f $(lib_name) $(obj_list)

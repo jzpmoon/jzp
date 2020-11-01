@@ -3,7 +3,7 @@ obj_list = test_stream.o
 u_lib    = u
 CFLAGS   = -std=c89 -Wall $(DEBUG_MODE)
 
-&(lib_name):$(obj_list) $(u_lib)
+$(bin_name):$(obj_list) $(u_lib)
 	$(CC) $(obj_list) -L./ -l$(u_lib) -Wl,-rpath='$$ORIGIN' -o $(bin_name)
 .c.o:
 	$(CC) -c -o $@ $< $(CFLAGS)
