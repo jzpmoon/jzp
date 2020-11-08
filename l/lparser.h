@@ -13,7 +13,7 @@ typedef struct _last_obj{
 
 last_obj* lparser_parse(ltoken_state* ts);
 
-typedef vps_t*(*last_attr_ft)(vps_t* vps,last_obj* ast_obj);
+typedef vps_t*(*last_attr_ft)(vps_mod* vps,last_obj* ast_obj);
 
 typedef struct _last_attr{
   char* sname;
@@ -70,17 +70,19 @@ void last_obj_log(last_obj* ast_obj);
   last_car(last_cdr(cons))
 
 #define LDEFATTR(aname,sname,body)			\
-  vps_t*  _last_attr_action_##aname(vps_t* vps,		\
+  vps_t*  _last_attr_action_##aname(vps_mod* vps,	\
 				 last_obj* ast_obj){	\
     body						\
       }							\
   static last_attr _last_attr_infor_##aname =		\
     {sname,NULL,_last_attr_action_##aname};
 
-#define LDECLATTR(afname,body)				\
+#define LATTRONLOAD(afname,body)			\
   void _lattr_file_init_##afname(ltoken_state* ts){	\
     body						\
   }
+
+#define LDECLATTR(aname) LATTR_INIT(ts,aname)
 
 #define LATTR_INIT(ts,aname)						\
   do{									\

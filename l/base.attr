@@ -5,7 +5,7 @@ LDEFATTR(subr,"subr",{
     last_obj* next;
     last_obj* obj;
     last_symbol* subr_name;
-    last_cons* args;
+    last_obj* args;
     vdfg_graph* grp;
     vdfg_block* blk;
     
@@ -27,19 +27,37 @@ LDEFATTR(subr,"subr",{
     if(obj->t != lastk_cons){
       uabort("subr args invalid!");
     }
-    args = (last_cons*)obj;
-    
-    ulog1("attr subr:%s",subr_name->name->value);
+    args = obj;
     grp = vdfg_graph_new();
     if(!grp){
       uabort("subr new dfg error!");
     }
+    /* args procedure */
+    while(args != NULL){
+      last_obj* arg = last_car(args);
+      last_symbol* sym;
+      vps_data* data;
+      if (arg->t != lastk_symbol) {
+	uabort("arg not a symbol!");
+      }
+      sym = (last_symbol*)arg;
+      ulog1("arg symbol:%s\n",sym->name->value);
+      data = vps_any_new(sym->name);
+      if(!data){
+	uabort("vps_any_new error!");
+      }
+      vdfg_grp_dtapd(grp,data);
+      args = last_cdr(args);
+    }
+
+    ulog1("attr subr:%s",subr_name->name->value);
+
     grp->name = subr_name->name;
     blk = vdfg_block_new();
     if(!blk){
       uabort("subr new blk error!");
     }
-    vdfg_graph_append(grp,blk);
+    vdfg_grp_cdapd(grp,blk);
     
     next = last_cdr(next);
     while(next){
@@ -67,6 +85,8 @@ LDEFATTR(subr,"subr",{
       }
       next = last_cdr(next);
     }
+    vps_mod_code_put(vps,grp);
+    
     return (vps_t*)vps;
   })
 
@@ -78,7 +98,7 @@ LDEFATTR(load,"load",{
     last_obj* obj;
     last_symbol* sym;
     last_obj* next;
-    last_obj_log(ast_obj);
+
     next = last_cdr(ast_obj);
     if(next->t != lastk_cons){
       uabort("load inst error!");
@@ -88,7 +108,7 @@ LDEFATTR(load,"load",{
       uabort("load inst error!");
     }
     sym = (last_symbol*)obj;
-    inst = vinst_new(vinstk_data,Bload,-1,sym->name,NULL,NULL);
+    inst = vinst_new(vinstk_data,Bload,vopdnon,sym->name,NULL,NULL);
     ulog("load");
     return (vps_t*)inst;
   })
@@ -100,7 +120,7 @@ LDEFATTR(push,"push",{
     vinst* inst;
     last_obj* obj;
     last_obj* next;
-    last_obj_log(ast_obj);
+
     next = last_cdr(ast_obj);
     if(next->t != lastk_cons){
       uabort("load inst error!");
@@ -108,16 +128,16 @@ LDEFATTR(push,"push",{
     obj = last_car(next);
     if(obj->t == lastk_symbol){
       last_symbol* sym = (last_symbol*)obj;
-      inst = vinst_new(vinstk_data,Bload,-1,sym->name,NULL,NULL);
+      inst = vinst_new(vinstk_data,Bload,vopdnon,sym->name,NULL,NULL);
     }else if(obj->t == lastk_number){
       last_number* num = (last_number*)obj;
       vps_data* data = vps_num_new(NULL,num->dnum);
       vps_mod_data_put((vps_mod*)vps,data);
-      inst = vinst_new(vinstk_imm,Bload,-1,NULL,data,NULL);
+      inst = vinst_new(vinstk_imm,Bload,vopdnon,NULL,data,NULL);
     }else{
       uabort("load inst error!");
     }
-    ulog("load");
+    ulog("push");
     return (vps_t*)inst;
   })
 
@@ -125,25 +145,29 @@ LDEFATTR(push,"push",{
  * define attribute add
  */
 LDEFATTR(add,"add",{
+    vinst* inst;
+    inst = vinst_new(vinstk_non,Badd,vopdnon,NULL,NULL,NULL);
     ulog("add");
-    return NULL;
+    return (vps_t*)inst;
   })
 
 /*
  * define attribute return
  */
 LDEFATTR(return,"return",{
+    vinst* inst;
+    inst = vinst_new(vinstk_non,Breturn,vopdnon,NULL,NULL,NULL);
     ulog("return");
-    return NULL;
+    return (vps_t*)inst;
   })
 
 /*
  * declare attribute
  */
-LDECLATTR(base,{
-    LATTR_INIT(ts,subr);
-    LATTR_INIT(ts,load);
-    LATTR_INIT(ts,push);
-    LATTR_INIT(ts,add);
-    LATTR_INIT(ts,return);
+LATTRONLOAD(base,{
+    LDECLATTR(subr);
+    LDECLATTR(load);
+    LDECLATTR(push);
+    LDECLATTR(add);
+    LDECLATTR(return);
   })

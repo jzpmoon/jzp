@@ -20,8 +20,8 @@ int last_attr_get_comp(void* k1,void* k2){
   return ustring_comp(sym,attr->name);
 }
 
-#include "ltemp.attr"
+#include "_ltemp.attr"
 
 void ltoken_state_attr_init(ltoken_state* ts){
-  _lattr_file_concat_init(ts);
+  lattr_file_concat_init(ts);
 }

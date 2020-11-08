@@ -1,4 +1,4 @@
-#include "uerror.h"
+ #include "uerror.h"
 #include "ualloc.h"
 #include "lparser.h"
 #include "lobj.h"
@@ -452,7 +452,7 @@ vps_mod* last2vps(ltoken_state* ts,last_obj* ast_obj){
 	if(!vps){
 	  uabort("ast2vps vps_mod_new error!");
 	}
-	(attr->action)((vps_t*)vps,ast_obj);
+	(attr->action)(vps,ast_obj);
       }
     }
   }

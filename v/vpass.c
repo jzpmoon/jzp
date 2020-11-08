@@ -15,8 +15,11 @@ vinst_new(int instk,
     inst->opcode  = opcode;
     inst->operand = operand;
     inst->label = label;
-    inst->u.data = data;
-    inst->u.code = code;
+    if(data){
+      inst->u.data = data;
+    }else{
+      inst->u.code = code;
+    }
   }
   return inst;
 }
@@ -110,6 +113,15 @@ vps_data* vps_num_new(ustring* name,
   return data;
 }
 
+vps_data* vps_any_new(ustring* name){
+  vps_data* data = ualloc(sizeof(vps_data));
+  if(data){
+    data->dtk = vdtk_any;
+    data->name = name;
+  }
+  return data;
+}
+
 vdfg_block* vdfg_block_new(){
   vdfg_block* b = ualloc(sizeof(vdfg_block));
   if(b){
@@ -126,7 +138,7 @@ vdfg_graph* vdfg_graph_new(){
     g->t = vdfgk_grp;
     g->link = NULL;
     g->name = NULL;
-    g->datas = NULL;
+    g->dts = NULL;
     g->dfgs = NULL;
     g->entry = NULL;
   }
@@ -148,11 +160,11 @@ vps_mod* vps_mod_new(){
   return mod;
 }
 
-void* vps_mod_key_put(void* data){
+static void* vps_mod_key_put(void* data){
   return data;
 }
 
-int vps_mod_comp(void* data1,void* data2){
+static int vps_mod_comp(void* data1,void* data2){
   if(data1 > data2){
     return 1;
   }else if(data1 < data2){
@@ -171,6 +183,19 @@ void vps_mod_data_put(vps_mod* mod,vps_data* data){
   uhash_table_put(mod->data,
 		  hscd,
 		  data,
+		  vps_mod_key_put,
+		  vps_mod_comp);
+}
+
+void vps_mod_code_put(vps_mod* mod,vdfg_graph* code){
+  ustring* name = code->name;
+  unsigned int hscd = 0;
+  if(name){
+    hscd = name->hash_code;
+  }
+  uhash_table_put(mod->data,
+		  hscd,
+		  code,
 		  vps_mod_key_put,
 		  vps_mod_comp);
 }

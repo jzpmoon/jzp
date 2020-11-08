@@ -1,4 +1,4 @@
-(subr inc (x)
+(subr inc (x y)
   (load x)
   (push 1)
   (add)

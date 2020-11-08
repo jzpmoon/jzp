@@ -32,6 +32,7 @@ enum{
   vdtk_arr,
   vdtk_num,
   vdtk_int,
+  vdtk_any,
 };
 
 typedef struct _vps_t{
@@ -54,6 +55,8 @@ typedef struct _vps_mod{
   uhash_table* data;
   uhash_table* code;
 } vps_mod;
+
+#define vopdnon (-1)
 
 typedef struct _vinst{
   VPSHEADER;
@@ -79,7 +82,7 @@ typedef struct _vdfg_block{
 typedef struct _vdfg_graph{
   VDFGHEADER;
   ustring* name;
-  ulist* datas;
+  ulist* dts;
   ulist* dfgs;
   vps_dfg* entry;
 } vdfg_graph;
@@ -101,6 +104,8 @@ int vinst_to_str(vcontext* ctx,
 vps_data* vps_num_new(ustring* name,
 		      double num);
 
+vps_data* vps_any_new(ustring* name);
+
 vdfg_block* vdfg_block_new();
 
 #define vdfg_block_append(blk,inst)		\
@@ -108,12 +113,17 @@ vdfg_block* vdfg_block_new();
 
 vdfg_graph* vdfg_graph_new();
 
-#define vdfg_graph_append(grp,dfg) \
+#define vdfg_grp_cdapd(grp,dfg)			\
   (grp)->dfgs=ulist_append((grp)->dfgs,dfg)
+
+#define vdfg_grp_dtapd(grp,dt)			\
+  (grp)->dts=ulist_append((grp)->dts,dt)
 
 vps_mod* vps_mod_new();
 
 void vps_mod_data_put(vps_mod* mod,vps_data* data);
+
+void vps_mod_code_put(vps_mod* mod,vdfg_graph* code);
 
 vgc_string* vps_dfg2bin(vps_dfg* dfg);
 
