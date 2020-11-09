@@ -59,16 +59,20 @@ typedef struct _vps_mod{
 #define vopdnon (-1)
 
 typedef struct _vinst{
+  usize_t opcode;
+  usize_t operand;
+} vinst;
+
+typedef struct _vps_inst{
   VPSHEADER;
   int instk;
   usize_t opcode;
-  usize_t operand;
   ustring* label;
   union {
     vps_data* data;
     struct _vps_dfg* code;
   } u;
-} vinst;
+} vps_inst;
 
 typedef struct _vps_dfg{
   VDFGHEADER;
@@ -90,16 +94,15 @@ typedef struct _vdfg_graph{
 #define VPS_MOD_DATA_TABLE_SIZE 17
 #define VPS_MOD_CODE_TABLE_SIZE 17
 
-vinst*
-vinst_new(int instk,
-	  usize_t opcode,
-	  usize_t operand,
-	  ustring* label,
-	  vps_data* data,
-	  vps_dfg* code);
-
 int vinst_to_str(vcontext* ctx,
 		 ulist* insts);
+
+vps_inst*
+vps_inst_new(int instk,
+	     usize_t opcode,
+	     ustring* label,
+	     vps_data* data,
+	     vps_dfg* code);
 
 vps_data* vps_num_new(ustring* name,
 		      double num);
@@ -108,7 +111,7 @@ vps_data* vps_any_new(ustring* name);
 
 vdfg_block* vdfg_block_new();
 
-#define vdfg_block_append(blk,inst)		\
+#define vdfg_blk_apd(blk,inst)			\
   (blk)->insts=ulist_append((blk)->insts,inst)
 
 vdfg_graph* vdfg_graph_new();

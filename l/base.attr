@@ -81,7 +81,7 @@ LDEFATTR(subr,"subr",{
 	if(inst == NULL || inst->t != vpsk_inst){
 	  uabort("not a inst!");
 	}
-	vdfg_block_append(blk,inst);
+	vdfg_blk_apd(blk,inst);
       }
       next = last_cdr(next);
     }
@@ -94,7 +94,7 @@ LDEFATTR(subr,"subr",{
  * define attribute load
  */
 LDEFATTR(load,"load",{
-    vinst* inst;
+    vps_inst* inst;
     last_obj* obj;
     last_symbol* sym;
     last_obj* next;
@@ -108,7 +108,7 @@ LDEFATTR(load,"load",{
       uabort("load inst error!");
     }
     sym = (last_symbol*)obj;
-    inst = vinst_new(vinstk_data,Bload,vopdnon,sym->name,NULL,NULL);
+    inst = vps_inst_new(vinstk_data,Bload,sym->name,NULL,NULL);
     ulog("load");
     return (vps_t*)inst;
   })
@@ -117,7 +117,7 @@ LDEFATTR(load,"load",{
  * define attribute push
  */
 LDEFATTR(push,"push",{
-    vinst* inst;
+    vps_inst* inst;
     last_obj* obj;
     last_obj* next;
 
@@ -128,12 +128,12 @@ LDEFATTR(push,"push",{
     obj = last_car(next);
     if(obj->t == lastk_symbol){
       last_symbol* sym = (last_symbol*)obj;
-      inst = vinst_new(vinstk_data,Bload,vopdnon,sym->name,NULL,NULL);
+      inst = vps_inst_new(vinstk_data,Bload,sym->name,NULL,NULL);
     }else if(obj->t == lastk_number){
       last_number* num = (last_number*)obj;
       vps_data* data = vps_num_new(NULL,num->dnum);
       vps_mod_data_put((vps_mod*)vps,data);
-      inst = vinst_new(vinstk_imm,Bload,vopdnon,NULL,data,NULL);
+      inst = vps_inst_new(vinstk_imm,Bload,NULL,data,NULL);
     }else{
       uabort("load inst error!");
     }
@@ -145,8 +145,8 @@ LDEFATTR(push,"push",{
  * define attribute add
  */
 LDEFATTR(add,"add",{
-    vinst* inst;
-    inst = vinst_new(vinstk_non,Badd,vopdnon,NULL,NULL,NULL);
+    vps_inst* inst;
+    inst = vps_inst_new(vinstk_non,Badd,NULL,NULL,NULL);
     ulog("add");
     return (vps_t*)inst;
   })
@@ -155,8 +155,8 @@ LDEFATTR(add,"add",{
  * define attribute return
  */
 LDEFATTR(return,"return",{
-    vinst* inst;
-    inst = vinst_new(vinstk_non,Breturn,vopdnon,NULL,NULL,NULL);
+    vps_inst* inst;
+    inst = vps_inst_new(vinstk_non,Breturn,NULL,NULL,NULL);
     ulog("return");
     return (vps_t*)inst;
   })

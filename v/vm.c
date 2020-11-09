@@ -307,14 +307,8 @@ void vcontext_execute(vcontext* ctx){
     CHECK_CURR_CALL;
     NEXT;
     switch(op){
-    case Bpush:
-      NEXT;
-      ulog1("Bpush %d",op);
-      bc_push(ctx,bc_constant(ctx,op));
-      break;
-    case Bpop:
-      ulog("Bpop");
-      bc_pop(ctx);
+    case Bnop:
+      ulog1("Bnop %d",op);
       break;
     case Bload:
       NEXT;
@@ -326,33 +320,56 @@ void vcontext_execute(vcontext* ctx){
       ulog1("Bstore %d",op);
       bc_store(ctx,op);
       break;
-    case Bref:
+    case Bpush:
+      NEXT;
+      ulog1("Bpush %d",op);
+      bc_push(ctx,bc_constant(ctx,op));
+      break;
+    case Bpop:
+      ulog("Bpop");
+      bc_pop(ctx);
+      break;
+    case Bjmp:
       NEXT2;
-      ulog1("Bref %d",op);
-      bc_ref(ctx,op);
-      break;
-    case Bset:
-      NEXT2;
-      ulog1("Bset %d",op);
-      bc_set(ctx,op);
-      break;
-    case Badd:
-      ulog("Badd");
-      bc_add(ctx);
-      break;
-    case Beq:
-      ulog("Beq");
-      bc_eq(ctx);
+      ulog1("Bjmp %d",op);
+      bc_jmp(ctx,op);
       break;
     case Bjmpi:
       NEXT2;
       ulog1("Bjmpi %d",op);
       bc_jmpi(ctx,op);
       break;
-    case Bjmp:
-      NEXT2;
-      ulog1("Bjmp %d",op);
-      bc_jmp(ctx,op);
+    case Beq:
+      ulog("Beq");
+      bc_eq(ctx);
+      break;
+    case Bgt:
+      ulog("Bgt");
+      break;
+    case Blt:
+      ulog("Blt");
+      break;
+    case Band:
+      ulog("Band");
+      break;
+    case Bor:
+      ulog("Bor");
+      break;
+    case Bnot:
+      ulog("Bnot");
+      break;
+    case Badd:
+      ulog("Badd");
+      bc_add(ctx);
+      break;
+    case Bsub:
+      ulog("Bsub");
+      break;
+    case Bmul:
+      ulog("Bmul");
+      break;
+    case Bdiv:
+      ulog("Bdiv");
       break;
     case Bcall:
       ulog("Bcall");
@@ -365,6 +382,16 @@ void vcontext_execute(vcontext* ctx){
     case Bretvoid:
       ulog("Bretvoid");
       bc_return_void(ctx);
+      break;
+    case Bref:
+      NEXT2;
+      ulog1("Bref %d",op);
+      bc_ref(ctx,op);
+      break;
+    case Bset:
+      NEXT2;
+      ulog1("Bset %d",op);
+      bc_set(ctx,op);
       break;
     default:
       uabort("bad byte code!");

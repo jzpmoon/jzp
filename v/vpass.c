@@ -1,19 +1,17 @@
 #include "vbyte_code.h"
 #include "vpass.h"
 
-vinst*
-vinst_new(int instk,
-	  usize_t opcode,
-	  usize_t operand,
-	  ustring* label,
-	  vps_data* data,
-	  vps_dfg* code){
-  vinst* inst = ualloc(sizeof(vinst));
+vps_inst*
+vps_inst_new(int instk,
+	     usize_t opcode,
+	     ustring* label,
+	     vps_data* data,
+	     vps_dfg* code){
+  vps_inst* inst = ualloc(sizeof(vps_inst));
   if(inst){
     inst->t = vpsk_inst;
     inst->instk = instk;
-    inst->opcode  = opcode;
-    inst->operand = operand;
+    inst->opcode = opcode;
     inst->label = label;
     if(data){
       inst->u.data = data;
