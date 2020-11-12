@@ -45,12 +45,12 @@ vgc_string* vgc_string_new(vgc_heap* heap,
 void vgc_string_log(vgc_heap* heap){
   int i = 0;
   vgc_string* string;
-  vgc_pop_obj(heap,string,vgc_string);
+  vgc_heap_obj_pop(heap,string,vgc_string);
   while(i < string->len){
     ulog1("string:%d",string->u.b[i]);
     i++;
   }
-  vgc_push_obj(heap,string);
+  vgc_heap_obj_push(heap,string);
 }
 
 vgc_cfun* vgc_cfun_new(vgc_heap* heap,
@@ -101,11 +101,11 @@ vgc_call* vgc_call_new(vgc_heap* heap,
     if(call_type == vgc_call_type_cfun){
       vgc_obj_slot_set(heap,call,cfun);
     }else{
-      vgc_pop_obj(heap,subr,vgc_subr);
+      vgc_heap_obj_pop(heap,subr,vgc_subr);
       vgc_obj_slot_get(heap,subr,bytecode);
-      vgc_pop_obj(heap,bytecode,vgc_string);
+      vgc_heap_obj_pop(heap,bytecode,vgc_string);
       call->pc = bytecode->u.b;
-      vgc_push_obj(heap,subr);
+      vgc_heap_obj_push(heap,subr);
       vgc_obj_slot_set(heap,call,subr);
     }
     vgc_obj_slot_set(heap,call,caller);
@@ -127,9 +127,9 @@ vslot vslot_num_eq(vslot slot1,vslot slot2){
   double num2 = vslot_num_get(slot2);
   vslot bool;
   if(num1 == num2){
-    vslot_bool_set(bool,1);
+    vslot_bool_set(bool,vbool_true);
   }else{
-    vslot_bool_set(bool,0);
+    vslot_bool_set(bool,vbool_false);
   }
   return bool;
 }
@@ -139,9 +139,9 @@ vslot vslot_ref_eq(vslot slot1,vslot slot2){
   vgc_obj* ref2 = vslot_ref_get(slot2,vgc_obj);
   vslot bool;
   if(ref1 == ref2){
-    vslot_bool_set(bool,1);
+    vslot_bool_set(bool,vbool_true);
   }else{
-    vslot_bool_set(bool,0);
+    vslot_bool_set(bool,vbool_false);
   }
   return bool;
 }

@@ -96,7 +96,7 @@ int vinst_to_str(vcontext* ctx,ulist* insts){
 #undef DF
 	}
   }while((node = node->next) != header);
-  vgc_push_obj(ctx->heap,str);
+  vgc_heap_obj_push(ctx->heap,str);
   return 0;
 }
 

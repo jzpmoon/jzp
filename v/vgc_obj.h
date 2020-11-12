@@ -12,6 +12,7 @@ enum {
   vgc_obj_type_cfun,
   vgc_obj_type_subr,
   vgc_obj_type_call,
+  vgc_obj_type_ctx,
   vgc_obj_type_extend,
 };
 
@@ -61,24 +62,39 @@ typedef struct _vslot{
   } u;
 } vslot;
 
-#define vslot_define_begin struct{
-#define vslot_define(name) vslot name;
-#define vslot_define_end } _u;
-#define vslot_is_num(slot) ((slot).t == vslot_type_num)
-#define vslot_is_bool(slot) ((slot).t == vslot_type_bool)
-#define vslot_is_ref(slot) ((slot).t == vslot_type_ref)
-#define vslot_bool_get(slot) ((slot).u.bool)
-#define vslot_bool_set(slot,val) \
+#define vbool_true (1)
+#define vbool_false (0)
+
+#define vslot_define_begin			\
+  struct{
+#define vslot_define(type,name)			\
+  vslot name;
+#define vslot_define_end			\
+  } _u;
+#define vslot_is_num(slot)			\
+  ((slot).t == vslot_type_num)
+#define vslot_is_bool(slot)			\
+  ((slot).t == vslot_type_bool)
+#define vslot_is_ref(slot)			\
+  ((slot).t == vslot_type_ref)
+#define vslot_bool_get(slot)			\
+  ((slot).u.bool)
+#define vslot_bool_set(slot,val)		\
   (slot.t = vslot_type_bool,slot.u.bool = val)
-#define vslot_num_get(slot) ((slot).u.num)
-#define vslot_num_set(slot,val) \
+#define vslot_num_get(slot)			\
+  ((slot).u.num)
+#define vslot_num_set(slot,val)			\
   (slot.t = vslot_type_num,slot.u.num = val)
-#define vslot_ref_get(slot,obj_type) ((obj_type*)(slot).u.ref)
-#define vslot_ref_set(slot,obj) \
-  (slot.t = vslot_type_ref,slot.u.ref = obj)
-#define vslot_null_set(slot) \
-  ((slot).t = vslot_type_null)
-#define VTRUEP(SLOT) ((SLOT).u.bool)
+#define vslot_ref_get(slot,obj_type)		\
+  ((obj_type*)(slot).u.ref)
+#define vslot_ref_set(slot,obj)			\
+  (slot.t = vslot_type_ref,			\
+   slot.u.ref = (vgc_obj*)obj)
+#define vslot_null_set(slot)			\
+  ((slot).t = vslot_type_null,			\
+   (slot).u.ref = NULL)
+#define vslot_is_true(SLOT)			\
+  (vslot_is_bool(SLOT) && (SLOT).u.bool)
 
 #define vslot_log(slot)				\
   ulog1("slot type:%d",slot.t);			\
@@ -125,7 +141,7 @@ vgc_obj* vgc_heap_data_new(vgc_heap* heap,
 
 void vgc_heap_stack_log(vgc_heap* heap);
 
-#define vgc_obj_slot_count(type) \
+#define vgc_obj_slot_count(type)		\
   (sizeof(((type*)0)->_u)/sizeof(vslot))
 
 #define vgc_heap_obj_new(heap,type,obj_type,area_type)			\
@@ -147,14 +163,14 @@ void vgc_heap_stack_set(vgc_heap* heap,usize_t index,vslot slot);
 usize_t vgc_heap_stack_top_get(vgc_heap* heap);
 void vgc_heap_stack_top_set(vgc_heap* heap,usize_t index);
 
-#define vgc_push_obj(heap,obj)			\
+#define vgc_heap_obj_push(heap,obj)		\
   do{						\
     vslot __slot;				\
-    vslot_ref_set(__slot,(vgc_obj*)obj);	\
+    vslot_ref_set(__slot,obj);			\
     vgc_heap_stack_push(heap,__slot);		\
   } while(0)
 
-#define vgc_pop_obj(heap,obj,obj_type)		\
+#define vgc_heap_obj_pop(heap,obj,obj_type)	\
   do{						\
     vslot __slot;				\
     vgc_heap_stack_pop(heap,&__slot);		\
@@ -171,19 +187,28 @@ void vgc_heap_stack_top_set(vgc_heap* heap,usize_t index);
   (vslot*)((char*)obj + obj->_size -		\
 	   (sizeof(vslot) * obj->_len))
 
+#define vgc_obj_null_set(obj,slot)		\
+  vslot_null_set((obj)->_u.slot)
+
 #define vgc_obj_ref_get(obj,slot,obj_type)	\
-  vslot_ref_get(obj->_u.slot,obj_type)
+  vslot_ref_get((obj)->_u.slot,obj_type)
+
+#define vgc_obj_ref_set(obj,slot,vobj)		\
+  vslot_ref_set((obj)->_u.slot,vobj)
 
 #define VCONTEXT_SYMTB_SIZE 17
 #define VCONTEXT_STRTB_SIZE 17
 
 typedef struct _vcontext{
+  VGCHEADER;
   vgc_heap* heap;
-  struct _vgc_call* calling;
   uhash_table* objtb;
   ustring_table* symtb;
   ustring_table* strtb;
-  struct _vgc_array* consts;
+  vslot_define_begin
+    vslot_define(vgc_call,calling);
+    vslot_define(vgc_array,consts);
+  vslot_define_end
 } vcontext;
 
 typedef struct _vgc_array{
@@ -219,6 +244,9 @@ typedef struct _vgc_cfun{
   VGCHEADER;
   vcfun_ft entry;
   vslot_define_begin
+    /*
+     *void member
+     */
   vslot_define_end
 } vgc_cfun;
 
@@ -231,8 +259,8 @@ typedef struct _vgc_subr{
   usize_t params_count;
   usize_t locals_count;
   vslot_define_begin
-  vslot_define(consts)
-  vslot_define(bytecode)
+    vslot_define(vgc_array,consts);
+    vslot_define(vgc_string,bytecode);
   vslot_define_end
 } vgc_subr;
 
@@ -252,9 +280,9 @@ typedef struct _vgc_call{
   usize_t base;
   unsigned char* pc;
   vslot_define_begin
-  vslot_define(cfun)
-  vslot_define(subr)
-  vslot_define(caller)
+    vslot_define(vgc_subr,cfun);
+    vslot_define(vgc_subr,subr);
+    vslot_define(vgc_call,caller);
   vslot_define_end
 } vgc_call;
 
@@ -276,6 +304,9 @@ typedef struct _vgc_obj_ex_t{
 typedef struct _vgc_extend{
   VGCHEADEREX;
   vslot_define_begin
+  /*
+   * void member
+   */
   vslot_define_end
 } vgc_extend;
 

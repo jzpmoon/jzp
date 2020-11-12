@@ -24,7 +24,7 @@ int main(){
   if(!ctx){
     uabort("new vcontext error!");
   }
-  consts = ctx->consts;
+  consts = vgc_obj_ref_get(ctx,consts,vgc_array);
   vslot_num_set(consts->objs[0],1);
   INST(Bload,0);
   INST(Bload,1);
@@ -44,12 +44,12 @@ int main(){
   if(vinst_to_str(ctx,insts)){
     uabort("new vinst_to_str error!");
   }
-  vgc_push_obj(heap,consts);
+  vgc_heap_obj_push(heap,consts);
   subr = vgc_subr_new(heap,2,0,vgc_heap_area_active);
   if(!subr){
     uabort("new vgc_subr error!");
   }
-  vgc_push_obj(heap,subr);
+  vgc_heap_obj_push(heap,subr);
   subr_slot = vgc_heap_stack_get(heap,-1);
   consts->objs[1] = subr_slot;
   ulog("execute");
