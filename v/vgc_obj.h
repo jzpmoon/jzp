@@ -244,9 +244,9 @@ typedef struct _vgc_cfun{
   VGCHEADER;
   vcfun_ft entry;
   vslot_define_begin
-    /*
-     *void member
-     */
+  /*
+   *void member
+   */
   vslot_define_end
 } vgc_cfun;
 

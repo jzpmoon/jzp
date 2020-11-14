@@ -1,4 +1,4 @@
-#include "vbyte_code.h"
+#include "vbytecode.h"
 #include "vm.h"
 #include "vpass.h"
 
@@ -33,7 +33,7 @@ vinst_full_length(ulist* insts){
     switch(inst->opcode){
 #define DF(code,name,value,len)			\
       case (code):length+=len;break;
-      VBYTE_CODE
+      VBYTECODE
 #undef DF
     }
   } while((node=node->next)!=header);
@@ -50,7 +50,7 @@ vinst_byte_length(ulist* insts,usize_t offset){
     switch(inst->opcode){
 #define DF(code,name,value,len)			\
       case (code):length+=len;break;
-      VBYTE_CODE
+      VBYTECODE
 #undef DF
     }
     node = node->next;
@@ -93,7 +93,7 @@ int vinst_to_str(vcontext* ctx,ulist* insts){
 	inst_count++;							\
 	break;								\
       }						
-      VBYTE_CODE				
+      VBYTECODE				
 #undef DF
 	}
   }while((node = node->next) != header);

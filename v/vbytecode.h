@@ -1,6 +1,6 @@
-#ifndef VBYTE_CODE
+#ifndef VBYTECODE
 
-#define VBYTE_CODE							\
+#define VBYTECODE							\
   DF(Bnop,"nop",0x00,1)							\
   DF(Bload,"load",0x01,2)						\
   DF(Bstore,"store",0x02,2)						\

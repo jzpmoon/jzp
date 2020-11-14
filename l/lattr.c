@@ -1,3 +1,4 @@
+#include "vm.h"
 #include "lparser.h"
 
 void* last_attr_key_put(void* key){
