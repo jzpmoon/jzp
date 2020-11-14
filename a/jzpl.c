@@ -19,5 +19,5 @@ UBEGIN
 
 int main (int argc,char** args)
 {
-  jzpl(argc,args);
+  return jzpl(argc,args);
 }

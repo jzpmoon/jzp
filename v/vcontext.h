@@ -4,6 +4,7 @@
 #include "ustring.h"
 #include "vgc_obj.h"
 #include "vpass.h"
+#include "vgenbc.h"
 
 typedef struct _vreloc{
   ustring* ref_name;
@@ -34,7 +35,7 @@ typedef struct _vmod{
   ulist_vreloc* rells;
   uhstb_vsymbol* gobjtb;
   uhstb_vsymbol* lobjtb;
-  vgc_subr* init;
+  struct _vgc_subr* init;
   ustring* name;
   int status;
 } vmod;
@@ -62,6 +63,7 @@ typedef struct _vcontext vcontext;
 struct _vcontext{
   VGCHEADER;
   vgc_heap* heap;
+  ustack_vslot* stack;
   umem_pool mp;
   uhstb_vmod* mods;
   vmod_loader* loader;
@@ -71,6 +73,21 @@ struct _vcontext{
     vslot_define(vgc_call,calling);
   vslot_define_end
 };
+
+typedef struct _vgc_subr{
+  VGCHEADER;
+  usize_t params_count;
+  usize_t locals_count;
+  vslot_define_begin
+    vslot_define(vgc_array,consts);
+    vslot_define(vgc_string,bytecode);
+  vslot_define_end
+} vgc_subr;
+
+vgc_subr* vgc_subr_new(vcontext* ctx,
+		       usize_t params_count,
+		       usize_t locals_count,
+		       int area_type);
 
 typedef int(*vcfun_ft)(vcontext*);
 
@@ -89,6 +106,30 @@ vgc_cfun* vgc_cfun_new(vgc_heap* heap,
 		       int params_count,
 		       int has_retval,
 		       int area_type);
+
+enum {
+  vgc_call_type_cfun,
+  vgc_call_type_subr,
+};
+
+typedef struct _vgc_call{
+  VGCHEADER;
+  int call_type;
+  usize_t base;
+  unsigned char* pc;
+  vslot_define_begin
+    vslot_define(vgc_subr,cfun);
+    vslot_define(vgc_subr,subr);
+    vslot_define(vgc_call,caller);
+  vslot_define_end
+} vgc_call;
+
+vgc_call* vgc_call_new(vcontext* ctx,
+		       int call_type,
+		       usize_t base);
+
+#define vgc_call_is_cfun(call)				\
+  ((call)->call_type == vgc_call_type_cfun)
 
 UDECLFUN(UFNAME vcontext_new,UARGS (vgc_heap* heap),URET vcontext*);
 
@@ -117,5 +158,48 @@ vsymbol* vmod_lobj_put(vgc_heap* heap,vmod* mod,ustring* name,vgc_obj* obj);
 vsymbol* vmod_gslot_put(vgc_heap* heap,vmod* mod,ustring* name,vslot slot);
 
 vsymbol* vmod_lslot_put(vgc_heap* heap,vmod* mod,ustring* name,vslot slot);
+
+vslot vcontext_stack_get(vcontext* ctx,usize_t index);
+
+void vcontext_stack_set(vcontext* ctx,usize_t index,vslot slot);
+
+usize_t vcontext_stack_top_get(vcontext* ctx);
+
+void vcontext_stack_top_set(vcontext* ctx,usize_t index);
+
+#define vcontext_stack_push(ctx,slot)			\
+  if(ustack_vslot_push(ctx->stack,slot)){		\
+    uabort("vgc_heap_stack: overflow!");		\
+  }
+
+#define vcontext_stack_pop(ctx,slotp)			\
+  if(ustack_vslot_pop(ctx->stack,slotp)){		\
+    uabort("vgc_heap_stack: empty!");			\
+  }
+
+#define vcontext_stack_pushv(ctx)		\
+  if(ustack_vslot_pushv(ctx->stack)){		\
+    uabort("vgc_heap_stack: overflow!");	\
+  }
+
+#define vcontext_obj_push(ctx,obj)		\
+  do{						\
+    vslot __slot;				\
+    vslot_ref_set(__slot,obj);			\
+    vcontext_stack_push(ctx,__slot);		\
+  } while(0)
+
+#define vcontext_obj_pop(ctx,obj,obj_type)	\
+  do{						\
+    vslot __slot;				\
+    vcontext_stack_pop(ctx,&__slot);		\
+    obj = vslot_ref_get(__slot,obj_type);	\
+  } while(0)
+
+#define vcontext_obj_slot_get(ctx,obj,slot)		\
+  vcontext_stack_push(ctx,(obj)->_u.slot);
+  
+#define vcontext_obj_slot_set(ctx,obj,slot)		\
+  vcontext_stack_pop(ctx,&((obj)->_u.slot));
 
 #endif

@@ -19,7 +19,31 @@ LDEFUN(make_array,"make-array",LSCOPE_GLOBAL,1,LRETVAL_YES,{
     if (!array) {
       uabort("arrray new error!");
     }
-    vgc_heap_obj_push(ctx->heap,array);
+    vcontext_obj_push(ctx,array);
+    return 0;
+  });
+/*
+ *define cfun make-string
+ */
+LDEFUN(make_string,"make-string",LSCOPE_GLOBAL,1,LRETVAL_YES,{
+    vslot slot;
+    int string_length;
+    vgc_string* string;
+    
+    slot = vcontext_params_get(ctx,0);
+    if (vslot_is_num(slot)) {
+      string_length = (int)vslot_num_get(slot);
+    } else if (vslot_is_int(slot)) {
+      string_length = vslot_int_get(slot);
+    } else {
+      uabort("not a number");
+      return 0;
+    }
+    string = vgc_string_new(ctx->heap,string_length,vgc_heap_area_active);
+    if (!string) {
+      uabort("string new error!");
+    }
+    vcontext_obj_push(ctx,string);
     return 0;
   });
 
@@ -91,6 +115,7 @@ LDEFVAR(system_ostream,"system-ostream",LSCOPE_GLOBAL,{
 
 LFUNONLOAD(base,{
     LDECLFUN(make_array);
+    LDECLFUN(make_string);
     LDECLFUN(make_stream);
     LDECLFUN(stream_output);
     LDECLVAR(system_istream);

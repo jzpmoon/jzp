@@ -3,14 +3,7 @@
 
 #include "ulist.h"
 #include "vgc_obj.h"
-#include "vbytecode.h"
+#include "vgenbc.h"
 #include "vcontext.h"
-
-enum vbytecode{
-  #define DF(code,name,value,len) \
-    code=value,
-    VBYTECODE
-  #undef DF
-};
 
 #endif

@@ -68,65 +68,17 @@ void vgc_ustr2vstr(vgc_string* vstr,ustring* ustr)
 {
   memcpy(vstr->u.b,ustr->value,ustr->len);
 }
-
-void vgc_string_log(vgc_heap* heap){
+/*
+void vgc_string_log(vcontext* ctx){
   int i = 0;
   vgc_string* string;
-  vgc_heap_obj_pop(heap,string,vgc_string);
+  vcontext_obj_pop(ctx,string,vgc_string);
   while(i < string->len){
     ulog("string:%d",string->u.b[i]);
     i++;
   }
-  vgc_heap_obj_push(heap,string);
-}
-
-vgc_subr* vgc_subr_new(vgc_heap* heap,
-		       usize_t params_count,
-		       usize_t locals_count,
-		       int area_type){
-  vgc_subr* subr;
-  subr = vgc_heap_obj_new(heap,
-			  vgc_subr,
-			  vgc_obj_type_subr,
-			  area_type);
-  if(subr){
-    subr->params_count = params_count;
-    subr->locals_count = locals_count;
-    vgc_obj_slot_set(heap,subr,consts);
-    vgc_obj_slot_set(heap,subr,bytecode);
-  }
-  return subr;
-}
-
-vgc_call* vgc_call_new(vgc_heap* heap,
-		       int call_type,
-		       usize_t base){
-  vgc_call* call;
-  vgc_subr* subr;
-  vgc_string* bytecode;
-  call = vgc_heap_obj_new(heap,
-			  vgc_call,
-			  vgc_obj_type_call,
-			  vgc_heap_area_active);
-  if(call){
-    call->call_type = call_type;
-    call->base = base;
-    if(call_type == vgc_call_type_cfun){
-      vgc_obj_slot_set(heap,call,cfun);
-      vgc_obj_null_set(call,subr);
-    }else{
-      vgc_heap_obj_pop(heap,subr,vgc_subr);
-      vgc_obj_slot_get(heap,subr,bytecode);
-      vgc_heap_obj_pop(heap,bytecode,vgc_string);
-      call->pc = bytecode->u.b;
-      vgc_heap_obj_push(heap,subr);
-      vgc_obj_slot_set(heap,call,subr);
-      vgc_obj_null_set(call,cfun);
-    }
-    vgc_obj_slot_set(heap,call,caller);
-  }
-  return call;
-}
+  vcontext_obj_push(ctx,string);
+  }*/
 
 vgc_ref* vgc_ref_new(vgc_heap* heap,vslot slot)
 {

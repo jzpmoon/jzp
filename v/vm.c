@@ -57,26 +57,23 @@ void bc_constant_set(vcontext* ctx,
 }
 
 void bc_top(vcontext* ctx,usize_t index){
-  vgc_heap_stack_top_set(ctx->heap,index);
+  vcontext_stack_top_set(ctx,index);
 }
 
 void bc_push(vcontext* ctx,
 	     vslot slot){
-  vgc_heap* heap = ctx->heap;
-  vgc_heap_stack_push(heap,slot);
+  vcontext_stack_push(ctx,slot);
 }
 
 void bc_pop(vcontext* ctx,usize_t index){
   vslot slot;
-  vgc_heap* heap = ctx->heap;
-  vgc_heap_stack_pop(heap,&slot);
+  vcontext_stack_pop(ctx,&slot);
   bc_constant_set(ctx,index,slot);
 }
 
 void bc_popv(vcontext* ctx){
   vslot slot;
-  vgc_heap* heap = ctx->heap;
-  vgc_heap_stack_pop(heap,&slot);
+  vcontext_stack_pop(ctx,&slot);
 }
 
 vslot bc_locals(vcontext* ctx,
@@ -89,14 +86,13 @@ vslot bc_locals(vcontext* ctx,
   usize_t real_index = base - count + index;
   if(index < 0 || index >= count)
     uabort("vm:local varable error!");
-  slot = vgc_heap_stack_get(ctx->heap,real_index);
+  slot = vcontext_stack_get(ctx,real_index);
   return slot;
 }
 
 void bc_store(vcontext* ctx,
 	      usize_t index){
   vslot slot;
-  vgc_heap* heap = ctx->heap;
   vgc_call* calling = vgc_obj_ref_get(ctx,calling,vgc_call);
   vgc_subr* subr = vgc_obj_ref_get(calling,subr,vgc_subr);
   usize_t count = subr->params_count + subr->locals_count;
@@ -104,8 +100,8 @@ void bc_store(vcontext* ctx,
   usize_t real_index = base - count + index;
   if(index < 0 || index >= count)
     uabort("vm:local varable error!");
-  vgc_heap_stack_pop(heap,&slot);
-  vgc_heap_stack_set(heap,real_index,slot);
+  vcontext_stack_pop(ctx,&slot);
+  vcontext_stack_set(ctx,real_index,slot);
 }
 
 void bc_jmp(vcontext* ctx,
@@ -121,8 +117,7 @@ void bc_jmp(vcontext* ctx,
 void bc_jmpi(vcontext* ctx,
 	     usize_t offset){
   vslot slot;
-  vgc_heap* heap = ctx->heap;
-  vgc_heap_stack_pop(heap,&slot);
+  vcontext_stack_pop(ctx,&slot);
   if(vslot_is_true(slot)){
     bc_jmp(ctx,offset);
   }
@@ -132,11 +127,9 @@ void bc_add(vcontext* ctx){
   vslot slot1;
   vslot slot2;
   vslot num;
-  vgc_heap* heap;
 
-  heap = ctx->heap;
-  vgc_heap_stack_pop(heap,&slot1);
-  vgc_heap_stack_pop(heap,&slot2);
+  vcontext_stack_pop(ctx,&slot1);
+  vcontext_stack_pop(ctx,&slot2);
   
   if (vslot_is_num(slot1)) {
     double num1 = vslot_num_get(slot1);
@@ -166,18 +159,16 @@ void bc_add(vcontext* ctx){
     uabort("second is not a numberical!");
     return;
   }
-  vgc_heap_stack_push(heap,num);
+  vcontext_stack_push(ctx,num);
 }
 
 void bc_sub(vcontext* ctx){
   vslot slot1;
   vslot slot2;
   vslot num;
-  vgc_heap* heap;
 
-  heap = ctx->heap;
-  vgc_heap_stack_pop(heap,&slot1);
-  vgc_heap_stack_pop(heap,&slot2);
+  vcontext_stack_pop(ctx,&slot1);
+  vcontext_stack_pop(ctx,&slot2);
 
   if (vslot_is_num(slot1)) {
     double num1 = vslot_num_get(slot1);
@@ -207,18 +198,16 @@ void bc_sub(vcontext* ctx){
     uabort("second is not a numberical!");
     return;
   }
-  vgc_heap_stack_push(heap,num);
+  vcontext_stack_push(ctx,num);
 }
 
 void bc_mul(vcontext* ctx){
   vslot slot1;
   vslot slot2;
   vslot num;
-  vgc_heap* heap;
-
-  heap = ctx->heap;
-  vgc_heap_stack_pop(heap,&slot1);
-  vgc_heap_stack_pop(heap,&slot2);
+  
+  vcontext_stack_pop(ctx,&slot1);
+  vcontext_stack_pop(ctx,&slot2);
   
   if (vslot_is_num(slot1)) {
     double num1 = vslot_num_get(slot1);
@@ -248,7 +237,7 @@ void bc_mul(vcontext* ctx){
     uabort("second is not a numberical!");
     return;
   }
-  vgc_heap_stack_push(heap,num);
+  vcontext_stack_push(ctx,num);
 }
 
 void bc_div(vcontext* ctx){
@@ -257,11 +246,9 @@ void bc_div(vcontext* ctx){
   double num1;
   double num2;
   vslot num;
-  vgc_heap* heap;
-  
-  heap = ctx->heap;
-  vgc_heap_stack_pop(heap,&slot1);
-  vgc_heap_stack_pop(heap,&slot2);
+
+  vcontext_stack_pop(ctx,&slot1);
+  vcontext_stack_pop(ctx,&slot2);
   
   if (vslot_is_num(slot1)) {
     num1 = vslot_num_get(slot1);
@@ -280,7 +267,7 @@ void bc_div(vcontext* ctx){
     return;
   }
   vslot_num_set(num,(num1 / num2));
-  vgc_heap_stack_push(heap,num);
+  vcontext_stack_push(ctx,num);
 }
 
 void bc_eq(vcontext* ctx){
@@ -290,8 +277,8 @@ void bc_eq(vcontext* ctx){
   double num2;
   vslot bool;
 
-  vgc_heap_stack_pop(ctx->heap,&slot1);
-  vgc_heap_stack_pop(ctx->heap,&slot2);
+  vcontext_stack_pop(ctx,&slot1);
+  vcontext_stack_pop(ctx,&slot2);
   
   if(vslot_is_ref(slot1) && vslot_is_ref(slot2)){
     bool = vslot_ref_eq(slot1,slot2);
@@ -304,7 +291,7 @@ void bc_eq(vcontext* ctx){
       num1 = vslot_int_get(slot1);
     } else {
       vslot_bool_set(bool,vbool_false);
-      vgc_heap_stack_push(ctx->heap,bool);
+      vcontext_stack_push(ctx,bool);
       return;
     }
     if(vslot_is_num(slot2)){
@@ -313,7 +300,7 @@ void bc_eq(vcontext* ctx){
       num2 = vslot_int_get(slot2);
     } else {
       vslot_bool_set(bool,vbool_false);
-      vgc_heap_stack_push(ctx->heap,bool);
+      vcontext_stack_push(ctx,bool);
       return;
     }
     if(num1 == num2){
@@ -322,7 +309,7 @@ void bc_eq(vcontext* ctx){
       vslot_bool_set(bool,vbool_false);
     }
   }
-  vgc_heap_stack_push(ctx->heap,bool);
+  vcontext_stack_push(ctx,bool);
 }
 
 void bc_gt(vcontext* ctx){
@@ -332,8 +319,8 @@ void bc_gt(vcontext* ctx){
   double num2;
   vslot bool;
 
-  vgc_heap_stack_pop(ctx->heap,&slot1);
-  vgc_heap_stack_pop(ctx->heap,&slot2);
+  vcontext_stack_pop(ctx,&slot1);
+  vcontext_stack_pop(ctx,&slot2);
 
   if(vslot_is_num(slot1)){
     num1 = vslot_num_get(slot1);
@@ -341,7 +328,7 @@ void bc_gt(vcontext* ctx){
     num1 = vslot_int_get(slot1);
   } else {
     vslot_bool_set(bool,vbool_false);
-    vgc_heap_stack_push(ctx->heap,bool);
+    vcontext_stack_push(ctx,bool);
     return;
   }
   if(vslot_is_num(slot2)){
@@ -350,7 +337,7 @@ void bc_gt(vcontext* ctx){
     num2 = vslot_int_get(slot2);
   } else {
     vslot_bool_set(bool,vbool_false);
-    vgc_heap_stack_push(ctx->heap,bool);
+    vcontext_stack_push(ctx,bool);
     return;
   }
   if(num1 > num2){
@@ -358,7 +345,7 @@ void bc_gt(vcontext* ctx){
   }else{
     vslot_bool_set(bool,vbool_false);
   }
-  vgc_heap_stack_push(ctx->heap,bool);
+  vcontext_stack_push(ctx,bool);
 }
 
 void bc_lt(vcontext* ctx){
@@ -368,8 +355,8 @@ void bc_lt(vcontext* ctx){
   double num2;
   vslot bool;
 
-  vgc_heap_stack_pop(ctx->heap,&slot1);
-  vgc_heap_stack_pop(ctx->heap,&slot2);
+  vcontext_stack_pop(ctx,&slot1);
+  vcontext_stack_pop(ctx,&slot2);
 
   if(vslot_is_num(slot1)){
     num1 = vslot_num_get(slot1);
@@ -377,7 +364,7 @@ void bc_lt(vcontext* ctx){
     num1 = vslot_int_get(slot1);
   } else {
     vslot_bool_set(bool,vbool_false);
-    vgc_heap_stack_push(ctx->heap,bool);
+    vcontext_stack_push(ctx,bool);
     return;
   }
   if(vslot_is_num(slot2)){
@@ -386,7 +373,7 @@ void bc_lt(vcontext* ctx){
     num2 = vslot_int_get(slot2);
   } else {
     vslot_bool_set(bool,vbool_false);
-    vgc_heap_stack_push(ctx->heap,bool);
+    vcontext_stack_push(ctx,bool);
     return;
   }
   if(num1 < num2){
@@ -394,7 +381,7 @@ void bc_lt(vcontext* ctx){
   }else{
     vslot_bool_set(bool,vbool_false);
   }
-  vgc_heap_stack_push(ctx->heap,bool);
+  vcontext_stack_push(ctx,bool);
 }
 
 void bc_and(vcontext* ctx){
@@ -402,8 +389,8 @@ void bc_and(vcontext* ctx){
   vslot slot2;
   vslot bool;
 
-  vgc_heap_stack_pop(ctx->heap,&slot1);
-  vgc_heap_stack_pop(ctx->heap,&slot2);
+  vcontext_stack_pop(ctx,&slot1);
+  vcontext_stack_pop(ctx,&slot2);
 
   if(vslot_is_bool(slot1) && vslot_is_bool(slot2)){
     int bool1 = vslot_bool_get(slot1);
@@ -416,7 +403,7 @@ void bc_and(vcontext* ctx){
   }else{
     vslot_bool_set(bool,vbool_false);
   }
-  vgc_heap_stack_push(ctx->heap,bool);    
+  vcontext_stack_push(ctx,bool);    
 }
 
 void bc_or(vcontext* ctx){
@@ -424,8 +411,8 @@ void bc_or(vcontext* ctx){
   vslot slot2;
   vslot bool;
 
-  vgc_heap_stack_pop(ctx->heap,&slot1);
-  vgc_heap_stack_pop(ctx->heap,&slot2);
+  vcontext_stack_pop(ctx,&slot1);
+  vcontext_stack_pop(ctx,&slot2);
 
   if(vslot_is_bool(slot1) && vslot_is_bool(slot2)){
     int bool1 = vslot_bool_get(slot1);
@@ -438,14 +425,14 @@ void bc_or(vcontext* ctx){
   }else{
     vslot_bool_set(bool,vbool_false);
   }
-  vgc_heap_stack_push(ctx->heap,bool);  
+  vcontext_stack_push(ctx,bool);  
 }
 
 void bc_not(vcontext* ctx){
   vslot slot;
   vslot bool;
   
-  vgc_heap_stack_pop(ctx->heap,&slot);
+  vcontext_stack_pop(ctx,&slot);
 
   if(vslot_is_bool(slot)){
     int b = vslot_bool_get(slot);
@@ -457,15 +444,14 @@ void bc_not(vcontext* ctx){
   }else{
     vslot_bool_set(bool,vbool_false);
   }
-  vgc_heap_stack_push(ctx->heap,bool);  
+  vcontext_stack_push(ctx,bool);  
 }
 
 void bc_call(vcontext* ctx){
-  vgc_heap* heap = ctx->heap;
   vgc_call* calling = vgc_obj_ref_get(ctx,calling,vgc_call);
   vslot slot;
   vgc_obj* obj;
-  vgc_heap_stack_pop(heap,&slot);
+  vcontext_stack_pop(ctx,&slot);
   if(!vslot_is_ref(slot)){
     uabort("bc_call:not refrence can not execute!");
   }
@@ -476,11 +462,11 @@ void bc_call(vcontext* ctx){
     usize_t base;
 
     subr = (vgc_subr*)obj;
-    base = vgc_heap_stack_top_get(heap) + subr->locals_count;
-    vgc_heap_stack_top_set(heap,base);
-    vgc_heap_obj_push(heap,calling);
-    vgc_heap_obj_push(heap,obj);
-    call = vgc_call_new(heap,
+    base = vcontext_stack_top_get(ctx) + subr->locals_count;
+    vcontext_stack_top_set(ctx,base);
+    vcontext_obj_push(ctx,calling);
+    vcontext_obj_push(ctx,obj);
+    call = vgc_call_new(ctx,
 			vgc_call_type_subr,
 			base);
     if(!call){
@@ -488,7 +474,7 @@ void bc_call(vcontext* ctx){
     }
 
     vgc_obj_ref_set(ctx,calling,call);
-    vgc_heap_obj_push(heap,call);
+    vcontext_obj_push(ctx,call);
   } else if(vgc_obj_typeof(obj,vgc_obj_type_cfun)){
     vgc_call* call;
     vgc_cfun* cfun;
@@ -496,10 +482,10 @@ void bc_call(vcontext* ctx){
     usize_t after_base;
     usize_t before_base;
     
-    before_base = vgc_heap_stack_top_get(heap);
-    vgc_heap_obj_push(heap,calling);
-    vgc_heap_obj_push(heap,obj);
-    call = vgc_call_new(heap,
+    before_base = vcontext_stack_top_get(ctx);
+    vcontext_obj_push(ctx,calling);
+    vcontext_obj_push(ctx,obj);
+    call = vgc_call_new(ctx,
 			vgc_call_type_cfun,
 			before_base);
     if(!call){
@@ -510,7 +496,7 @@ void bc_call(vcontext* ctx){
     cfun = vgc_obj_ref_get(call,cfun,vgc_cfun);
     has_retval = cfun->has_retval;
     (cfun->entry)(ctx);
-    after_base = vgc_heap_stack_top_get(heap);
+    after_base = vcontext_stack_top_get(ctx);
     if(has_retval){
       if (after_base - before_base != 1) {
 	uabort("cfun claim return value but has no return!");
@@ -530,7 +516,6 @@ void bc_call(vcontext* ctx){
 }
 
 void bc_return(vcontext* ctx){
-  vgc_heap* heap = ctx->heap;
   vgc_call* calling;
   vgc_call* called;
   vgc_subr* subr;
@@ -545,15 +530,14 @@ void bc_return(vcontext* ctx){
     uabort("bc_return:calling not a subr!");
     return;
   }
-  vgc_heap_stack_pop(heap,&slot_val);
-  vgc_heap_stack_top_set(heap,base);
-  vgc_heap_stack_push(heap,slot_val);
+  vcontext_stack_pop(ctx,&slot_val);
+  vcontext_stack_top_set(ctx,base);
+  vcontext_stack_push(ctx,slot_val);
   called = vgc_obj_ref_get(calling,caller,vgc_call);
   vgc_obj_ref_set(ctx,calling,called);
 }
 
 void bc_return_void(vcontext* ctx){
-  vgc_heap* heap = ctx->heap;
   vgc_call* calling;
   vgc_call* called;
   vgc_subr* subr;
@@ -567,7 +551,7 @@ void bc_return_void(vcontext* ctx){
     uabort("bc_return_void:calling not a subr!");
     return;
   }
-  vgc_heap_stack_top_set(heap,base);
+  vcontext_stack_top_set(ctx,base);
   called = vgc_obj_ref_get(calling,caller,vgc_call);
   vgc_obj_ref_set(ctx,calling,called);
 }
@@ -577,15 +561,15 @@ void bc_ref(vcontext* ctx,
   vslot slot;
   vslot* slot_list;
   vgc_obj* obj;
-  vgc_heap* heap = ctx->heap;
-  vgc_heap_obj_pop(heap,obj,vgc_obj);
+
+  vcontext_obj_pop(ctx,obj,vgc_obj);
   if(!obj)
     uabort("vm:refrence null object!");
   if(vgc_obj_ref_check(obj,index))
     uabort("vm:ref obj error!");
   slot_list = vgc_obj_slot_list(obj);
   slot = slot_list[index];
-  vgc_heap_stack_push(heap,slot);
+  vcontext_stack_push(ctx,slot);
 }
 
 void bc_set(vcontext* ctx,
@@ -594,9 +578,9 @@ void bc_set(vcontext* ctx,
   vslot slot_val;
   vslot* slot_list;
   vgc_obj* obj;
-  vgc_heap* heap = ctx->heap;
-  vgc_heap_stack_pop(heap,&slot_obj);
-  vgc_heap_stack_pop(heap,&slot_val);
+
+  vcontext_stack_pop(ctx,&slot_obj);
+  vcontext_stack_pop(ctx,&slot_val);
   obj = vslot_ref_get(slot_obj,vgc_obj);
   if(!obj)
     uabort("vm:set null object!");

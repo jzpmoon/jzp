@@ -3,6 +3,7 @@
 
 #include "ulist_tpl.h"
 #include "vgc_obj.h"
+#include "vgenbc.h"
 
 #define VPSHEADER				\
   int t
@@ -58,13 +59,6 @@ typedef struct _vps_data{
   } u;
 } vps_data,*vps_datap;
 
-#define vopdnon (-1)
-
-typedef struct _vinst{
-  usize_t opcode;
-  usize_t operand;
-} vinst,*vinstp;
-
 typedef struct _vps_inst{
   VPSHEADER;
   int instk;
@@ -86,8 +80,8 @@ typedef struct _vps_dfg{
 } vps_dfg,*vps_dfgp;
 
 uhstb_decl_tpl(vps_datap);
-ulist_decl_tpl(vps_datap);
 ulist_decl_tpl(vps_instp);
+ulist_decl_tpl(vps_datap);
 ulist_decl_tpl(vps_dfgp);
 
 typedef struct _vdfg_block{
@@ -134,11 +128,6 @@ typedef struct _vps_cntr{
 } vps_cntr;
 
 #define VPS_CNTR_MOD_TABLE_SIZE 17
-
-ulist_decl_tpl(vinstp);
-
-int vinst_to_str(vgc_heap* heap,
-		 ulist_vinstp* insts);
 
 vps_inst*
 vps_inst_new(vps_cntr* vps,

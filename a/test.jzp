@@ -44,7 +44,7 @@
 )
 
 (subr test-fibonacci ()
-  (push 20)
+  (push 23)
   (push fibonacci)
   (call)
   (push system-ostream)

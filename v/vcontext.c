@@ -56,6 +56,7 @@ UBEGIN
   }
 
   ctx->heap = heap;
+  ctx->stack = &heap->root_set;
   ctx->mods = mods;
   ctx->loader = NULL;
   ctx->symtb = symtb;
@@ -64,6 +65,24 @@ UBEGIN
 
   return ctx;
 })
+
+vgc_subr* vgc_subr_new(vcontext* ctx,
+		       usize_t params_count,
+		       usize_t locals_count,
+		       int area_type){
+  vgc_subr* subr;
+  subr = vgc_heap_obj_new(ctx->heap,
+			  vgc_subr,
+			  vgc_obj_type_subr,
+			  area_type);
+  if(subr){
+    subr->params_count = params_count;
+    subr->locals_count = locals_count;
+    vcontext_obj_slot_set(ctx,subr,consts);
+    vcontext_obj_slot_set(ctx,subr,bytecode);
+  }
+  return subr;
+}
 
 vgc_cfun* vgc_cfun_new(vgc_heap* heap,
 		       vcfun_ft entry,
@@ -84,6 +103,39 @@ vgc_cfun* vgc_cfun_new(vgc_heap* heap,
     cfun->has_retval = has_retval;
   }
   return cfun;
+}
+
+vgc_call* vgc_call_new(vcontext* ctx,
+		       int call_type,
+		       usize_t base){
+  vgc_heap* heap;
+  vgc_call* call;
+  vgc_subr* subr;
+  vgc_string* bytecode;
+
+  heap = ctx->heap;
+  call = vgc_heap_obj_new(heap,
+			  vgc_call,
+			  vgc_obj_type_call,
+			  vgc_heap_area_active);
+  if(call){
+    call->call_type = call_type;
+    call->base = base;
+    if(call_type == vgc_call_type_cfun){
+      vcontext_obj_slot_set(ctx,call,cfun);
+      vgc_obj_null_set(call,subr);
+    }else{
+      vcontext_obj_pop(ctx,subr,vgc_subr);
+      vcontext_obj_slot_get(ctx,subr,bytecode);
+      vcontext_obj_pop(ctx,bytecode,vgc_string);
+      call->pc = bytecode->u.b;
+      vcontext_obj_push(ctx,subr);
+      vcontext_obj_slot_set(ctx,call,subr);
+      vgc_obj_null_set(call,cfun);
+    }
+    vcontext_obj_slot_set(ctx,call,caller);
+  }
+  return call;
 }
 
 static int vobjtb_key_comp(vsymbol* sym1,vsymbol* sym2){
@@ -264,6 +316,7 @@ vgc_subr* vcontext_graph_load(vcontext* ctx,vmod* mod,vdfg_graph* grp){
   ulist_vps_datap* imms;
   ulist_vps_dfgp* dfgs;
   ulist_vinstp* insts;
+  vgc_string* bytecode;
   vgc_subr* subr;
   ucursor cursor;
 
@@ -294,9 +347,10 @@ vgc_subr* vcontext_graph_load(vcontext* ctx,vmod* mod,vdfg_graph* grp){
     }
   }
 
-  vinst_to_str(heap,insts);
-  vgc_heap_obj_push(heap,consts);
-  subr = vgc_subr_new(heap,
+  bytecode = vinst_to_str(heap,insts);
+  vcontext_obj_push(ctx,bytecode);
+  vcontext_obj_push(ctx,consts);
+  subr = vgc_subr_new(ctx,
 		      grp->params_count,
 		      grp->locals_count,
 		      vgc_heap_area_static);
@@ -406,7 +460,7 @@ static void vcontext_mod_init(vcontext* ctx)
     }
     if (next->init) {
       vslot_ref_set(slot,next->init);
-      vgc_heap_stack_push(ctx->heap,slot);
+      vcontext_stack_push(ctx,slot);
       vcontext_execute(ctx);
     }
   }
@@ -540,7 +594,7 @@ vslot vcontext_params_get(vcontext* ctx,int index){
 
   if(index < 0 || index >= count)
     uabort("vm:local varable error!");
-  slot = vgc_heap_stack_get(ctx->heap,real_index);
+  slot = vcontext_stack_get(ctx,real_index);
   return slot;
 }
 
@@ -679,4 +733,28 @@ vsymbol* vmod_lslot_put(vgc_heap* heap,vmod* mod,ustring* name,vslot slot)
     uabort("vmod_lobj_put error!");
   }
   return new_symbol;
+}
+
+vslot vcontext_stack_get(vcontext* ctx,usize_t index){
+  vslot slot;
+  if(ustack_vslot_get(ctx->stack,index,&slot)){
+    uabort("vcontext_stack:index over of bound!");
+  }
+  return slot;
+}
+
+void vcontext_stack_set(vcontext* ctx,usize_t index,vslot slot){
+  if(ustack_vslot_set(ctx->stack,index,slot)){
+    uabort("vcontext_stack:index over of bound!");
+  }
+}
+
+int vcontext_stack_top_get(vcontext* ctx){
+  return ustack_vslot_top_get(ctx->stack);
+}
+
+void vcontext_stack_top_set(vcontext* ctx,usize_t index){
+  if(ustack_vslot_top_set(ctx->stack,index)){
+    uabort("vcontext_stack:index over of bound!");
+  }
 }
