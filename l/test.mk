@@ -14,6 +14,6 @@ $(bin):$(obj) $(l_sobj)
 .c.o:
 	$(CC) -c -o $@ $< -I $(libv_path) -I $(libu_path) $(CFLAGS)
 $(l_sobj):
-	make -f $(l_somk) DEBUG_MODE=$(DEBUG_MODE) ATTR=base CFUN=base
+	make -f $(l_somk) DEBUG_MODE=$(DEBUG_MODE)
 clean:
 	make -f $(l_somk) clean;rm -f $(bin) $(obj)

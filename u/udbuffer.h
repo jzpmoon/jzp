@@ -18,4 +18,6 @@ int udbuffer_look_ahead(udbuffer* dbuff);
 
 int udbuffer_read_from_file(udbuffer* dbuff,FILE* file);
 
+void udbuffer_empty(udbuffer* dbuff);
+
 #endif

@@ -112,3 +112,13 @@ int udbuffer_read_from_file(udbuffer* dbuff,FILE* file){
   }
   return count;
 }
+
+void udbuffer_empty(udbuffer* dbuff){
+  if (dbuff->buff_prev) {
+    ubuffer_empty(dbuff->buff_prev);
+  }
+  if (dbuff->buff_next) {
+    ubuffer_empty(dbuff->buff_next);
+  }
+  dbuff->buff_curr = dbuff->buff_prev;
+}

@@ -441,6 +441,17 @@ ltoken_state* ltoken_state_new(ustream* stream,
   return NULL;
 }
 
+void ltoken_state_reset(ltoken_state* ts,FILE* file){
+  ustream* stream = ts->stream;
+  ustream_close(stream);
+  ulog("stream close");
+  if(ustream_open_by_file(stream,file)){
+    uabort("token state file stream open error!");
+  }
+  ulog("stream open");
+  ltoken_state_init(ts,stream);
+}
+
 int last2vps(ltoken_state* ts,last_obj* ast_obj,vps_mod* mod){
   switch(ast_obj->t){
   case lastk_cons:{

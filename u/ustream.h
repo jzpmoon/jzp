@@ -25,6 +25,12 @@ ustream* ustream_new_by_buff(int iot,ubuffer* buff,URI_DECL);
 
 ustream* ustream_new_by_file(int iot,FILE* file,URI_DECL);
 
+ustream* ustream_new(int iot,int dst);
+
+int ustream_open_by_file(ustream* stream,FILE* file);
+
+void ustream_close(ustream* stream);
+
 int ustream_read_to_buff(ustream* stream,ubuffer* buff,URI_DECL);
 
 int ustream_read_next(ustream* stream,URI_DECL);

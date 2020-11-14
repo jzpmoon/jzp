@@ -2,6 +2,7 @@
 #include "vm.h"
 #include "lparser.h"
 #include "lcfun.h"
+#include "leval.h"
 
 ltoken_state ts;
 
@@ -65,7 +66,13 @@ int test_1(){
   return 0;
 }
 
+int test_2(){
+  lstartup();
+  leval_load("./test.txt");
+  return 0;
+}
+
 int main(){
-  test_1();
+  test_2();
   return 0;
 }

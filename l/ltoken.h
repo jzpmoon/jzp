@@ -43,6 +43,8 @@ ltoken_state* ltoken_state_new(ustream* stream,
 void ltoken_state_init(ltoken_state* ts,
 		       ustream* stream);
 
+void ltoken_state_reset(ltoken_state* ts,FILE* file);
+
 void ltoken_log(ltoken_state* ts);
 
 #endif
