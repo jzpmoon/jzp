@@ -292,7 +292,7 @@ int vcontext_mod2mod(vcontext* ctx,vmod* dest_mod,vps_mod* src_mod)
     vcontext_data_load(ctx,*dp);
   }
 
-  (data->iterate)(&cursor);
+  (code->iterate)(&cursor);
   while(1){
     vdfg_graphp* gp = (code->next)((uset*)code,&cursor);
     vdfg_graph* g;
@@ -370,8 +370,21 @@ int vcontext_data_load(vcontext* ctx,vps_data* data)
     vslot_num_set(slot,data->u.number);      
   }else if(data->dtk == vdtk_int){
     vslot_int_set(slot,data->u.integer);
-  }else if(data->dtk == vdtk_arr){
+  }else if(data->dtk == vdtk_str){
+    vgc_string* vstr;
+    ustring* ustr;
     
+    ustr = data->u.string;
+    vstr = vgc_string_new(ctx->heap,
+			  ustr->len,
+			  vgc_heap_area_static);
+    if (!vstr) {
+      uabort("new vgc_string error!");
+    }
+    vgc_ustr2vstr(vstr,ustr);
+    vslot_ref_set(slot,vstr);
+  }else if(data->dtk == vdtk_arr){
+    /* todo */
     return 0;
   }else if(data->dtk == vdtk_any){
     vslot_null_set(slot);
@@ -384,8 +397,7 @@ int vcontext_data_load(vcontext* ctx,vps_data* data)
     uabort("vcontext_load consts overflow!");
   }
   data->idx = top;
-  ulog("vcontext_load data:%s",data->name->value);
-  ulog("vcontext_load data idx:%d",top);
+  ulog("vcontext_load data:%s,idx:%d",data->name->value,top);
   return 0;
 }
 
@@ -433,7 +445,8 @@ void vmod_relocate(vcontext* ctx,vmod* mod){
   rells->iterate(&cursor);
   while(1){
     vsymbol* symbol;
-    vreloc* reloc = rells->next((uset*)rells,&cursor);
+    vreloc* reloc;
+    reloc = rells->next((uset*)rells,&cursor);
     if(!reloc){
       break;
     }

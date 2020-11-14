@@ -27,6 +27,7 @@ enum{
   vdtk_arr,
   vdtk_num,
   vdtk_int,
+  vdtk_str,
   vdtk_any,
   vdtk_code,
   vstk_heap,
@@ -52,6 +53,7 @@ typedef struct _vps_data{
   union {
     double number;
     int integer;
+    ustring* string;
     struct _vps_dfg* code;
   } u;
 } vps_data,*vps_datap;
@@ -151,6 +153,7 @@ vps_inst* vps_istoreimm(vps_cntr* vps,int imm);
 vps_inst* vps_istoredt(vps_cntr* vps,ustring* name);
 vps_inst* vps_ipushimm(vps_cntr* vps,vps_mod* mod,ustring* name,double dnum);
 vps_inst* vps_ipushdt(vps_cntr* vps,vps_mod* mod,ustring* name);
+vps_inst* vps_ipushstr(vps_cntr* vps,vps_mod* mod,ustring* string);
 vps_inst* vps_itop(vps_cntr* vps,int imm);
 vps_inst* vps_ipop(vps_cntr* vps);
 vps_inst* vps_iadd(vps_cntr* vps);
@@ -175,8 +178,11 @@ vps_inst* vps_isetimm(vps_cntr* vps,int imm);
 
 vps_data* vps_num_new(vps_cntr* vps,
 		      ustring* name,
-		      double num,
-		      int stk);
+		      double num);
+
+vps_data* vps_str_new(vps_cntr* vps,
+		      ustring* name,
+		      ustring* string);
 
 vps_data* vps_any_new(vps_cntr* vps,
 		      ustring* name,
@@ -184,8 +190,7 @@ vps_data* vps_any_new(vps_cntr* vps,
 
 vps_data* vps_dtcd_new(vps_cntr* vps,
 		       ustring* name,
-		       vps_dfg* code,
-		       int stk);
+		       vps_dfg* code);
 
 vdfg_block* vdfg_block_new(vps_cntr* vps);
 

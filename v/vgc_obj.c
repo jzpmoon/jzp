@@ -64,6 +64,11 @@ vgc_string* vgc_string_new(vgc_heap* heap,
   return string;
 }
 
+void vgc_ustr2vstr(vgc_string* vstr,ustring* ustr)
+{
+  memcpy(vstr->u.b,ustr->value,ustr->len);
+}
+
 void vgc_string_log(vgc_heap* heap){
   int i = 0;
   vgc_string* string;

@@ -70,7 +70,7 @@ vps_inst* vps_ipushimm(vps_cntr* vps,vps_mod* mod,ustring* name,double dnum){
   vps_inst* inst;
   vps_data* data;
 
-  data = vps_num_new(vps,name,dnum,vstk_heap);
+  data = vps_num_new(vps,name,dnum);
   data->scope = VPS_SCOPE_LOCAL;
   vps_mod_data_put(mod,data);
   inst = vps_inst_new(vps,vinstk_imm,Bpush,NULL,data,NULL);
@@ -80,6 +80,7 @@ vps_inst* vps_ipushimm(vps_cntr* vps,vps_mod* mod,ustring* name,double dnum){
 vps_inst* vps_ipushdt(vps_cntr* vps,vps_mod* mod,ustring* name){
   vps_inst* inst;
   vps_data* data;
+  
   data = vps_any_new(vps,name,vstk_heap);
   data->scope = VPS_SCOPE_LOCAL;
   vps_mod_data_put(mod,data);
@@ -87,10 +88,21 @@ vps_inst* vps_ipushdt(vps_cntr* vps,vps_mod* mod,ustring* name){
   return inst;
 }
 
+vps_inst* vps_ipushstr(vps_cntr* vps,vps_mod* mod,ustring* string)
+{
+  vps_inst* inst;
+  vps_data* data;
+  
+  data = vps_str_new(vps,string,string);
+  data->scope = VPS_SCOPE_LOCAL;
+  vps_mod_data_put(mod,data);
+  inst = vps_inst_new(vps,vinstk_imm,Bpush,NULL,data,NULL);
+  return inst;
+}
+
 vps_inst* vps_itop(vps_cntr* vps,int imm){
   vps_inst* inst;
   inst = vps_inst_new(vps,vinstk_imm,Btop,NULL,NULL,NULL);
-  ulog("vps_itop:%d",imm);
   if(inst){
     inst->inst.operand = imm;
   }
@@ -324,17 +336,33 @@ int vinst_to_str(vgc_heap* heap,ulist_vinstp* insts){
 
 vps_data* vps_num_new(vps_cntr* vps,
 		      ustring* name,
-		      double num,
-		      int stk){
+		      double num){
   vps_data* data;
 
   data = umem_pool_alloc(&vps->pool,sizeof(vps_data));
   if(data){
     data->t = vpsk_dt;
     data->dtk = vdtk_num;
-    data->stk = stk;
+    data->stk = vstk_heap;
     data->name = name;
     data->u.number = num;
+  }
+  return data;
+}
+
+vps_data* vps_str_new(vps_cntr* vps,
+		      ustring* name,
+		      ustring* string)
+{
+  vps_data* data;
+
+  data = umem_pool_alloc(&vps->pool,sizeof(vps_data));
+  if(data){
+    data->t = vpsk_dt;
+    data->dtk = vdtk_str;
+    data->stk = vstk_heap;
+    data->name = name;
+    data->u.string = string;
   }
   return data;
 }
@@ -356,8 +384,7 @@ vps_data* vps_any_new(vps_cntr* vps,
 
 vps_data* vps_dtcd_new(vps_cntr* vps,
 		       ustring* name,
-		       vps_dfg* code,
-		       int stk)
+		       vps_dfg* code)
 {
   vps_data* data;
   
@@ -365,7 +392,7 @@ vps_data* vps_dtcd_new(vps_cntr* vps,
   if(data){
     data->t = vpsk_dt;
     data->dtk = vdtk_code;
-    data->stk = stk;
+    data->stk = vstk_stack;
     data->name = name;
     data->u.code = code;
   }
@@ -427,7 +454,7 @@ void vdfg_grp_cdapd(vps_cntr* vps,vdfg_graph* grp,vps_dfg* dfg)
 
   name = dfg->name;
   if (name) {
-    data = vps_dtcd_new(vps,name,dfg,vstk_stack);
+    data = vps_dtcd_new(vps,name,dfg);
     if (!data) {
       uabort("vdfg_grp_cdapd: vps_dtcd_new error!");
     }

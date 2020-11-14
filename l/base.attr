@@ -98,6 +98,9 @@ static vdfg_graph* subr(vps_mod* top,vps_dfg* parent,last_obj* ast_obj){
 	if (res.res_type == lar_vps_apd) {
 	  /* append instruction */
 	  vps_t* res_vps = res.res_vps;
+	  if (!res_vps) {
+	    uabort("res_vps can not be null!");
+	  }
 	  if(res_vps->t != vpsk_inst){
 	    uabort("not a inst!");
 	  }
@@ -105,6 +108,9 @@ static vdfg_graph* subr(vps_mod* top,vps_dfg* parent,last_obj* ast_obj){
 	} else if (res.res_type == lar_blk_new) {
 	  /* append a new block */
 	  vps_t* res_vps = res.res_vps;
+	  if (!res_vps) {
+	    uabort("res_vps can not be null!");
+	  }
 	  if (res_vps->t != vdfgk_blk) {
 	    uabort("not a block");
 	  }
@@ -308,6 +314,9 @@ LDEFATTR(push,"push",{
     }else if(obj->t == lastk_number){
       last_number* num = (last_number*)obj;
       inst = vps_ipushimm(top->vps,top,num->name,num->dnum);
+    }else if(obj->t == lastk_string){
+      last_string* str = (last_string*)obj;
+      inst = vps_ipushstr(top->vps,top,str->string);
     }else{
       uabort("push inst error!");
     }

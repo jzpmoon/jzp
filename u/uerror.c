@@ -1,3 +1,4 @@
+#include <stdarg.h>
 #include "uerror.h"
 
 URI_ERR_DEFINE(UERR_SUCC, "U000", "success");

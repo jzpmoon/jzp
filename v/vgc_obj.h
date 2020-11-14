@@ -43,9 +43,9 @@ typedef struct _vgc_obj{
 #define vgc_obj_log(obj)			\
   do{						\
     ulog("*******vgc_obj_log");			\
-    ulog1("type:%d",obj->_mark.t);		\
-    ulog1("size:%d",obj->_size);		\
-    ulog1("len: %d",obj->_len);			\
+    ulog("type:%d",obj->_mark.t);		\
+    ulog("size:%d",obj->_size);			\
+    ulog("len: %d",obj->_len);			\
   } while(0)
 
 enum{
@@ -235,6 +235,8 @@ typedef struct _vgc_string{
 vgc_string* vgc_string_new(vgc_heap* heap,
 			   usize_t string_length,
 			   int area_type);
+
+void vgc_ustr2vstr(vgc_string* vstr,ustring* ustr);
 
 void vgc_string_log(vgc_heap* heap);
 

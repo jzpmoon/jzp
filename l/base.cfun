@@ -11,7 +11,7 @@ LDEFUN(make_stream,"make-stream",LSCOPE_GLOBAL,0,LRETVAL_NO,{
  */
 LDEFUN(stream_output,"stream-output",LSCOPE_GLOBAL,2,LRETVAL_NO,{
     URI_DEFINE;
-    vslot slot_num = vcontext_params_get(ctx,0);
+    vslot slot = vcontext_params_get(ctx,0);
     vslot slot_stream = vcontext_params_get(ctx,1);
     vgc_obj* obj;
     vgc_extend* extend;
@@ -29,13 +29,22 @@ LDEFUN(stream_output,"stream-output",LSCOPE_GLOBAL,2,LRETVAL_NO,{
       uabort("stream-output:stream error, not a stream!");
     }
     lstream = (lobj_stream*)extend;
-    if (vslot_is_num(slot_num)) {
-      double num = vslot_num_get(slot_num);
+    if (vslot_is_num(slot)) {
+      double num = vslot_num_get(slot);
       if(ustream_write_dnum(lstream->stream,num,URI_REF)){
-	uabort("stream-output:stream write error!");	
+	uabort("stream-output:stream write number error!");	
       }
+    } else if (vslot_is_ref(slot)) {
+      vgc_obj* obj = vslot_ref_get(slot,vgc_obj);
+      if (vgc_obj_typeof(obj,vgc_obj_type_string)) {
+	vgc_string* str = (vgc_string*)obj;
+	if(ustream_write_string(lstream->stream,str->u.c,URI_REF)){
+	  uabort("stream-output:stream write string error!");
+	}
+      }
+    } else {
+      uabort("stream-output:not support data type");
     }
-
     return 0;
   });
 
