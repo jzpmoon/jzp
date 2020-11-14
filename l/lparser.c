@@ -329,14 +329,11 @@ void ltoken_log(ltoken_state* ts){
 void lparser_atom_log(last_obj* s_exp){
   if(s_exp){
     if(s_exp->t == lastk_symbol){
-      last_symbol* sym = (last_symbol*)s_exp;
-      ulog1("  %s",sym->name->value);
+      ulog1("  %s",((last_symbol*)s_exp)->name->value);
     }else if(s_exp->t == lastk_string){
-      last_string* str = (last_string*)s_exp;
-      ulog1("  \"%s\"",str->string->value);
+      ulog1("  \"%s\"",((last_string*)s_exp)->string->value);
     }else if(s_exp->t == lastk_number){
-      last_number* num = (last_number*)s_exp;
-      ulog1("  %f",num->dnum);
+      ulog1("  %f",((last_number*)s_exp)->dnum);
     }else{
       ulog(" [unkonw]");
     }

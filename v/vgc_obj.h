@@ -147,8 +147,6 @@ vgc_obj* vgc_heap_data_new(vgc_heap* heap,
 			   int obj_type,
 			   int area_type);
 
-void vgc_heap_stack_log(vgc_heap* heap);
-
 #define vgc_obj_slot_count(type)		\
   (sizeof(((type*)0)->_u)/sizeof(vslot))
 
