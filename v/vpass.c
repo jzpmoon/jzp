@@ -1,4 +1,5 @@
 #include "vbyte_code.h"
+#include "vm.h"
 #include "vpass.h"
 
 vps_inst*

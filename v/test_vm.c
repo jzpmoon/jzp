@@ -3,6 +3,7 @@
 #include "ualloc.h"
 #include "uerror.h"
 #include "vpass.h"
+#include "vcontext.h"
 #include "vm.h"
 
 #define INST(code,operand) \

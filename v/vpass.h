@@ -3,7 +3,6 @@
 
 #include "ulist.h"
 #include "vgc_obj.h"
-#include "vm.h"
 
 #define VPSHEADER \
   int t;
