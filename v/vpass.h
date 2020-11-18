@@ -32,6 +32,8 @@ enum{
   vdtk_num,
   vdtk_int,
   vdtk_any,
+  vstk_heap,
+  vstk_stack,
 };
 
 typedef struct _vps_t{
@@ -41,6 +43,8 @@ typedef struct _vps_t{
 typedef struct _vps_data{
   VPSHEADER;
   int dtk;
+  int stk;
+  int idx;
   ustring* name;
   union {
     ulist* array;
@@ -104,9 +108,11 @@ vps_inst_new(int instk,
 	     vps_dfg* code);
 
 vps_data* vps_num_new(ustring* name,
-		      double num);
+		      double num,
+		      int stk);
 
-vps_data* vps_any_new(ustring* name);
+vps_data* vps_any_new(ustring* name,
+		      int stk);
 
 vdfg_block* vdfg_block_new();
 

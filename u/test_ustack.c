@@ -8,13 +8,13 @@ int main(){
   int j = 0;
   ustack_init(int,&stack,-1,-1);
   while(i < 10){
-    ustack_push_int(&stack,i);
+    ustack_int_push(&stack,i);
     i++;
   }
   
   while(j < 10){
     int val;
-    ustack_pop_int(&stack,&val);
+    ustack_int_pop(&stack,&val);
     printf("val:%d\n",val);
     j++;
   }

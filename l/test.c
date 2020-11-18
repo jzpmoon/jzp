@@ -49,6 +49,8 @@ int test_1(){
   last_obj_log(ast_obj);
 
   p = last2vps(ts,ast_obj);
+
+  vcontext_load(ctx,(vps_t*)p);
   
   return 0;
 }

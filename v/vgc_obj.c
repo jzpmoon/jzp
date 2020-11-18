@@ -17,6 +17,7 @@ vgc_array* vgc_array_new(vgc_heap* heap,
 					vgc_obj_type_array,
 					area_type);
   if(array){
+    array->top = 0;
     slot_list = vgc_obj_slot_list(array);
     while(i < array_length){
       vslot_null_set(slot_list[i]);
@@ -24,6 +25,22 @@ vgc_array* vgc_array_new(vgc_heap* heap,
     }
   }
   return array;
+}
+
+int vgc_array_push(vgc_array* array,vslot slot){
+  if(array->top <= array->_len){
+    array->objs[array->top] = slot;
+    return array->top++;
+  }else{
+    return -1;
+  }
+}
+
+vslot vgc_array_pop(vgc_array* array){
+  if(array->top > 0){
+    array->top--;
+  }
+  return array->objs[array->top];
 }
 
 vgc_string* vgc_string_new(vgc_heap* heap,

@@ -49,6 +49,7 @@ typedef struct _vgc_obj{
 enum{
   vslot_type_ref,
   vslot_type_num,
+  vslot_type_int,
   vslot_type_bool,
   vslot_type_null,
 };
@@ -57,6 +58,7 @@ typedef struct _vslot{
   int t;
   union {
     double   num;
+    int      inte;
     int      bool;
     vgc_obj* ref;
   } u;
@@ -85,6 +87,10 @@ typedef struct _vslot{
   ((slot).u.num)
 #define vslot_num_set(slot,val)			\
   (slot.t = vslot_type_num,slot.u.num = val)
+#define vslot_int_get(slot)			\
+  ((slot).u.inte)
+#define vslot_int_set(slot,val)			\
+  (slot.t = vslot_type_int,slot.u.inte = val)
 #define vslot_ref_get(slot,obj_type)		\
   ((obj_type*)(slot).u.ref)
 #define vslot_ref_set(slot,obj)			\
@@ -149,12 +155,12 @@ void vgc_heap_stack_log(vgc_heap* heap);
   (heap,sizeof(type),vgc_obj_slot_count(type),obj_type,area_type)
 
 #define vgc_heap_stack_push(heap,slot)			\
-  if(ustack_push_vslot(&(heap)->root_set,slot)){	\
+  if(ustack_vslot_push(&(heap)->root_set,slot)){	\
     uabort("vgc_heap_stack: overflow!");		\
   }
 
 #define vgc_heap_stack_pop(heap,slotp)			\
-  if(ustack_pop_vslot(&(heap)->root_set,slotp)){	\
+  if(ustack_vslot_pop(&(heap)->root_set,slotp)){	\
     uabort("vgc_heap_stack: empty!");			\
   }
 
@@ -213,12 +219,17 @@ typedef struct _vcontext{
 
 typedef struct _vgc_array{
   VGCHEADER;
+  int top;
   vslot objs[1];
 } vgc_array;
 
 vgc_array* vgc_array_new(vgc_heap* heap,
 			 usize_t array_length,
 			 int area_type);
+
+int vgc_array_push(vgc_array* array,vslot slot);
+
+vslot vgc_array_pop(vgc_array* array);
 
 typedef struct _vgc_string{
   VGCHEADER;

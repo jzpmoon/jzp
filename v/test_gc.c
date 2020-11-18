@@ -15,7 +15,7 @@ int main() {
       vgc_heap_stack_pop(heap,&slot);
     i++;
   }
-  ustack_log_vslot(&heap->root_set);
+  ustack_vslot_log(&heap->root_set);
   ulog("test end");
   return 0;
 }

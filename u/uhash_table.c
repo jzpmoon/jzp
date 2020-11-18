@@ -2,6 +2,13 @@
 #include <string.h>
 #include "ualloc.h"
 #include "uhash_table.h"
+#include "uhstb_tpl.c"
+
+uhstb_def_tpl(int);
+uhstb_def_tpl(long);
+uhstb_def_tpl(float);
+uhstb_def_tpl(double);
+uhstb_def_tpl(uvoidp);
 
 uhash_table* uhash_table_new(int size){
   uhash_table* hstb;

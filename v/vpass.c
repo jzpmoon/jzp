@@ -102,17 +102,20 @@ int vinst_to_str(vcontext* ctx,ulist* insts){
 }
 
 vps_data* vps_num_new(ustring* name,
-		      double num){
+		      double num,
+		      int stk){
   vps_data* data = ualloc(sizeof(vps_data));
   if(data){
     data->dtk = vdtk_num;
+    data->stk = stk;
     data->name = name;
     data->u.number = num;
   }
   return data;
 }
 
-vps_data* vps_any_new(ustring* name){
+vps_data* vps_any_new(ustring* name,
+		      int stk){
   vps_data* data = ualloc(sizeof(vps_data));
   if(data){
     data->dtk = vdtk_any;

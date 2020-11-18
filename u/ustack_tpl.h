@@ -22,13 +22,13 @@
 #define BLOCK_SIZE 4*1024
 
 #define ustack_log_decl_tpl(t)			\
-  void ustack_log_##t(ustack_##t* stack);
+  void ustack_##t##_log(ustack_##t* stack);
 
 #define ustack_push_decl_tpl(t)				\
-  int ustack_push_##t(ustack_##t* stack,t data);
+  int ustack_##t##_push(ustack_##t* stack,t data);
 
 #define ustack_pop_decl_tpl(t)				\
-  int ustack_pop_##t(ustack_##t* stack,t* data);
+  int ustack_##t##_pop(ustack_##t* stack,t* data);
 
 #define UBLOCK_SIZE_GET(SIZE)			\
   SIZE > 0 ? SIZE : BLOCK_SIZE

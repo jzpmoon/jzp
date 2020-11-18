@@ -42,7 +42,7 @@ LDEFATTR(subr,"subr",{
       }
       sym = (last_symbol*)arg;
       ulog1("arg symbol:%s\n",sym->name->value);
-      data = vps_any_new(sym->name);
+      data = vps_any_new(sym->name,vstk_stack);
       if(!data){
 	uabort("vps_any_new error!");
       }
@@ -131,7 +131,7 @@ LDEFATTR(push,"push",{
       inst = vps_inst_new(vinstk_data,Bload,sym->name,NULL,NULL);
     }else if(obj->t == lastk_number){
       last_number* num = (last_number*)obj;
-      vps_data* data = vps_num_new(NULL,num->dnum);
+      vps_data* data = vps_num_new(NULL,num->dnum,vstk_heap);
       vps_mod_data_put((vps_mod*)vps,data);
       inst = vps_inst_new(vinstk_imm,Bload,NULL,data,NULL);
     }else{

@@ -87,6 +87,35 @@ vsymbol* vcontext_obj_put(vcontext* ctx,ustring* name,vslot obj){
 }
 
 int vcontext_load(vcontext* ctx,vps_t* vps){
-  
+  switch(vps->t){
+  case vpsk_dt:{
+    vps_data* data = (vps_data*)vps;
+    vgc_array* consts = vgc_obj_ref_get(ctx,consts,vgc_array);
+    vslot slot;
+    int top;
+    if(data->dtk == vdtk_num){
+      vslot_num_set(slot,data->u.number);      
+    }else if(data->dtk == vdtk_int){
+      vslot_int_set(slot,data->u.integer);
+    }else if(data->dtk == vdtk_arr){
+      break;
+    }else if(data->dtk == vdtk_any){
+      vslot_null_set(slot);
+    }else{
+      uabort("vcontext_load unknow data type");
+    }
+    top = vgc_array_push(consts,slot);
+    if(top == -1){
+      uabort("vcontext_load consts overflow!");
+    }
+    data->idx = top;
+    break;
+  }
+  case vpsk_mod:{
+    break;
+  }
+  default:
+    uabort("vcontext_load unknow vps type!");
+  }
   return 0;
 }
