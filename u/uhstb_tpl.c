@@ -3,12 +3,39 @@
 #include "ualloc.h"
 #include "uhstb_tpl.h"
 
+#define uhstb_iterator_tpl(t)					\
+  static void uhstb_##t##_iterator(uiterator* iterator){	\
+    uhstb_iterator_##t* i = (uhstb_iterator_##t*)iterator;	\
+    i->next_idx = -1;						\
+    i->next_nd = NULL;						\
+  }
+
+#define uhstb_next_tpl(t)					\
+  static void* uhstb_##t##_next(uset* set,uiterator* iterator){	\
+    uhstb_##t* hstb = (uhstb_##t*)set;				\
+    uhstb_iterator_##t* i = (uhstb_iterator_##t*)iterator;	\
+    void* nd;							\
+    while(!i->next_nd){						\
+      if(hstb->len >= i->next_idx){				\
+	return NULL;						\
+      }else{							\
+	i->next_idx++;						\
+	i->next_nd = hstb->ndar[i->next_idx];			\
+      }								\
+    }								\
+    nd = (void*)&i->next_nd->k;					\
+    i->next_nd = i->next_nd->next;				\
+    return nd;							\
+  }
+
 #define uhstb_new_tpl(t)				\
   uhstb_##t* uhstb_##t##_new(int len){			\
     uhstb_##t* hstb;					\
     int size = TYPE_SIZE_OF(uhstb_##t,uhsnd_##t,len);	\
     int i;						\
     unew(hstb,size,return NULL;);			\
+    hstb->iterate = uhstb_##t##_iterator;		\
+    hstb->next = uhstb_##t##_next;			\
     hstb->len = len;					\
     for(i = 0;i < len;i++){				\
       hstb->ndar[i] = NULL;				\
@@ -72,6 +99,8 @@
   }
 
 #define uhstb_def_tpl(t)			\
+  uhstb_iterator_tpl(t);			\
+  uhstb_next_tpl(t);				\
   uhstb_new_tpl(t);				\
   uhstb_put_tpl(t);				\
   uhstb_get_tpl(t)

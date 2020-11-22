@@ -1,12 +1,19 @@
 #ifndef _HSTB_TPL_H_
 #define _HSTB_TPL_H_
 
+#include "uset.h"
+
 #define uhstb_tpl(t)				\
   typedef struct _uhsnd_##t{			\
     struct _uhsnd_##t* next;			\
     t                  k;			\
   } uhsnd_##t;					\
+  typedef struct _uhstb_iterator_##t{		\
+    uhsnd_##t* next_nd;				\
+    int next_idx;				\
+  } uhstb_iterator_##t;				\
   typedef struct _uhstb_##t{			\
+    USETHEADER;					\
     int len;					\
     uhsnd_##t* ndar[1];				\
   } uhstb_##t

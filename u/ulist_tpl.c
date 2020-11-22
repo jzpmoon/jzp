@@ -2,14 +2,17 @@
 #include "ualloc.h"
 #include "ulist_tpl.h"
 
-#define ulist_new_def_tpl(t)				\
-  ulist_##t ulist_##t##_new(){				\
+#define ulist_new_tpl(t)				\
+  ulist_##t* ulist_##t##_new(){				\
     ulist_##t* list = ualloc(sizeof(ulist_##t));	\
-    list->len = 0;					\
-    list->header = NULL;				\
+    if(list){						\
+      list->len = 0;					\
+      list->header = NULL;				\
+    }							\
+    return list;					\
   }
 
-#define ulist_append_def_tpl(t)				\
+#define ulist_append_tpl(t)				\
   int ulist_##t##_append(ulist_##t* list,t value){	\
     ulsnd_##t* header=list->header;			\
     ulsnd_##t* footer=NULL;				\
@@ -30,4 +33,5 @@
   }
 
 #define ulist_def_tpl(t)			\
-  ulist_append_def_tpl(t)
+  ulist_new_tpl(t);				\
+  ulist_append_tpl(t)
