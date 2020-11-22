@@ -5,7 +5,7 @@
 #include "ualloc.h"
 #include "ustring.h"
 
-unsigned int data_hscd(void* v,int len){
+unsigned int udata_hscd(void* v,int len){
 	unsigned int code=0,i=0;
 	while(i<len){
 		code=code*31+((char*)v)[i++];
@@ -13,7 +13,7 @@ unsigned int data_hscd(void* v,int len){
 	return code;
 }
 
-unsigned int string_hscd(char* v){
+unsigned int ucharp_hscd(char* v){
 	unsigned int code=0,i=0;
 	while(v[i]!='\0'){
 		code=code*31+v[i++];
@@ -39,7 +39,7 @@ ustring* ustring_new(
 }
 
 ustring* ustring_new_by_charp(char* charp){
-  unsigned int hscd = string_hscd(charp);
+  unsigned int hscd = ucharp_hscd(charp);
   int len = strlen(charp);
   ustring* string = ustring_new(charp,len,hscd);
   return string;

@@ -51,11 +51,13 @@ typedef struct _ureturn_infor{
 
 #define URI_DECL const ureturn_infor** const _rip
 
+#define URI_ERROR if(UERR_SUCC != *_rip){
+
 #define URI_CASE(CODE) if((CODE) == *_rip){
 
-#define URI_ELSE(CODE) }if((CODE) == *_rip){
+#define URI_THEN(CODE) }if((CODE) == *_rip){
 
-#define URI_ERROR if(UERR_SUCC != *_rip){
+#define URI_ELSE }else{
 
 #define URI_END }
 

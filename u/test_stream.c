@@ -20,9 +20,13 @@ int main(){
   
   do{
     next = ustream_read_next(stream,URI_REF);
-    URI_ERROR;
-    uabort(URI_DESC);
-    URI_END;
+    URI_ERROR
+      URI_CASE(UERR_EOF)
+        break;  
+      URI_ELSE
+        uabort(URI_DESC);
+      URI_END
+    URI_END
     printf("read %c\n",next);
   } while(next != -1);
   

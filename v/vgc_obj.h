@@ -3,6 +3,7 @@
 
 #include "udef.h"
 #include "ustack_tpl.h"
+#include "uhash_table.h"
 #include "ustring_table.h"
 #include "ubuffer.h"
 

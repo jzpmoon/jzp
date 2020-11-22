@@ -1,6 +1,5 @@
 #include "udef.h"
 #include "ustack_tpl.c"
-#include "ustack_tpl.h"
 #include "ustack.h"
 
 ustack_def_tpl(int)

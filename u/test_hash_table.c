@@ -17,7 +17,7 @@ int main(){
 	while(i<5){
 		uhash_table_put(
 		hstb,
-		string_hscd(a[i])%17,
+		ucharp_hscd(a[i])%17,
 		a[i],
 		putk,
 		comp);

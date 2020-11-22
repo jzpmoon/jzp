@@ -23,12 +23,13 @@ int main(int argc,char** args){
   
   while(1){
     next = ustream_read_next(stream,URI_REF);
-    if(next == -1){
-      break;
-    }
-    URI_ERROR;
-    uabort(URI_DESC);
-    URI_END;
+    URI_ERROR
+      URI_CASE(UERR_EOF)
+	break;
+      URI_ELSE
+	uabort(URI_DESC);
+      URI_END
+    URI_END
     b = next ^ 0xa3;
     putchar(b);
   } 

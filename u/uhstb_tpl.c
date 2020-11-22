@@ -3,29 +3,33 @@
 #include "ualloc.h"
 #include "uhstb_tpl.h"
 
-#define uhstb_new_tpl(t)			\
-  uhstb_##t* uhstb_##t##_new(int size){		\
-    uhstb_##t* hstb;				\
-    int _size = sizeof(uhsnd_##t) * size;	\
-    unew(hstb,_size,return NULL;);		\
-    memset(hstb,0,_size);			\
-    return hstb;				\
+#define uhstb_new_tpl(t)				\
+  uhstb_##t* uhstb_##t##_new(int len){			\
+    uhstb_##t* hstb;					\
+    int size = TYPE_SIZE_OF(uhstb_##t,uhsnd_##t,len);	\
+    int i;						\
+    unew(hstb,size,return NULL;);			\
+    hstb->len = len;					\
+    for(i = 0;i < len;i++){				\
+      hstb->ndar[i] = NULL;				\
+    }							\
+    return hstb;					\
   }
 
 #define uhstb_put_tpl(t)				\
   int uhstb_##t##_put(uhstb_##t*          hstb,		\
 		      unsigned int        hscd,		\
 		      t                   ink,		\
-		      t                   outk,		\
-		      uhstb_##t##_key_ft  putk,		\
+		      t**                 outk,		\
 		      uhstb_##t##_comp_ft comp){	\
     uhsnd_##t* prev_nd = NULL;				\
-    uhsnd_##t* nd      = NULL;				\
-    uhsnd_##t* ls      = hstb[hscd];			\
+    uhsnd_##t* nd = NULL;				\
+    int idx = hscd%hstb->len;				\
+    uhsnd_##t* ls = hstb->ndar[idx];			\
     while(ls){						\
       int c = comp(ink,ls->k);				\
       if(c == 0){					\
-	outk = ls->k;					\
+	*outk = &ls->k;					\
 	return 0;					\
       }else if(c > 0){					\
 	prev_nd = ls;					\
@@ -36,15 +40,13 @@
     }							\
     unew(nd,sizeof(uhsnd_##t),return -1;);		\
     if(!prev_nd){					\
-      hstb[hscd] = nd;					\
+      hstb->ndar[idx] = nd;				\
     }else{						\
       prev_nd->next = nd;				\
     }							\
-    if(putk){						\
-      nd->k = putk(ink);				\
-    }							\
+    nd->k = ink;					\
     nd->next = ls;					\
-    outk = nd->k;					\
+    *outk = &nd->k;					\
     return 0;						\
   }
 
@@ -52,20 +54,14 @@
   int uhstb_##t##_get(uhstb_##t*          hstb,		\
 		      unsigned int        hscd,		\
 		      t                   ink,		\
-		      t                   outk,		\
-		      uhstb_##t##_key_ft  getk,		\
+		      t**                 outk,		\
 		      uhstb_##t##_comp_ft comp){	\
-    uhsnd_##t* ls = hstb[hscd];				\
+    uhsnd_##t* ls = hstb->ndar[hscd%hstb->len];		\
     while(ls){						\
       int c = comp(ink,ls->k);				\
       if(c == 0){					\
-	if(getk){					\
-	  outk = getk(ls->k);				\
-	  return 0;					\
-	}else{						\
-	  outk = ls->k;					\
-	  return 0;					\
-	}						\
+	*outk = &ls->k;					\
+	return 0;					\
       }else if(c > 0){					\
 	ls = ls->next;					\
       }else{						\
@@ -78,4 +74,4 @@
 #define uhstb_def_tpl(t)			\
   uhstb_new_tpl(t);				\
   uhstb_put_tpl(t);				\
-  uhstb_get_tpl(t);
+  uhstb_get_tpl(t)

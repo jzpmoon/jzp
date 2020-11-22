@@ -26,12 +26,12 @@ vcontext* vcontext_new(vgc_heap* heap){
     uabort("vcontext_new:objtb new error!");
   }
   
-  symtb = uhash_table_new(VCONTEXT_SYMTB_SIZE);
+  symtb = ustring_table_new(VCONTEXT_SYMTB_SIZE);
   if(!symtb){
     uabort("vcontext_new:symtb new error!");
   }
 
-  strtb = uhash_table_new(VCONTEXT_STRTB_SIZE);
+  strtb = ustring_table_new(VCONTEXT_STRTB_SIZE);
   if(!strtb){
     uabort("vcontext_new:strtb new error!");
   }
