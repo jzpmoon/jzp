@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include "udbuffer.h"
 #include "ustream.h"
+#include "ustring_table.h"
 
-int main(){
+
+int main_test(){
   URI_DEFINE;
   FILE* file;
   ustream* stream;
@@ -57,4 +59,21 @@ int test_buffer(){
   fclose(file);
 
   return 0;
+}
+
+int string_table_test(){
+  char* a = "hello";
+  ustring_table* strtb = ustring_table_new(10);
+  ulog("1");
+  ustring* str = ustring_table_put(strtb,
+				   10,
+				   a,
+				   -1);
+  
+  ulog("2");
+  return 0;
+}
+
+int main(){
+  string_table_test();
 }

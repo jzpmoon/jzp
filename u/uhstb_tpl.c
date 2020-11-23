@@ -1,6 +1,7 @@
 #include <stddef.h>
 #include <string.h>
 #include "ualloc.h"
+#include "uerror.h"
 #include "uhstb_tpl.h"
 
 #define uhstb_iterator_tpl(t)					\
@@ -14,18 +15,18 @@
   static void* uhstb_##t##_next(uset* set,uiterator* iterator){	\
     uhstb_##t* hstb = (uhstb_##t*)set;				\
     uhstb_iterator_##t* i = (uhstb_iterator_##t*)iterator;	\
-    void* nd;							\
+    void* k;							\
     while(!i->next_nd){						\
-      if(hstb->len >= i->next_idx){				\
+      if(hstb->len <= i->next_idx){				\
 	return NULL;						\
       }else{							\
 	i->next_idx++;						\
 	i->next_nd = hstb->ndar[i->next_idx];			\
       }								\
     }								\
-    nd = (void*)&i->next_nd->k;					\
+    k = (void*)&i->next_nd->k;					\
     i->next_nd = i->next_nd->next;				\
-    return nd;							\
+    return k;							\
   }
 
 #define uhstb_new_tpl(t)				\
@@ -56,7 +57,9 @@
     while(ls){						\
       int c = comp(ink,ls->k);				\
       if(c == 0){					\
-	*outk = &ls->k;					\
+	if(outk){					\
+	  *outk = &ls->k;				\
+	}						\
 	return 0;					\
       }else if(c > 0){					\
 	prev_nd = ls;					\
@@ -73,7 +76,9 @@
     }							\
     nd->k = ink;					\
     nd->next = ls;					\
-    *outk = &nd->k;					\
+    if(outk){						\
+      *outk = &nd->k;					\
+    }							\
     return 0;						\
   }
 
@@ -95,6 +100,7 @@
 	break;						\
       }							\
     }							\
+    *outk = NULL;					\
     return -1;						\
   }
 

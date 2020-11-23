@@ -1,7 +1,10 @@
- #include "uerror.h"
+#include "uerror.h"
 #include "ualloc.h"
+#include "uhstb_tpl.c"
 #include "lparser.h"
 #include "lobj.h"
+
+uhstb_def_tpl(last_attr);
 
 #define LTOKEN_BUFF_SIZE 100
 
@@ -209,13 +212,14 @@ last_obj* lparser_atom_parse(ltoken_state* ts){
     }
   case ltk_identify:
     {
+      last_attr in_attr = {NULL,ts->id,NULL};
       last_attr* attr;
       last_symbol* sym;
-      attr = uhash_table_get(ts->attrtb,
-			     ts->id->hash_code % ts->attrtb_size,
-			     ts->id,
-			     last_attr_key_get,
-			     last_attr_get_comp);
+      uhstb_last_attr_get(ts->attrtb,
+			  ts->id->hash_code,
+			  in_attr,
+			  &attr,
+			  last_attr_get_comp);
       sym = last_symbol_new(ts->id,attr);
       if(!sym){
 	uabort("lparser_atom_parse error!");
@@ -408,14 +412,14 @@ ltoken_state* ltoken_state_new(ustream* stream,
 			       int strtb_size){
   ltoken_state* ts;
   ubuffer* buff;
-  uhash_table* attrtb;
+  uhstb_last_attr* attrtb;
   
   buff = ubuffer_new(LTOKEN_BUFF_SIZE);
   if(!buff){
     goto err;
   }
   
-  attrtb = uhash_table_new(LATTR_TABLE_SIZE);
+  attrtb = uhstb_last_attr_new(LATTR_TABLE_SIZE);
   if(!attrtb){
     goto err;
   }
@@ -428,7 +432,6 @@ ltoken_state* ltoken_state_new(ustream* stream,
   ts->strtb = strtb;
   ts->strtb_size = strtb_size;
   ts->attrtb = attrtb;
-  ts->attrtb_size = LATTR_TABLE_SIZE;
   
   ltoken_state_init(ts,stream);
   ltoken_state_attr_init(ts);

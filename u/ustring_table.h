@@ -11,6 +11,8 @@ typedef uhstb_ustring ustring_table;
 #define ustring_table_new(len)			\
   uhstb_ustring_new(len)
 
+void ustring_table_test1();
+
 ustring* ustring_table_put(ustring_table* strtb,
 			   int            tblen,
 			   char*          charp,

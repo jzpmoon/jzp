@@ -13,5 +13,8 @@ $(u_lib):
 	make -C $(libu_path) -f $(u_somk)
 install:
 	cp $(bin_name) ~/../usr/bin/;make -C $(libu_path) -f $(u_somk) install
+uninstall:
+	rm ~/../usr/bin/$(bin_name);make -C $(libu_path) -f $(u_somk) uninstall
+
 clean:
 	make -C $(libu_path) -f $(u_somk) clean;rm -f $(bin_name) $(obj_list)

@@ -9,6 +9,10 @@ static int ustrtb_key_comp(ustring k1,ustring k2){
   return ustring_comp(&k1,&k2);
 }
 
+void ustring_table_test1(){
+  ulog("hello");
+}
+
 ustring* ustring_table_put(ustring_table* strtb,
 			   int            tblen,
 			   char*          charp,
@@ -17,12 +21,13 @@ ustring* ustring_table_put(ustring_table* strtb,
   int      _len     = len > 0 ? len : strlen(charp);
   ustring  str      = (ustring){charp,_len,hscd};
   ustring* new_str;
-  int retval = uhstb_ustring_put(strtb,
-				 hscd,
-				 str,
-				 &new_str,
-				 ustrtb_key_comp);
-  if (retval >0){
+  int retval;
+  retval = uhstb_ustring_put(strtb,
+			     hscd,
+			     str,
+			     &new_str,
+			     ustrtb_key_comp);
+  if (retval != -1){
     return new_str;
   }else{
     return NULL;
@@ -46,7 +51,7 @@ ustring* ustring_table_add(ustring_table* strtb,
 				 str,
 				 &new_str,
 				 ustrtb_key_comp_greater);
-  if (retval >0){
+  if (retval != 0){
     return new_str;
   }else{
     return NULL;

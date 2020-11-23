@@ -1,5 +1,5 @@
-#ifndef _HSTB_TPL_H_
-#define _HSTB_TPL_H_
+#ifndef _UHSTB_TPL_H_
+#define _UHSTB_TPL_H_
 
 #include "uset.h"
 
@@ -19,8 +19,6 @@
   } uhstb_##t
 
 
-#define uhstb_key_ft_tpl(t)			\
-  typedef t(*uhstb_##t##_key_ft)(t);
 #define uhstb_comp_ft_tpl(t)			\
   typedef int(*uhstb_##t##_comp_ft)(t,t);
 
@@ -43,7 +41,6 @@
 
 #define uhstb_decl_tpl(t)			\
   uhstb_tpl(t);					\
-  uhstb_key_ft_tpl(t);				\
   uhstb_comp_ft_tpl(t);				\
   uhstb_new_decl_tpl(t);			\
   uhstb_put_decl_tpl(t);			\

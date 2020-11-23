@@ -16,5 +16,7 @@ $(lib_name):$(obj_list)
 	$(CC) -c -o $@ $< $(CFLAGS) -fPIC
 install:
 	cp $(lib_name) ~/../usr/lib/
+uninstall:
+	rm ~/../usr/lib/$(lib_name)
 clean:
 	rm -f $(lib_name) $(obj_list)

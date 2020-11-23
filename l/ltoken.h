@@ -3,6 +3,7 @@
 
 #include "ustring.h"
 #include "ustream.h"
+#include "uhstb_tpl.h"
 #include "vgc_obj.h"
 
 enum ltoken{
@@ -28,8 +29,7 @@ typedef struct _ltoken_state{
   int symtb_size;
   ustring_table* strtb;
   int strtb_size;
-  uhash_table* attrtb;
-  int attrtb_size;
+  struct _uhstb_last_attr* attrtb;
   struct {
     int x;
     int y;

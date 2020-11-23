@@ -50,6 +50,8 @@ typedef struct _last_string{
   ustring* string;
 } last_string;
 
+uhstb_decl_tpl(last_attr);
+
 last_cons* last_cons_new(last_obj* car,last_obj* cdr);
 
 last_symbol* last_symbol_new(ustring* name,last_attr* attr);
@@ -85,27 +87,23 @@ void last_obj_log(last_obj* ast_obj);
 #define LDECLATTR(aname) LATTR_INIT(ts,aname)
 
 #define LATTR_INIT(ts,aname)						\
-  do{									\
-    ustring* str = ustring_table_put(ts->symtb,				\
-				     ts->symtb_size,			\
-				     _last_attr_infor_##aname.sname,	\
-				     -1);				\
-    if(!str){uabort("init attr error!");}				\
-    _last_attr_infor_##aname.name = str;				\
-    uhash_table_put(ts->attrtb,						\
-		    str->hash_code % ts->attrtb_size,			\
-		    &_last_attr_infor_##aname,				\
-		    last_attr_key_put,					\
-		    last_attr_put_comp);				\
-  }while(0)
+    do{									\
+      ustring* str = ustring_table_put(ts->symtb,			\
+				       ts->symtb_size,			\
+				       _last_attr_infor_##aname.sname,	\
+				       -1);				\
+      if(!str){uabort("init attr error!");}				\
+      _last_attr_infor_##aname.name = str;				\
+      uhstb_last_attr_put(ts->attrtb,					\
+			  str->hash_code,				\
+			  _last_attr_infor_##aname,			\
+			  NULL,						\
+			  last_attr_put_comp);				\
+    }while(0)
 
-void* last_attr_key_put(void* key);
+int last_attr_put_comp(last_attr k1,last_attr k2);
 
-void* last_attr_key_get(void* key);
-
-int last_attr_put_comp(void* k1,void* k2);
-
-int last_attr_get_comp(void* k1,void* k2);
+int last_attr_get_comp(last_attr k1,last_attr k2);
 
 void ltoken_state_attr_init(ltoken_state* ts);
 
