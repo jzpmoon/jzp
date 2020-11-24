@@ -21,6 +21,14 @@ unsigned int ucharp_hscd(char* v){
 	return code;
 }
 
+char* ucharp_new(void* data,int len){
+  char* charp;
+  unew(charp,len+1,return NULL;);
+  memcpy(charp,data,len);
+  charp[len]='\0';
+  return charp;
+}
+
 ustring* ustring_new(
 	void* value,int len,int hscd){
 	ustring* str=NULL;

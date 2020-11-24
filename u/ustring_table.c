@@ -5,12 +5,18 @@
 
 uhstb_def_tpl(ustring);
 
-static ustring* ustrtb_key_put(ustring* key){
+static ustring ustrtb_key_put(ustring* key){
   ustring* str = key;
-  ustring* new_str;
-  new_str = ustring_new(str->value,
-			str->len,
-			str->hash_code);
+  char* charp;
+  ustring new_str;
+  charp = ucharp_new(str->value,
+		     str->len);
+  if(!charp){
+    uabort("ucharp_new error!");
+  }
+  new_str.value = charp;
+  new_str.len = str->len;
+  new_str.hash_code = str->hash_code;
   return new_str;
 }
 

@@ -8,6 +8,7 @@ typedef struct _ustring{
 } ustring,* ustringp;
 
 int ustring_comp(ustring*s1,ustring* s2);
+char* ucharp_new(void* data,int len);
 ustring* ustring_new(
 	void* value,int len,int hscd);
 ustring* ustring_new_by_charp(

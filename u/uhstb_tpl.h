@@ -19,7 +19,7 @@
   } uhstb_##t
 
 #define uhstb_key_ft_tpl(t)			\
-  typedef t*(*uhstb_##t##_key_ft)(t*)
+  typedef t(*uhstb_##t##_key_ft)(t*)
 
 #define uhstb_comp_ft_tpl(t)			\
   typedef int(*uhstb_##t##_comp_ft)(t*,t*)

@@ -37,8 +37,8 @@ int hash_table_test(){
 	return 0;
 }
 
-int* int_put(int* k){
-  return k;
+int int_put(int* k){
+  return *k;
 }
 
 int int_comp(int* k1,int* k2){

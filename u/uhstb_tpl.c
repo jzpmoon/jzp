@@ -76,7 +76,7 @@
       prev_nd->next = nd;				\
     }							\
     if(putk){						\
-      nd->k = *putk(ink);				\
+      nd->k = putk(ink);				\
     }else{						\
       nd->k = *ink;					\
     }							\
