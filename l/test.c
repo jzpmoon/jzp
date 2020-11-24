@@ -38,9 +38,7 @@ int test_1(){
 
   ts = ltoken_state_new(stream,
 			ctx->symtb,
-			VCONTEXT_SYMTB_SIZE,
-			ctx->strtb,
-			VCONTEXT_STRTB_SIZE);
+			ctx->strtb);
   if(!ts){
     uabort("new token state error!");
   }
@@ -51,7 +49,7 @@ int test_1(){
   p = last2vps(ts,ast_obj);
 
   vcontext_load(ctx,(vps_t*)p);
-  
+
   return 0;
 }
 

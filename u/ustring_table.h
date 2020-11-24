@@ -14,12 +14,10 @@ typedef uhstb_ustring ustring_table;
 void ustring_table_test1();
 
 ustring* ustring_table_put(ustring_table* strtb,
-			   int            tblen,
 			   char*          charp,
 			   int            len);
 
 ustring* ustring_table_add(ustring_table* strtb,
-			   int            tblen,
 			   char*          charp,
 			   int            len);
 #endif

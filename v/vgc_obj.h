@@ -3,9 +3,9 @@
 
 #include "udef.h"
 #include "ustack_tpl.h"
-#include "uhash_table.h"
 #include "ustring_table.h"
 #include "ubuffer.h"
+#include "uhstb_tpl.h"
 
 enum {
   vgc_obj_type_array,
@@ -203,13 +203,20 @@ void vgc_heap_stack_top_set(vgc_heap* heap,usize_t index);
 #define vgc_obj_ref_set(obj,slot,vobj)		\
   vslot_ref_set((obj)->_u.slot,vobj)
 
+typedef struct _vsymbol{
+  ustring* name;
+  vslot slot;
+} vsymbol;
+
+uhstb_decl_tpl(vsymbol);
+
 #define VCONTEXT_SYMTB_SIZE 17
 #define VCONTEXT_STRTB_SIZE 17
 
 typedef struct _vcontext{
   VGCHEADER;
   vgc_heap* heap;
-  uhash_table* objtb;
+  uhstb_vsymbol* objtb;
   ustring_table* symtb;
   ustring_table* strtb;
   vslot_define_begin

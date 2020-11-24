@@ -85,6 +85,7 @@ LDEFATTR(subr,"subr",{
       }
       next = last_cdr(next);
     }
+
     vps_mod_code_put(vps,grp);
     
     return (vps_t*)vps;

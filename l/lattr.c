@@ -1,12 +1,12 @@
 #include "vm.h"
 #include "lparser.h"
 
-int last_attr_put_comp(last_attr k1,last_attr k2){
-  return ustring_comp(k1.name,k2.name);
+int last_attr_put_comp(last_attr* k1,last_attr* k2){
+  return ustring_comp(k1->name,k2->name);
 }
 
-int last_attr_get_comp(last_attr k1,last_attr k2){
-  return ustring_comp(k1.name,k2.name);
+int last_attr_get_comp(last_attr* k1,last_attr* k2){
+  return ustring_comp(k1->name,k2->name);
 }
 
 #include "_ltemp.attr"

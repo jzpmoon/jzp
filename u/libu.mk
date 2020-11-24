@@ -7,7 +7,8 @@ obj_list=uhash_table.o   \
 	 uerror.o        \
 	 ubuffer.o       \
 	 udbuffer.o	 \
-	 ustream.o
+	 ustream.o       \
+	 uhstb.o
 
 CFLAGS=-std=c89 -Wall $(DEBUG_MODE)
 $(lib_name):$(obj_list)

@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include "ustring.h"
 #include "uhash_table.h"
+#include "uhstb.h"
 #include "ustring_table.h"
 
 uhash_table hstb[17];
@@ -36,7 +37,11 @@ int hash_table_test(){
 	return 0;
 }
 
-int int_comp(int k1,int k2){
+int* int_put(int* k){
+  return k;
+}
+
+int int_comp(int* k1,int* k2){
   return k1 - k2;
 }
 
@@ -48,8 +53,9 @@ int hstb_test(){
   while(i<5){
     uhstb_int_put(hstb,
 		  a[i],
-		  a[i],
+		  &a[i],
 		  NULL,
+		  int_put,
 		  int_comp);
     i++;
   }
@@ -65,14 +71,15 @@ int hstb_test(){
 }
 
 int string_table_test(){
+  char* charp = "hello";
   ustring_table* strtb = ustring_table_new(10);
   ustring* str = ustring_table_put(strtb,
-				   10,
-				   NULL,
+				   charp,
 				   -1);
   return 0;
 }
 
 int main(){
   string_table_test();
+  hstb_test();
 }

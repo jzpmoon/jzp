@@ -5,16 +5,20 @@
 
 uhstb_def_tpl(ustring);
 
-static int ustrtb_key_comp(ustring k1,ustring k2){
-  return ustring_comp(&k1,&k2);
+static ustring* ustrtb_key_put(ustring* key){
+  ustring* str = key;
+  ustring* new_str;
+  new_str = ustring_new(str->value,
+			str->len,
+			str->hash_code);
+  return new_str;
 }
 
-void ustring_table_test1(){
-  ulog("hello");
+static int ustrtb_key_comp(ustring* k1,ustring* k2){
+  return ustring_comp(k1,k2);
 }
 
 ustring* ustring_table_put(ustring_table* strtb,
-			   int            tblen,
 			   char*          charp,
 			   int            len){
   unsigned int hscd = len > 0 ? udata_hscd(charp,len) : ucharp_hscd(charp);
@@ -24,8 +28,9 @@ ustring* ustring_table_put(ustring_table* strtb,
   int retval;
   retval = uhstb_ustring_put(strtb,
 			     hscd,
-			     str,
+			     &str,
 			     &new_str,
+			     ustrtb_key_put,
 			     ustrtb_key_comp);
   if (retval != -1){
     return new_str;
@@ -34,24 +39,25 @@ ustring* ustring_table_put(ustring_table* strtb,
   }
 }
 
-static int ustrtb_key_comp_greater(ustring k1,ustring k2){
+static int ustrtb_key_comp_greater(ustring* k1,ustring* k2){
   return 1;
 }
 
 ustring* ustring_table_add(ustring_table* strtb,
-			   int            tblen,
 			   char*          charp,
 			   int            len){
   unsigned int hscd = len > 0 ? udata_hscd(charp,len) : ucharp_hscd(charp);
   int      _len     = len > 0 ? len : strlen(charp);
   ustring  str      = (ustring){charp,_len,hscd};
   ustring* new_str;
-  int retval = uhstb_ustring_put(strtb,
-				 hscd,
-				 str,
-				 &new_str,
-				 ustrtb_key_comp_greater);
-  if (retval != 0){
+  int retval;
+  retval = uhstb_ustring_put(strtb,
+			     hscd,
+			     &str,
+			     &new_str,
+			     ustrtb_key_put,
+			     ustrtb_key_comp_greater);
+  if (retval != -1){
     return new_str;
   }else{
     return NULL;

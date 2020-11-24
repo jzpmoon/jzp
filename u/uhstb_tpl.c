@@ -2,11 +2,11 @@
 #include <string.h>
 #include "ualloc.h"
 #include "uerror.h"
-#include "uhstb_tpl.h"
+#include "uhstb.h"
 
 #define uhstb_iterator_tpl(t)					\
-  static void uhstb_##t##_iterator(uiterator* iterator){	\
-    uhstb_iterator_##t* i = (uhstb_iterator_##t*)iterator;	\
+  static void uhstb_##t##_iterator_init(uiterator* iterator){	\
+    uhstb_##t##_iterator* i = (uhstb_##t##_iterator*)iterator;	\
     i->next_idx = -1;						\
     i->next_nd = NULL;						\
   }
@@ -14,7 +14,7 @@
 #define uhstb_next_tpl(t)					\
   static void* uhstb_##t##_next(uset* set,uiterator* iterator){	\
     uhstb_##t* hstb = (uhstb_##t*)set;				\
-    uhstb_iterator_##t* i = (uhstb_iterator_##t*)iterator;	\
+    uhstb_##t##_iterator* i = (uhstb_##t##_iterator*)iterator;	\
     void* k;							\
     while(!i->next_nd){						\
       if(hstb->len <= i->next_idx){				\
@@ -35,7 +35,7 @@
     int size = TYPE_SIZE_OF(uhstb_##t,uhsnd_##t,len);	\
     int i;						\
     unew(hstb,size,return NULL;);			\
-    hstb->iterate = uhstb_##t##_iterator;		\
+    hstb->iterate = uhstb_##t##_iterator_init;		\
     hstb->next = uhstb_##t##_next;			\
     hstb->len = len;					\
     for(i = 0;i < len;i++){				\
@@ -47,15 +47,16 @@
 #define uhstb_put_tpl(t)				\
   int uhstb_##t##_put(uhstb_##t*          hstb,		\
 		      unsigned int        hscd,		\
-		      t                   ink,		\
+		      t*                  ink,		\
 		      t**                 outk,		\
+		      uhstb_##t##_key_ft  putk,		\
 		      uhstb_##t##_comp_ft comp){	\
     uhsnd_##t* prev_nd = NULL;				\
     uhsnd_##t* nd = NULL;				\
     int idx = hscd%hstb->len;				\
     uhsnd_##t* ls = hstb->ndar[idx];			\
     while(ls){						\
-      int c = comp(ink,ls->k);				\
+      int c = comp(ink,&ls->k);				\
       if(c == 0){					\
 	if(outk){					\
 	  *outk = &ls->k;				\
@@ -74,7 +75,11 @@
     }else{						\
       prev_nd->next = nd;				\
     }							\
-    nd->k = ink;					\
+    if(putk){						\
+      nd->k = *putk(ink);				\
+    }else{						\
+      nd->k = *ink;					\
+    }							\
     nd->next = ls;					\
     if(outk){						\
       *outk = &nd->k;					\
@@ -85,12 +90,12 @@
 #define uhstb_get_tpl(t)				\
   int uhstb_##t##_get(uhstb_##t*          hstb,		\
 		      unsigned int        hscd,		\
-		      t                   ink,		\
+		      t*                  ink,		\
 		      t**                 outk,		\
 		      uhstb_##t##_comp_ft comp){	\
     uhsnd_##t* ls = hstb->ndar[hscd%hstb->len];		\
     while(ls){						\
-      int c = comp(ink,ls->k);				\
+      int c = comp(ink,&ls->k);				\
       if(c == 0){					\
 	*outk = &ls->k;					\
 	return 0;					\

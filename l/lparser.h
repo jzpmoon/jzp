@@ -87,23 +87,23 @@ void last_obj_log(last_obj* ast_obj);
 #define LDECLATTR(aname) LATTR_INIT(ts,aname)
 
 #define LATTR_INIT(ts,aname)						\
-    do{									\
-      ustring* str = ustring_table_put(ts->symtb,			\
-				       ts->symtb_size,			\
-				       _last_attr_infor_##aname.sname,	\
-				       -1);				\
-      if(!str){uabort("init attr error!");}				\
-      _last_attr_infor_##aname.name = str;				\
-      uhstb_last_attr_put(ts->attrtb,					\
-			  str->hash_code,				\
-			  _last_attr_infor_##aname,			\
-			  NULL,						\
-			  last_attr_put_comp);				\
-    }while(0)
+  do{									\
+    ustring* str = ustring_table_put(ts->symtb,				\
+				     _last_attr_infor_##aname.sname,	\
+				     -1);				\
+    if(!str){uabort("init attr error!");}				\
+    _last_attr_infor_##aname.name = str;				\
+    uhstb_last_attr_put(ts->attrtb,					\
+			str->hash_code,					\
+			&_last_attr_infor_##aname,			\
+			NULL,						\
+			NULL,						\
+			last_attr_put_comp);				\
+  }while(0)
 
-int last_attr_put_comp(last_attr k1,last_attr k2);
+int last_attr_put_comp(last_attr* k1,last_attr* k2);
 
-int last_attr_get_comp(last_attr k1,last_attr k2);
+int last_attr_get_comp(last_attr* k1,last_attr* k2);
 
 void ltoken_state_attr_init(ltoken_state* ts);
 

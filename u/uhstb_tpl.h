@@ -8,19 +8,21 @@
     struct _uhsnd_##t* next;			\
     t                  k;			\
   } uhsnd_##t;					\
-  typedef struct _uhstb_iterator_##t{		\
+  typedef struct _uhstb_##t##_iterator{		\
     uhsnd_##t* next_nd;				\
     int next_idx;				\
-  } uhstb_iterator_##t;				\
+  } uhstb_##t##_iterator;			\
   typedef struct _uhstb_##t{			\
     USETHEADER;					\
     int len;					\
     uhsnd_##t* ndar[1];				\
   } uhstb_##t
 
+#define uhstb_key_ft_tpl(t)			\
+  typedef t*(*uhstb_##t##_key_ft)(t*)
 
 #define uhstb_comp_ft_tpl(t)			\
-  typedef int(*uhstb_##t##_comp_ft)(t,t);
+  typedef int(*uhstb_##t##_comp_ft)(t*,t*)
 
 #define uhstb_new_decl_tpl(t)			\
   uhstb_##t* uhstb_##t##_new(int size)
@@ -28,19 +30,21 @@
 #define uhstb_put_decl_tpl(t)				\
   int uhstb_##t##_put(uhstb_##t*          hstb,		\
 		      unsigned int        hscd,		\
-		      t                   ink,		\
+		      t*                  ink,		\
 		      t**                 outk,		\
+		      uhstb_##t##_key_ft  putk,		\
 		      uhstb_##t##_comp_ft comp)
 
 #define uhstb_get_decl_tpl(t)				\
   int uhstb_##t##_get(uhstb_##t*          hstb,		\
 		      unsigned int        hscd,		\
-		      t                   ink,		\
+		      t*                  ink,		\
 		      t**                 outk,		\
 		      uhstb_##t##_comp_ft comp)
 
 #define uhstb_decl_tpl(t)			\
   uhstb_tpl(t);					\
+  uhstb_key_ft_tpl(t);				\
   uhstb_comp_ft_tpl(t);				\
   uhstb_new_decl_tpl(t);			\
   uhstb_put_decl_tpl(t);			\

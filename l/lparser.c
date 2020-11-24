@@ -12,7 +12,7 @@ static ustring* ltoken_state_symbol_finish(ltoken_state* ts){
   ubuffer* buff = ts->buff;
   ustring* str;
   ubuffer_ready_read(buff);
-  str = ustring_table_put(ts->symtb,ts->symtb_size,buff->data,buff->limit);
+  str = ustring_table_put(ts->symtb,buff->data,buff->limit);
   ubuffer_ready_write(buff);
   return str;
 }
@@ -21,7 +21,7 @@ static ustring* ltoken_state_string_finish(ltoken_state* ts){
   ubuffer* buff = ts->buff;
   ustring* str;
   ubuffer_ready_read(buff);
-  str = ustring_table_add(ts->strtb,ts->strtb_size,buff->data,buff->limit);
+  str = ustring_table_add(ts->strtb,buff->data,buff->limit);
   ubuffer_ready_write(buff);
   return str;
 }
@@ -217,7 +217,7 @@ last_obj* lparser_atom_parse(ltoken_state* ts){
       last_symbol* sym;
       uhstb_last_attr_get(ts->attrtb,
 			  ts->id->hash_code,
-			  in_attr,
+			  &in_attr,
 			  &attr,
 			  last_attr_get_comp);
       sym = last_symbol_new(ts->id,attr);
@@ -407,9 +407,7 @@ void ltoken_state_init(ltoken_state* ts,
 
 ltoken_state* ltoken_state_new(ustream* stream,
 			       ustring_table* symtb,
-			       int symtb_size,
-			       ustring_table* strtb,
-			       int strtb_size){
+			       ustring_table* strtb){
   ltoken_state* ts;
   ubuffer* buff;
   uhstb_last_attr* attrtb;
@@ -428,9 +426,7 @@ ltoken_state* ltoken_state_new(ustream* stream,
   
   ts->buff = buff;
   ts->symtb = symtb;
-  ts->symtb_size = symtb_size;
   ts->strtb = strtb;
-  ts->strtb_size = strtb_size;
   ts->attrtb = attrtb;
   
   ltoken_state_init(ts,stream);

@@ -5,12 +5,6 @@
 #include "vgc_obj.h"
 #include "vpass.h"
 
-
-typedef struct _vsymbol{
-  ustring* name;
-  vslot slot;
-} vsymbol;
-
 vcontext* vcontext_new(vgc_heap* heap);
 
 vsymbol* vcontext_obj_put(vcontext* ctx,ustring* name,vslot obj);

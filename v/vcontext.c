@@ -1,4 +1,7 @@
+#include "uhstb_tpl.c"
 #include "vcontext.h"
+
+uhstb_def_tpl(vsymbol);
 
 #define VCONTEXT_OBJTB_SIZE 17
 #define VCONTEXT_SYMTB_SIZE 17
@@ -7,7 +10,7 @@
 
 vcontext* vcontext_new(vgc_heap* heap){
   vcontext* ctx;
-  uhash_table* objtb;
+  uhstb_vsymbol* objtb;
   ustring_table* symtb;
   ustring_table* strtb;
   vgc_array* consts;
@@ -21,7 +24,7 @@ vcontext* vcontext_new(vgc_heap* heap){
     uabort("vcontext_new: ctx new error!");
   }
   
-  objtb = uhash_table_new(VCONTEXT_OBJTB_SIZE);
+  objtb = uhstb_vsymbol_new(VCONTEXT_OBJTB_SIZE);
   if(!objtb){
     uabort("vcontext_new:objtb new error!");
   }
@@ -60,29 +63,22 @@ vsymbol* vsymbol_new(ustring* name,vslot slot){
   return symbol;
 }
 
-static void* vobjtb_key_put(void* key){
-  vsymbol* symbol = (void*)key;
-  vsymbol* new_symbol = vsymbol_new(symbol->name,symbol->slot);
-  if(!new_symbol){
-    uabort("vobjtb key put error!");
-  }
-  return new_symbol;
-}
-
-static int vobjtb_key_comp(void* k1,void* k2){
-  vsymbol* sym1 = (vsymbol*)k1;
-  vsymbol* sym2 = (vsymbol*)k2;
+static int vobjtb_key_comp(vsymbol* sym1,vsymbol* sym2){
   return (sym1->name - sym2->name);
 }
 
 vsymbol* vcontext_obj_put(vcontext* ctx,ustring* name,vslot obj){
   vsymbol symbol = (vsymbol){name,obj};
-  vsymbol* new_symbol = 
-    uhash_table_put(ctx->objtb,
-		    name->hash_code % VCONTEXT_OBJTB_SIZE,
-		    (void*)&symbol,
-		    vobjtb_key_put,
-		    vobjtb_key_comp);
+  vsymbol* new_symbol;
+  int retval = uhstb_vsymbol_put(ctx->objtb,
+				 name->hash_code,
+				 &symbol,
+				 &new_symbol,
+				 NULL,
+				 vobjtb_key_comp);
+  if(retval == -1){
+    uabort("vcontext_obj_put error!");
+  }
   return new_symbol;
 }
 
@@ -93,6 +89,7 @@ int vcontext_load(vcontext* ctx,vps_t* vps){
     vgc_array* consts = vgc_obj_ref_get(ctx,consts,vgc_array);
     vslot slot;
     int top;
+    ulog("vcontext_load data");
     if(data->dtk == vdtk_num){
       vslot_num_set(slot,data->u.number);      
     }else if(data->dtk == vdtk_int){
@@ -112,6 +109,39 @@ int vcontext_load(vcontext* ctx,vps_t* vps){
     break;
   }
   case vpsk_mod:{
+    vps_mod* mod = (vps_mod*)vps;
+    uiterator iterator;
+    uhstb_vps_data* data = mod->data;
+    uhstb_vdfg_graph* code = mod->code;
+    ulog("vcontext_load mod");
+    (data->iterate)(&iterator);
+    ulog("vcontext_load mod data");
+    while(1){
+      vps_data* d = (data->next)((uset*)data,&iterator);
+      if(!d){
+	break;
+      }
+      ulog("vcontext_load mod data entry");
+      vcontext_load(ctx,(vps_t*)d);
+    }
+    ulog("vcontext_load mod code");
+    (data->iterate)(&iterator);
+    while(1){
+      vdfg_graph* g = (code->next)((uset*)code,&iterator);
+      if(!g){
+	break;
+      }
+      ulog("vcontext_load mod graph entry");
+      vcontext_load(ctx,(vps_t*)g);
+    }
+    break;
+  }
+  case vdfgk_grp:{
+    ulog("vcontext_load graph");
+    break;
+  }
+  case vdfgk_blk:{
+    ulog("vcontext_load block");
     break;
   }
   default:

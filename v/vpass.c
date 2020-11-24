@@ -1,6 +1,10 @@
+#include "uhstb_tpl.c"
 #include "vbytecode.h"
 #include "vm.h"
 #include "vpass.h"
+
+uhstb_def_tpl(vps_data);
+uhstb_def_tpl(vdfg_graph);
 
 vps_inst*
 vps_inst_new(int instk,
@@ -106,6 +110,7 @@ vps_data* vps_num_new(ustring* name,
 		      int stk){
   vps_data* data = ualloc(sizeof(vps_data));
   if(data){
+    data->t = vpsk_dt;
     data->dtk = vdtk_num;
     data->stk = stk;
     data->name = name;
@@ -118,6 +123,7 @@ vps_data* vps_any_new(ustring* name,
 		      int stk){
   vps_data* data = ualloc(sizeof(vps_data));
   if(data){
+    data->t = vpsk_dt;
     data->dtk = vdtk_any;
     data->name = name;
   }
@@ -150,11 +156,12 @@ vdfg_graph* vdfg_graph_new(){
 vps_mod* vps_mod_new(){
   vps_mod* mod = ualloc(sizeof(vps_mod));
   if(mod){
-    mod->data = uhash_table_new(VPS_MOD_DATA_TABLE_SIZE);
+    mod->t = vpsk_mod;
+    mod->data = uhstb_vps_data_new(VPS_MOD_DATA_TABLE_SIZE);
     if(!mod->data){
       uabort("new hash table data error!");
     }
-    mod->code = uhash_table_new(VPS_MOD_CODE_TABLE_SIZE);
+    mod->code = uhstb_vdfg_graph_new(VPS_MOD_CODE_TABLE_SIZE);
     if(!mod->code){
       uabort("new hash table code error!");
     }
@@ -162,11 +169,17 @@ vps_mod* vps_mod_new(){
   return mod;
 }
 
-static void* vps_mod_key_put(void* data){
-  return data;
+static int vps_mod_data_comp(vps_data* data1,vps_data* data2){
+  if(data1 > data2){
+    return 1;
+  }else if(data1 < data2){
+    return -1;
+  }else{
+    return 0;
+  }
 }
 
-static int vps_mod_comp(void* data1,void* data2){
+static int vps_mod_code_comp(vdfg_graph* data1,vdfg_graph* data2){
   if(data1 > data2){
     return 1;
   }else if(data1 < data2){
@@ -182,11 +195,12 @@ void vps_mod_data_put(vps_mod* mod,vps_data* data){
   if(name){
     hscd = name->hash_code;
   }
-  uhash_table_put(mod->data,
-		  hscd,
-		  data,
-		  vps_mod_key_put,
-		  vps_mod_comp);
+  uhstb_vps_data_put(mod->data,
+		     hscd,
+		     data,
+		     NULL,
+		     NULL,
+		     vps_mod_data_comp);
 }
 
 void vps_mod_code_put(vps_mod* mod,vdfg_graph* code){
@@ -195,11 +209,12 @@ void vps_mod_code_put(vps_mod* mod,vdfg_graph* code){
   if(name){
     hscd = name->hash_code;
   }
-  uhash_table_put(mod->data,
-		  hscd,
-		  code,
-		  vps_mod_key_put,
-		  vps_mod_comp);
+  uhstb_vdfg_graph_put(mod->code,
+		       hscd,
+		       code,
+		       NULL,
+		       NULL,
+		       vps_mod_code_comp);
 }
 
 vgc_string* vpass_dfg2bin(vps_dfg* dfg){

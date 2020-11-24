@@ -26,9 +26,7 @@ typedef struct _ltoken_state{
   double num;
   int bool;
   ustring_table* symtb;
-  int symtb_size;
   ustring_table* strtb;
-  int strtb_size;
   struct _uhstb_last_attr* attrtb;
   struct {
     int x;
@@ -40,9 +38,7 @@ typedef struct _ltoken_state{
 
 ltoken_state* ltoken_state_new(ustream* stream,
 			       ustring_table* symtb,
-			       int symtb_size,
-			       ustring_table* strtb,
-			       int strtb_size);
+			       ustring_table* strtb);
 
 void ltoken_state_init(ltoken_state* ts,
 		       ustream* stream);
