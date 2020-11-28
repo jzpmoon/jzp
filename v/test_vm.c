@@ -7,12 +7,12 @@
 #include "vm.h"
 
 #define INST(code,operand) \
-  insts=ulist_append(insts,&((vinst){code,operand}))
+  ulist_vinstp_append(insts,&((vinst){code,operand}))
 
 int main(){
   vgc_heap* heap = NULL;
   vcontext* ctx = NULL;
-  ulist* insts = NULL;
+  ulist_vinstp* insts = NULL;
   vgc_array* consts;
   vgc_subr* subr;
   vslot subr_slot;
@@ -24,6 +24,10 @@ int main(){
   ctx = vcontext_new(heap);
   if(!ctx){
     uabort("new vcontext error!");
+  }
+  insts = ulist_vinstp_new();
+  if(!insts){
+    uabort("new insts error!");
   }
   consts = vgc_obj_ref_get(ctx,consts,vgc_array);
   vslot_num_set(consts->objs[0],1);

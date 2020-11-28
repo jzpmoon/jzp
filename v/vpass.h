@@ -1,7 +1,7 @@
 #ifndef _VPASS_H_
 #define _VPASS_H_
 
-#include "ulist.h"
+#include "ulist_tpl.h"
 #include "vgc_obj.h"
 
 #define VPSHEADER \
@@ -9,7 +9,7 @@
 
 #define VDFGHEADER \
   VPSHEADER	   \
-  ulist* link
+  struct _vps_dfg* link
 
 enum{
   vpsk_dt,
@@ -37,7 +37,9 @@ enum{
 
 typedef struct _vps_t{
   VPSHEADER;
-} vps_t;
+} vps_t,* vpsp;
+
+ulist_decl_tpl(vpsp);
 
 typedef struct _vps_data{
   VPSHEADER;
@@ -46,18 +48,18 @@ typedef struct _vps_data{
   int idx;
   ustring* name;
   union {
-    ulist* array;
+    ulist_vpsp* array;
     double number;
     int integer;
   } u;
-} vps_data;
+} vps_data,*vps_datap;
 
 #define vopdnon (-1)
 
 typedef struct _vinst{
   usize_t opcode;
   usize_t operand;
-} vinst;
+} vinst,*vinstp;
 
 typedef struct _vps_inst{
   VPSHEADER;
@@ -68,39 +70,45 @@ typedef struct _vps_inst{
     vps_data* data;
     struct _vps_dfg* code;
   } u;
-} vps_inst;
+} vps_inst,*vps_instp;
 
 typedef struct _vps_dfg{
   VDFGHEADER;
-} vps_dfg;
+} vps_dfg,*vps_dfgp;
+
+ulist_decl_tpl(vps_instp);
+ulist_decl_tpl(vps_datap);
+ulist_decl_tpl(vps_dfgp);
 
 typedef struct _vdfg_block{
   VDFGHEADER;
-  ulist* insts;
+  ulist_vps_instp* insts;
 } vdfg_block;
 
 typedef struct _vdfg_graph{
   VDFGHEADER;
   ustring* name;
-  ulist* dts;
-  ulist* dfgs;
+  ulist_vps_datap* dts;
+  ulist_vps_dfgp* dfgs;
   vps_dfg* entry;
-} vdfg_graph;
+} vdfg_graph,*vdfg_graphp;
 
-uhstb_decl_tpl(vps_data);
-uhstb_decl_tpl(vdfg_graph);
+uhstb_decl_tpl(vps_datap);
+uhstb_decl_tpl(vdfg_graphp);
 
 typedef struct _vps_mod{
   VPSHEADER;
-  uhstb_vps_data* data;
-  uhstb_vdfg_graph* code;
+  uhstb_vps_datap* data;
+  uhstb_vdfg_graphp* code;
 } vps_mod;
 
 #define VPS_MOD_DATA_TABLE_SIZE 17
 #define VPS_MOD_CODE_TABLE_SIZE 17
 
+ulist_decl_tpl(vinstp);
+
 int vinst_to_str(vcontext* ctx,
-		 ulist* insts);
+		 ulist_vinstp* insts);
 
 vps_inst*
 vps_inst_new(int instk,
@@ -119,15 +127,15 @@ vps_data* vps_any_new(ustring* name,
 vdfg_block* vdfg_block_new();
 
 #define vdfg_blk_apd(blk,inst)			\
-  (blk)->insts=ulist_append((blk)->insts,inst)
+  ulist_vps_instp_append((blk)->insts,inst)
 
 vdfg_graph* vdfg_graph_new();
 
 #define vdfg_grp_cdapd(grp,dfg)			\
-  (grp)->dfgs=ulist_append((grp)->dfgs,dfg)
+  ulist_vps_dfgp_append((grp)->dfgs,dfg)
 
 #define vdfg_grp_dtapd(grp,dt)			\
-  (grp)->dts=ulist_append((grp)->dts,dt)
+  ulist_vps_datap_append((grp)->dts,dt)
 
 vps_mod* vps_mod_new();
 

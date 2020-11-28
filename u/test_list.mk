@@ -5,5 +5,5 @@ $(bin):$(obj)
 	$(CC) $(obj) -o $(bin)
 .c.o:
 	$(CC) -std=c89 -Wall -c -o $@ $<
-clear:
+clean:
 	rm -f $(bin) $(obj)

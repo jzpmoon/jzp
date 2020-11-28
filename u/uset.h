@@ -3,15 +3,15 @@
 
 struct _uset;
 
-typedef struct _uiterator{
+typedef struct _ucursor{
   char pad[32];  
-} uiterator;
+} ucursor;
 
-typedef void (*uset_iterator_ft)(uiterator* iterator);
-typedef void*(*uset_next_ft)(struct _uset* set,uiterator* iterator);
+typedef void (*uset_cursor_ft)(ucursor* cursor);
+typedef void*(*uset_next_ft)(struct _uset* set,ucursor* cursor);
 
 #define USETHEADER				\
-  uset_iterator_ft iterate;			\
+  uset_cursor_ft iterate;			\
   uset_next_ft next
 
 typedef struct _uset{

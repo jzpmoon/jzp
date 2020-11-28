@@ -8,6 +8,7 @@ ulist_def_tpl(long);
 ulist_def_tpl(float);
 ulist_def_tpl(double);
 ulist_def_tpl(uvoidp);
+ulist_def_tpl(ucharp);
 
 void* ulist_append(ulist* list,void* value){
   ulist* header=list;

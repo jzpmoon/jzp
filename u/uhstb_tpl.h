@@ -8,10 +8,10 @@
     struct _uhsnd_##t* next;			\
     t                  k;			\
   } uhsnd_##t;					\
-  typedef struct _uhstb_##t##_iterator{		\
+  typedef struct _uhstb_##t##_cursor{		\
     uhsnd_##t* next_nd;				\
     int next_idx;				\
-  } uhstb_##t##_iterator;			\
+  } uhstb_##t##_cursor;				\
   typedef struct _uhstb_##t{			\
     USETHEADER;					\
     int len;					\

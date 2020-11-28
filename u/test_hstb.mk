@@ -1,6 +1,5 @@
-bin=test_hash_table
-obj=test_hash_table.o \
-	uhash_table.o \
+bin=test_hstb
+obj=test_hstb.o \
 	ustring.o \
 	ustring_table.o \
 	uhstb.o

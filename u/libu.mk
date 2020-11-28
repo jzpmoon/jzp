@@ -1,6 +1,5 @@
 lib_name=libu.so
-obj_list=uhash_table.o   \
-         ulist.o         \
+obj_list=ulist.o         \
          ustack.o      	 \
          ustring.o       \
          ustring_table.o \

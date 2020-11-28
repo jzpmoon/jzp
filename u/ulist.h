@@ -8,6 +8,7 @@ ulist_decl_tpl(long);
 ulist_decl_tpl(float);
 ulist_decl_tpl(double);
 ulist_decl_tpl(uvoidp);
+ulist_decl_tpl(ucharp);
 
 typedef struct _ulist{
   struct _ulist* prev;

@@ -7,5 +7,6 @@
 typedef int ubool;
 typedef int usize_t;
 typedef void* uvoidp;
+typedef char* ucharp;
 
 #endif

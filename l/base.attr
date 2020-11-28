@@ -57,7 +57,7 @@ LDEFATTR(subr,"subr",{
     if(!blk){
       uabort("subr new blk error!");
     }
-    vdfg_grp_cdapd(grp,blk);
+    vdfg_grp_cdapd(grp,(vps_dfg*)blk);
     
     next = last_cdr(next);
     while(next){
@@ -81,7 +81,7 @@ LDEFATTR(subr,"subr",{
 	if(inst == NULL || inst->t != vpsk_inst){
 	  uabort("not a inst!");
 	}
-	vdfg_blk_apd(blk,inst);
+	vdfg_blk_apd(blk,(vps_inst*)inst);
       }
       next = last_cdr(next);
     }

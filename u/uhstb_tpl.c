@@ -4,29 +4,29 @@
 #include "uerror.h"
 #include "uhstb.h"
 
-#define uhstb_iterator_tpl(t)					\
-  static void uhstb_##t##_iterator_init(uiterator* iterator){	\
-    uhstb_##t##_iterator* i = (uhstb_##t##_iterator*)iterator;	\
+#define uhstb_cursor_tpl(t)					\
+  static void uhstb_##t##_cursor_init(ucursor* cursor){		\
+    uhstb_##t##_cursor* i = (uhstb_##t##_cursor*)cursor;	\
     i->next_idx = -1;						\
     i->next_nd = NULL;						\
   }
 
-#define uhstb_next_tpl(t)					\
-  static void* uhstb_##t##_next(uset* set,uiterator* iterator){	\
-    uhstb_##t* hstb = (uhstb_##t*)set;				\
-    uhstb_##t##_iterator* i = (uhstb_##t##_iterator*)iterator;	\
-    void* k;							\
-    while(!i->next_nd){						\
-      if(hstb->len <= i->next_idx){				\
-	return NULL;						\
-      }else{							\
-	i->next_idx++;						\
-	i->next_nd = hstb->ndar[i->next_idx];			\
-      }								\
-    }								\
-    k = (void*)&i->next_nd->k;					\
-    i->next_nd = i->next_nd->next;				\
-    return k;							\
+#define uhstb_cursor_next_tpl(t)					\
+  static void* uhstb_##t##_cursor_next(uset* set,ucursor* cursor){	\
+    uhstb_##t* hstb = (uhstb_##t*)set;					\
+    uhstb_##t##_cursor* c = (uhstb_##t##_cursor*)cursor;		\
+    void* k;								\
+    while(!c->next_nd){							\
+      if(hstb->len <= c->next_idx){					\
+	return NULL;							\
+      }else{								\
+	c->next_idx++;							\
+	c->next_nd = hstb->ndar[c->next_idx];				\
+      }									\
+    }									\
+    k = (void*)&c->next_nd->k;						\
+    c->next_nd = c->next_nd->next;					\
+    return k;								\
   }
 
 #define uhstb_new_tpl(t)				\
@@ -35,8 +35,8 @@
     int size = TYPE_SIZE_OF(uhstb_##t,uhsnd_##t,len);	\
     int i;						\
     unew(hstb,size,return NULL;);			\
-    hstb->iterate = uhstb_##t##_iterator_init;		\
-    hstb->next = uhstb_##t##_next;			\
+    hstb->iterate = uhstb_##t##_cursor_init;		\
+    hstb->next = uhstb_##t##_cursor_next;		\
     hstb->len = len;					\
     for(i = 0;i < len;i++){				\
       hstb->ndar[i] = NULL;				\
@@ -110,8 +110,8 @@
   }
 
 #define uhstb_def_tpl(t)			\
-  uhstb_iterator_tpl(t);			\
-  uhstb_next_tpl(t);				\
+  uhstb_cursor_tpl(t);				\
+  uhstb_cursor_next_tpl(t);			\
   uhstb_new_tpl(t);				\
   uhstb_put_tpl(t);				\
   uhstb_get_tpl(t)

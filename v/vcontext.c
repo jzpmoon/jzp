@@ -110,29 +110,29 @@ int vcontext_load(vcontext* ctx,vps_t* vps){
   }
   case vpsk_mod:{
     vps_mod* mod = (vps_mod*)vps;
-    uiterator iterator;
-    uhstb_vps_data* data = mod->data;
-    uhstb_vdfg_graph* code = mod->code;
+    ucursor cursor;
+    uhstb_vps_datap* data = mod->data;
+    uhstb_vdfg_graphp* code = mod->code;
     ulog("vcontext_load mod");
-    (data->iterate)(&iterator);
+    (data->iterate)(&cursor);
     ulog("vcontext_load mod data");
     while(1){
-      vps_data* d = (data->next)((uset*)data,&iterator);
-      if(!d){
+      vps_datap* dp = (data->next)((uset*)data,&cursor);
+      if(!dp){
 	break;
       }
       ulog("vcontext_load mod data entry");
-      vcontext_load(ctx,(vps_t*)d);
+      vcontext_load(ctx,(vps_t*)*dp);
     }
     ulog("vcontext_load mod code");
-    (data->iterate)(&iterator);
+    (data->iterate)(&cursor);
     while(1){
-      vdfg_graph* g = (code->next)((uset*)code,&iterator);
-      if(!g){
+      vdfg_graphp* gp = (code->next)((uset*)code,&cursor);
+      if(!gp){
 	break;
       }
       ulog("vcontext_load mod graph entry");
-      vcontext_load(ctx,(vps_t*)g);
+      vcontext_load(ctx,(vps_t*)*gp);
     }
     break;
   }

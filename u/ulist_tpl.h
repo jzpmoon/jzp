@@ -2,6 +2,7 @@
 #define _ULIST_TPL_H_
 
 #include "udef.h"
+#include "uset.h"
 
 #define ulist_tpl(t)				\
   typedef struct _ulsnd_##t{			\
@@ -9,7 +10,11 @@
     struct _ulsnd_##t* next;			\
     t value;					\
   } ulsnd_##t;					\
+  typedef struct _ulist_##t##_cursor{		\
+    ulsnd_##t* next;				\
+  } ulist_##t##_cursor;				\
   typedef struct _ulist_##t{			\
+    USETHEADER;					\
     int len;					\
     ulsnd_##t* header;				\
   } ulist_##t
