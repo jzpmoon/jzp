@@ -127,6 +127,8 @@ vps_data* vps_any_new(ustring* name,
 
 vdfg_block* vdfg_block_new();
 
+int vdfg_blk2inst(vdfg_block* blk,ulist_vinstp* insts);
+
 #define vdfg_blk_apd(blk,inst)			\
   ulist_vps_instp_append((blk)->insts,inst)
 

@@ -7,7 +7,9 @@
 
 vcontext* vcontext_new(vgc_heap* heap);
 
-vsymbol* vcontext_obj_put(vcontext* ctx,ustring* name,vslot obj);
+vsymbol* vcontext_obj_put(vcontext* ctx,ustring* name,vgc_obj* obj);
+
+vsymbol* vcontext_slot_put(vcontext* ctx,ustring* name,vslot obj);
 
 int vcontext_load(vcontext* ctx,vps_t* vps);
 

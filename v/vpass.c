@@ -157,6 +157,10 @@ vdfg_block* vdfg_block_new(){
   return b;
 }
 
+int vdfg_blk2inst(vdfg_block* blk,ulist_vinstp* insts){
+  return 0;
+}
+
 vdfg_graph* vdfg_graph_new(){
   vdfg_graph* g = ualloc(sizeof(vdfg_graph));
   if(g){

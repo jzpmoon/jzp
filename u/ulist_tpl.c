@@ -58,8 +58,32 @@
     return 0;						\
   }
 
+#define ulist_concat_tpl(t)					\
+  void ulist_##t##_concat(ulist_##t* list1,ulist_##t* list2){	\
+    ulsnd_##t* header1 = list1->header;				\
+    ulsnd_##t* header2 = list2->header;				\
+    ulsnd_##t* footer1;						\
+    ulsnd_##t* footer2;						\
+    if(!header1 || !header2){					\
+      return;							\
+    }								\
+    footer1 = header1->prev;					\
+    footer2 = header2->prev;					\
+    header1->prev = footer2;					\
+    footer2->next = header1;					\
+    header2->prev = footer1;					\
+    footer1->next = header2;					\
+  }
+
+#define ulist_del_tpl(t)					\
+  void ulist_##t##_del(ulist_##t* list,ulist_##t##_del_ft del){	\
+								\
+  }
+
 #define ulist_def_tpl(t)			\
   ulist_cursor_tpl(t);				\
   ulist_cursor_next_tpl(t);			\
   ulist_new_tpl(t);				\
-  ulist_append_tpl(t)
+  ulist_append_tpl(t);				\
+  ulist_concat_tpl(t);				\
+  ulist_del_tpl(t)

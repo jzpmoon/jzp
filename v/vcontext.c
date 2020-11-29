@@ -67,7 +67,13 @@ static int vobjtb_key_comp(vsymbol* sym1,vsymbol* sym2){
   return (sym1->name - sym2->name);
 }
 
-vsymbol* vcontext_obj_put(vcontext* ctx,ustring* name,vslot obj){
+vsymbol* vcontext_obj_put(vcontext* ctx,ustring* name,vgc_obj* obj){
+  vslot slot;
+  vslot_ref_set(slot,obj);
+  return vcontext_slot_put(ctx,name,slot);
+}
+
+vsymbol* vcontext_slot_put(vcontext* ctx,ustring* name,vslot obj){
   vsymbol symbol = (vsymbol){name,obj};
   vsymbol* new_symbol;
   int retval = uhstb_vsymbol_put(ctx->objtb,
@@ -138,7 +144,33 @@ int vcontext_load(vcontext* ctx,vps_t* vps){
   }
   case vdfgk_grp:{
     vdfg_graph* grp = (vdfg_graph*)vps;
+    ulist_vps_dfgp* dfgs = grp->dfgs;
+    ulist_vinstp* insts = ulist_vinstp_new();
     vgc_subr* subr;
+    ucursor cursor;
+    dfgs->iterate(&cursor);
+    while(1){
+      vps_dfgp* dfgp = dfgs->next((uset*)dfgs,&cursor);
+      vdfg_block* blk;
+      if(!dfgp){
+	break;
+      }
+      if((*dfgp)->t != vdfgk_blk){
+	uabort("vps_dfg not a block!");
+      }
+      blk = (vdfg_block*)(*dfgp);
+      if(vdfg_blk2inst(blk,insts)){
+	uabort("vdfg_blk2inst error!");
+      }
+    }
+    vinst_to_str(ctx,insts);
+    vgc_obj_slot_get(ctx->heap,ctx,consts);
+    subr = vgc_subr_new(ctx->heap,
+			grp->params->len,
+			0,
+			vgc_heap_area_active);
+    vcontext_obj_put(ctx,grp->name,(vgc_obj*)subr);
+    ulist_vinstp_del(insts,NULL);
     ulog("vcontext_load graph");
     break;
   }
