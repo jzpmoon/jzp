@@ -10,14 +10,4 @@ ulist_decl_tpl(double);
 ulist_decl_tpl(uvoidp);
 ulist_decl_tpl(ucharp);
 
-typedef struct _ulist{
-  struct _ulist* prev;
-  struct _ulist* next;
-  void* value;
-} ulist;
-
-void* ulist_append(ulist* list,void* value);
-
-int ulist_length(ulist* list);
-
 #endif

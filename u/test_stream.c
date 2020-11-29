@@ -66,7 +66,6 @@ int string_table_test(){
   ustring_table* strtb = ustring_table_new(10);
   ulog("1");
   ustring* str = ustring_table_put(strtb,
-				   10,
 				   a,
 				   -1);
   
@@ -75,5 +74,5 @@ int string_table_test(){
 }
 
 int main(){
-  string_table_test();
+  main_test();
 }

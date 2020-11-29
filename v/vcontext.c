@@ -137,6 +137,8 @@ int vcontext_load(vcontext* ctx,vps_t* vps){
     break;
   }
   case vdfgk_grp:{
+    vdfg_graph* grp = (vdfg_graph*)vps;
+    vgc_subr* subr;
     ulog("vcontext_load graph");
     break;
   }

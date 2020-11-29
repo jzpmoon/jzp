@@ -163,7 +163,8 @@ vdfg_graph* vdfg_graph_new(){
     g->t = vdfgk_grp;
     g->link = NULL;
     g->name = NULL;
-    g->dts = ulist_vps_datap_new();
+    g->params = ulist_vps_datap_new();
+    g->locals = ulist_vps_datap_new();
     g->dfgs = ulist_vps_dfgp_new();
     g->entry = NULL;
   }

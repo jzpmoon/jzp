@@ -88,7 +88,8 @@ typedef struct _vdfg_block{
 typedef struct _vdfg_graph{
   VDFGHEADER;
   ustring* name;
-  ulist_vps_datap* dts;
+  ulist_vps_datap* params;
+  ulist_vps_datap* locals;
   ulist_vps_dfgp* dfgs;
   vps_dfg* entry;
 } vdfg_graph,*vdfg_graphp;
@@ -135,7 +136,7 @@ vdfg_graph* vdfg_graph_new();
   ulist_vps_dfgp_append((grp)->dfgs,dfg)
 
 #define vdfg_grp_dtapd(grp,dt)			\
-  ulist_vps_datap_append((grp)->dts,dt)
+  ulist_vps_datap_append((grp)->params,dt)
 
 vps_mod* vps_mod_new();
 
