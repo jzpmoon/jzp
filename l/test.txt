@@ -1,6 +1,7 @@
 (subr inc (x y)
-  (load x)
+  (load 1)
   (push 1)
   (add)
   (return))
 
+(entry inc)

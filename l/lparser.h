@@ -107,6 +107,6 @@ int last_attr_get_comp(last_attr* k1,last_attr* k2);
 
 void ltoken_state_attr_init(ltoken_state* ts);
 
-vps_mod* last2vps(ltoken_state* ts,last_obj* ast_obj);
+int last2vps(ltoken_state* ts,last_obj* ast_obj,vps_mod* mod);
 
 #endif

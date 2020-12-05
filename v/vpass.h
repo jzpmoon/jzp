@@ -4,12 +4,12 @@
 #include "ulist_tpl.h"
 #include "vgc_obj.h"
 
-#define VPSHEADER \
-  int t;
+#define VPSHEADER				\
+  int t
 
-#define VDFGHEADER \
-  VPSHEADER	   \
-  struct _vps_dfg* link
+#define VDFGHEADER				\
+  VPSHEADER;					\
+  struct _vps_t* parent
 
 enum{
   vpsk_dt,
@@ -64,7 +64,7 @@ typedef struct _vinst{
 typedef struct _vps_inst{
   VPSHEADER;
   int instk;
-  usize_t opcode;
+  vinst inst;
   ustring* label;
   union {
     vps_data* data;
@@ -101,6 +101,8 @@ typedef struct _vps_mod{
   VPSHEADER;
   uhstb_vps_datap* data;
   uhstb_vdfg_graphp* code;
+  ustring* entry;
+  ustring* exit;
 } vps_mod;
 
 #define VPS_MOD_DATA_TABLE_SIZE 17

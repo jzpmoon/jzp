@@ -22,7 +22,7 @@ vps_inst_new(int instk,
   if(inst){
     inst->t = vpsk_inst;
     inst->instk = instk;
-    inst->opcode = opcode;
+    inst->inst.opcode = opcode;
     inst->label = label;
     if(data){
       inst->u.data = data;
@@ -151,13 +151,52 @@ vdfg_block* vdfg_block_new(){
   vdfg_block* b = ualloc(sizeof(vdfg_block));
   if(b){
     b->t = vdfgk_blk;
-    b->link = NULL;
+    b->parent = NULL;
     b->insts = ulist_vps_instp_new();
   }
   return b;
 }
 
 int vdfg_blk2inst(vdfg_block* blk,ulist_vinstp* insts){
+  ulist_vps_instp* insts_l1;
+  ucursor cursor;
+  insts_l1 = blk->insts;
+  insts->iterate(&cursor);
+  while(1){
+    vps_instp* instp = insts->next((uset*)insts_l1,&cursor);
+    vps_inst* inst_l1;
+    vinst* inst;
+    if(!instp){
+      break;
+    }
+    inst_l1 = *instp;
+    switch(inst_l1->instk){
+    case vinstk_imm:
+      inst = &inst_l1->inst;
+      if(inst_l1->u.data == NULL){
+	uabort("inst imm not find!");
+      }
+      inst->operand = inst_l1->u.data->idx;
+      ulog("inst imm");
+      ulist_vinstp_append(insts,inst);
+      break;
+    case vinstk_data:
+      inst = &inst_l1->inst;
+      ulog("inst data");
+      ulist_vinstp_append(insts,inst);
+      break;
+    case vinstk_code:
+      ulog("inst non");
+      break;
+    case vinstk_non:
+      inst = &inst_l1->inst;
+      ulog("inst non");
+      ulist_vinstp_append(insts,inst);
+      break;
+    default:
+      break;
+    }
+  }
   return 0;
 }
 
@@ -165,7 +204,7 @@ vdfg_graph* vdfg_graph_new(){
   vdfg_graph* g = ualloc(sizeof(vdfg_graph));
   if(g){
     g->t = vdfgk_grp;
-    g->link = NULL;
+    g->parent = NULL;
     g->name = NULL;
     g->params = ulist_vps_datap_new();
     g->locals = ulist_vps_datap_new();

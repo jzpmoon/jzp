@@ -12,7 +12,7 @@ int test_1(){
   ustream* stream;
   ltoken_state* ts;
   last_obj* ast_obj;
-  vps_mod* p;
+  vps_mod* mod;
 
   heap = vgc_heap_new(1024,
 		      1024*10,
@@ -43,13 +43,22 @@ int test_1(){
     uabort("new token state error!");
   }
 
-  ast_obj = lparser_parse(ts);
-  last_obj_log(ast_obj);
-
-  p = last2vps(ts,ast_obj);
-
-  vcontext_load(ctx,(vps_t*)p);
-
+  mod = vps_mod_new();
+  if (!mod) {
+    uabort("new mod error!");
+  }
+  
+  while(1){
+    ast_obj = lparser_parse(ts);
+    if (ast_obj == NULL){
+      break;
+    }
+    last_obj_log(ast_obj);
+    last2vps(ts,ast_obj,mod);
+  }
+  
+  vcontext_load(ctx,(vps_t*)mod);
+  
   return 0;
 }
 

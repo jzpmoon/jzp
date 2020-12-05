@@ -32,6 +32,7 @@ LDEFATTR(subr,"subr",{
     if(!grp){
       uabort("subr new dfg error!");
     }
+    grp->parent = (vps_t*)vps;
     /* args procedure */
     while(args != NULL){
       last_obj* arg = last_car(args);
@@ -57,6 +58,7 @@ LDEFATTR(subr,"subr",{
     if(!blk){
       uabort("subr new blk error!");
     }
+    blk->parent = (vps_t*)grp;
     vdfg_grp_cdapd(grp,(vps_dfg*)blk);
     
     next = last_cdr(next);
@@ -97,29 +99,6 @@ LDEFATTR(subr,"subr",{
 LDEFATTR(load,"load",{
     vps_inst* inst;
     last_obj* obj;
-    last_symbol* sym;
-    last_obj* next;
-
-    next = last_cdr(ast_obj);
-    if(next->t != lastk_cons){
-      uabort("load inst error!");
-    }
-    obj = last_car(next);
-    if(obj->t != lastk_symbol){
-      uabort("load inst error!");
-    }
-    sym = (last_symbol*)obj;
-    inst = vps_inst_new(vinstk_data,Bload,sym->name,NULL,NULL);
-    ulog("load");
-    return (vps_t*)inst;
-  })
-
-/*
- * define attribute push
- */
-LDEFATTR(push,"push",{
-    vps_inst* inst;
-    last_obj* obj;
     last_obj* next;
 
     next = last_cdr(ast_obj);
@@ -136,7 +115,35 @@ LDEFATTR(push,"push",{
       vps_mod_data_put((vps_mod*)vps,data);
       inst = vps_inst_new(vinstk_imm,Bload,NULL,data,NULL);
     }else{
-      uabort("load inst error!");
+      uabort("load inst error!");      
+    }
+    ulog("load");
+    return (vps_t*)inst;
+  })
+
+/*
+ * define attribute push
+ */
+LDEFATTR(push,"push",{
+    vps_inst* inst;
+    last_obj* obj;
+    last_obj* next;
+
+    next = last_cdr(ast_obj);
+    if(next->t != lastk_cons){
+      uabort("push inst error!");
+    }
+    obj = last_car(next);
+    if(obj->t == lastk_symbol){
+      last_symbol* sym = (last_symbol*)obj;
+      inst = vps_inst_new(vinstk_data,Bpush,sym->name,NULL,NULL);
+    }else if(obj->t == lastk_number){
+      last_number* num = (last_number*)obj;
+      vps_data* data = vps_num_new(NULL,num->dnum,vstk_heap);
+      vps_mod_data_put((vps_mod*)vps,data);
+      inst = vps_inst_new(vinstk_imm,Bpush,NULL,data,NULL);
+    }else{
+      uabort("push inst error!");
     }
     ulog("push");
     return (vps_t*)inst;

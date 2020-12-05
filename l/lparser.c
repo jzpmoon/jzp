@@ -283,6 +283,8 @@ last_obj* lparser_parse(ltoken_state* ts){
     case ltk_left:
       s_exp = lparser_exp_parse(ts);
       return s_exp;
+    case ltk_eof:
+      return NULL;
     default:
       s_exp = lparser_atom_parse(ts);
       return s_exp;
@@ -438,8 +440,7 @@ ltoken_state* ltoken_state_new(ustream* stream,
   return NULL;
 }
 
-vps_mod* last2vps(ltoken_state* ts,last_obj* ast_obj){
-  vps_mod* vps =NULL;
+int last2vps(ltoken_state* ts,last_obj* ast_obj,vps_mod* mod){
   switch(ast_obj->t){
   case lastk_cons:{
     last_obj* obj = last_car(ast_obj);
@@ -447,11 +448,7 @@ vps_mod* last2vps(ltoken_state* ts,last_obj* ast_obj){
       last_symbol* sym = (last_symbol*)obj;
       if(sym->attr){
 	last_attr* attr = sym->attr;
-	vps = vps_mod_new();
-	if(!vps){
-	  uabort("ast2vps vps_mod_new error!");
-	}
-	(attr->action)(vps,ast_obj);
+	(attr->action)(mod,ast_obj);
       }
     }
   }
@@ -463,7 +460,7 @@ vps_mod* last2vps(ltoken_state* ts,last_obj* ast_obj){
   case lastk_string:
     break;
   default:
-    uabort("ast type error!");
+    return -1;
   }
-  return vps;
+  return 0;
 }
