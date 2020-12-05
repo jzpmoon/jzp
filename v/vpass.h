@@ -101,8 +101,7 @@ typedef struct _vps_mod{
   VPSHEADER;
   uhstb_vps_datap* data;
   uhstb_vdfg_graphp* code;
-  ustring* entry;
-  ustring* exit;
+  vdfg_graph* entry;
 } vps_mod;
 
 #define VPS_MOD_DATA_TABLE_SIZE 17

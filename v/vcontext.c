@@ -88,6 +88,39 @@ vsymbol* vcontext_slot_put(vcontext* ctx,ustring* name,vslot obj){
   return new_symbol;
 }
 
+vsymbol* vcontext_graph_load(vcontext* ctx,vdfg_graph* grp){
+  vsymbol* symbol;
+  ulist_vps_dfgp* dfgs = grp->dfgs;
+  ulist_vinstp* insts = ulist_vinstp_new();
+  vgc_subr* subr;
+  ucursor cursor;
+  dfgs->iterate(&cursor);
+  while(1){
+    vps_dfgp* dfgp = dfgs->next((uset*)dfgs,&cursor);
+    vdfg_block* blk;
+    if(!dfgp){
+      break;
+    }
+    if((*dfgp)->t != vdfgk_blk){
+      uabort("vps_dfg not a block!");
+    }
+    blk = (vdfg_block*)(*dfgp);
+    if(vdfg_blk2inst(blk,insts)){
+      uabort("vdfg_blk2inst error!");
+    }
+  }
+  vinst_to_str(ctx,insts);
+  vgc_obj_slot_get(ctx->heap,ctx,consts);
+  subr = vgc_subr_new(ctx->heap,
+		      grp->params->len,
+		      0,
+		      vgc_heap_area_active);
+  symbol = vcontext_obj_put(ctx,grp->name,(vgc_obj*)subr);
+  ulist_vinstp_del(insts,NULL);
+  ulog("vcontext_graph_load");
+  return symbol;
+}
+
 int vcontext_load(vcontext* ctx,vps_t* vps){
   switch(vps->t){
   case vpsk_dt:{
@@ -119,7 +152,10 @@ int vcontext_load(vcontext* ctx,vps_t* vps){
     ucursor cursor;
     uhstb_vps_datap* data = mod->data;
     uhstb_vdfg_graphp* code = mod->code;
+    vsymbol* symbol;
+    
     ulog("vcontext_load mod");
+
     (data->iterate)(&cursor);
     ulog("vcontext_load mod data");
     while(1){
@@ -130,6 +166,7 @@ int vcontext_load(vcontext* ctx,vps_t* vps){
       ulog("vcontext_load mod data entry");
       vcontext_load(ctx,(vps_t*)*dp);
     }
+
     ulog("vcontext_load mod code");
     (data->iterate)(&cursor);
     while(1){
@@ -140,38 +177,15 @@ int vcontext_load(vcontext* ctx,vps_t* vps){
       ulog("vcontext_load mod graph entry");
       vcontext_load(ctx,(vps_t*)*gp);
     }
+
+    symbol = vcontext_graph_load(ctx,mod->entry);
+    vgc_heap_stack_push(ctx->heap,symbol->slot);
+    vcontext_execute(ctx);
+    
     break;
   }
   case vdfgk_grp:{
-    vdfg_graph* grp = (vdfg_graph*)vps;
-    ulist_vps_dfgp* dfgs = grp->dfgs;
-    ulist_vinstp* insts = ulist_vinstp_new();
-    vgc_subr* subr;
-    ucursor cursor;
-    dfgs->iterate(&cursor);
-    while(1){
-      vps_dfgp* dfgp = dfgs->next((uset*)dfgs,&cursor);
-      vdfg_block* blk;
-      if(!dfgp){
-	break;
-      }
-      if((*dfgp)->t != vdfgk_blk){
-	uabort("vps_dfg not a block!");
-      }
-      blk = (vdfg_block*)(*dfgp);
-      if(vdfg_blk2inst(blk,insts)){
-	uabort("vdfg_blk2inst error!");
-      }
-    }
-    vinst_to_str(ctx,insts);
-    vgc_obj_slot_get(ctx->heap,ctx,consts);
-    subr = vgc_subr_new(ctx->heap,
-			grp->params->len,
-			0,
-			vgc_heap_area_active);
-    vcontext_obj_put(ctx,grp->name,(vgc_obj*)subr);
-    ulist_vinstp_del(insts,NULL);
-    ulog("vcontext_load graph");
+    vcontext_graph_load(ctx,(vdfg_graph*)vps);
     break;
   }
   case vdfgk_blk:{

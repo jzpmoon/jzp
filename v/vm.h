@@ -13,6 +13,4 @@ enum vbytecode{
   #undef DF
 };
 
-void vcontext_execute(vcontext* ctx);
-
 #endif

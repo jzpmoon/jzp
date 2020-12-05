@@ -11,6 +11,10 @@ vsymbol* vcontext_obj_put(vcontext* ctx,ustring* name,vgc_obj* obj);
 
 vsymbol* vcontext_slot_put(vcontext* ctx,ustring* name,vslot obj);
 
+vsymbol* vcontext_graph_load(vcontext* ctx,vdfg_graph* grp);
+
 int vcontext_load(vcontext* ctx,vps_t* vps);
+
+void vcontext_execute(vcontext* ctx);
 
 #endif

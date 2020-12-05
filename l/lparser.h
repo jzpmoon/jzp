@@ -13,7 +13,9 @@ typedef struct _last_obj{
 
 last_obj* lparser_parse(ltoken_state* ts);
 
-typedef vps_t*(*last_attr_ft)(vps_mod* vps,last_obj* ast_obj);
+typedef vps_t*(*last_attr_ft)(vps_mod* vps,
+			      vps_dfg* parent,
+			      last_obj* ast_obj);
 
 typedef struct _last_attr{
   char* sname;
@@ -73,7 +75,8 @@ void last_obj_log(last_obj* ast_obj);
 
 #define LDEFATTR(aname,sname,body)			\
   vps_t*  _last_attr_action_##aname(vps_mod* vps,	\
-				 last_obj* ast_obj){	\
+				    vps_dfg* parent,	\
+				    last_obj* ast_obj){	\
     body						\
       }							\
   static last_attr _last_attr_infor_##aname =		\

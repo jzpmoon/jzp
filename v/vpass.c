@@ -226,6 +226,7 @@ vps_mod* vps_mod_new(){
     if(!mod->code){
       uabort("new hash table code error!");
     }
+    mod->entry = NULL;
   }
   return mod;
 }
