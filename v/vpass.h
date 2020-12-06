@@ -21,7 +21,8 @@ enum{
 
 enum{
   vinstk_imm,
-  vinstk_data,
+  vinstk_glodt,
+  vinstk_locdt,
   vinstk_code,
   vinstk_non,
 };
@@ -77,7 +78,7 @@ typedef struct _vps_dfg{
 } vps_dfg,*vps_dfgp;
 
 ulist_decl_tpl(vps_instp);
-ulist_decl_tpl(vps_datap);
+uhstb_decl_tpl(vps_datap);
 ulist_decl_tpl(vps_dfgp);
 
 typedef struct _vdfg_block{
@@ -88,13 +89,13 @@ typedef struct _vdfg_block{
 typedef struct _vdfg_graph{
   VDFGHEADER;
   ustring* name;
-  ulist_vps_datap* params;
-  ulist_vps_datap* locals;
+  uhstb_vps_datap* locals;
   ulist_vps_dfgp* dfgs;
   vps_dfg* entry;
 } vdfg_graph,*vdfg_graphp;
 
-uhstb_decl_tpl(vps_datap);
+#define VDFG_GRP_DATA_TABLE_SIZE 17
+
 uhstb_decl_tpl(vdfg_graphp);
 
 typedef struct _vps_mod{
@@ -138,8 +139,9 @@ vdfg_graph* vdfg_graph_new();
 #define vdfg_grp_cdapd(grp,dfg)			\
   ulist_vps_dfgp_append((grp)->dfgs,dfg)
 
-#define vdfg_grp_dtapd(grp,dt)			\
-  ulist_vps_datap_append((grp)->params,dt)
+void vdfg_grp_dtapd(vdfg_graph* grp,vps_data* dt);
+
+vps_data* vdfg_grp_dtget(vdfg_graph* grp,ustring* name);
 
 vps_mod* vps_mod_new();
 

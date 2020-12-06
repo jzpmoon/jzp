@@ -8,7 +8,6 @@ uhstb_def_tpl(vps_datap);
 uhstb_def_tpl(vdfg_graphp);
 ulist_def_tpl(vpsp);
 ulist_def_tpl(vps_instp);
-ulist_def_tpl(vps_datap);
 ulist_def_tpl(vps_dfgp);
 ulist_def_tpl(vinstp);
 
@@ -162,10 +161,12 @@ int vdfg_blk2inst(vdfg_block* blk,ulist_vinstp* insts){
   ucursor cursor;
   insts_l1 = blk->insts;
   insts->iterate(&cursor);
+
   while(1){
     vps_instp* instp = insts->next((uset*)insts_l1,&cursor);
     vps_inst* inst_l1;
     vinst* inst;
+
     if(!instp){
       break;
     }
@@ -180,10 +181,24 @@ int vdfg_blk2inst(vdfg_block* blk,ulist_vinstp* insts){
       ulog("inst imm");
       ulist_vinstp_append(insts,inst);
       break;
-    case vinstk_data:
+    case vinstk_locdt:{
+      vps_t* dfg = blk->parent;
+      vdfg_graph* grp;
+      vps_data* data;
+
+      if(!dfg || dfg->t != vdfgk_grp){
+	uabort("vdfg_block have no parent!");
+      }
+      grp = (vdfg_graph*)dfg;
+      data = vdfg_grp_dtget(grp,inst_l1->label);
+      if(!data){
+	uabort1("local variable: %s not find",inst_l1->label->value);
+      }
       inst = &inst_l1->inst;
+      inst->operand = data->idx;
       ulog("inst data");
       ulist_vinstp_append(insts,inst);
+    }
       break;
     case vinstk_code:
       ulog("inst non");
@@ -206,12 +221,67 @@ vdfg_graph* vdfg_graph_new(){
     g->t = vdfgk_grp;
     g->parent = NULL;
     g->name = NULL;
-    g->params = ulist_vps_datap_new();
-    g->locals = ulist_vps_datap_new();
+    g->locals = uhstb_vps_datap_new(VDFG_GRP_DATA_TABLE_SIZE);
     g->dfgs = ulist_vps_dfgp_new();
     g->entry = NULL;
   }
   return g;
+}
+
+static int vdfg_grp_dt_put_comp(vps_datap* data1,vps_datap* data2){
+  vps_data* d1;
+  vps_data* d2;
+  ustring* n1;
+  ustring* n2;
+  d1 = *data1;
+  d2 = *data2;
+  n1 = d1->name;
+  n2 = d2->name;
+  return ustring_comp(n1,n2);
+}
+
+void vdfg_grp_dtapd(vdfg_graph* grp,vps_data* dt){
+  ustring* name = dt->name;
+  unsigned int hscd = 0;
+  if(name){
+    hscd = name->hash_code;
+  }
+  uhstb_vps_datap_put(grp->locals,
+		      hscd,
+		      &dt,
+		      NULL,
+		      NULL,
+		      vdfg_grp_dt_put_comp);
+}
+
+static int vdfg_grp_dt_get_comp(vps_datap* data1,vps_datap* data2){
+  vps_data* d1;
+  vps_data* d2;
+  ustring* n1;
+  ustring* n2;
+  d1 = *data1;
+  d2 = *data2;
+  n1 = d1->name;
+  n2 = d2->name;
+  return ustring_comp(n1,n2);
+}
+
+vps_data* vdfg_grp_dtget(vdfg_graph* grp,ustring* name){
+  vps_data dt_in;
+  vps_datap dt_ink = &dt_in;
+  vps_datap* dt_outk;
+
+  dt_in.name = name;
+  uhstb_vps_datap_get(grp->locals,
+		      name->hash_code,
+		      &dt_ink,
+		      &dt_outk,
+		      vdfg_grp_dt_get_comp);
+  if(dt_outk){
+    return *dt_outk;
+  }else{
+    return NULL;
+  }
 }
 
 vps_mod* vps_mod_new(){

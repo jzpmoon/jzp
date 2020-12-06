@@ -94,6 +94,7 @@ vsymbol* vcontext_graph_load(vcontext* ctx,vdfg_graph* grp){
   ulist_vinstp* insts = ulist_vinstp_new();
   vgc_subr* subr;
   ucursor cursor;
+
   dfgs->iterate(&cursor);
   while(1){
     vps_dfgp* dfgp = dfgs->next((uset*)dfgs,&cursor);
@@ -109,10 +110,11 @@ vsymbol* vcontext_graph_load(vcontext* ctx,vdfg_graph* grp){
       uabort("vdfg_blk2inst error!");
     }
   }
+
   vinst_to_str(ctx,insts);
   vgc_obj_slot_get(ctx->heap,ctx,consts);
   subr = vgc_subr_new(ctx->heap,
-		      grp->params->len,
+		      grp->locals->len,
 		      0,
 		      vgc_heap_area_active);
   symbol = vcontext_obj_put(ctx,grp->name,(vgc_obj*)subr);
@@ -171,11 +173,13 @@ int vcontext_load(vcontext* ctx,vps_t* vps){
     (data->iterate)(&cursor);
     while(1){
       vdfg_graphp* gp = (code->next)((uset*)code,&cursor);
+      vdfg_graph* g;
       if(!gp){
 	break;
       }
-      ulog("vcontext_load mod graph entry");
-      vcontext_load(ctx,(vps_t*)*gp);
+      g = *gp;
+      ulog1("vcontext_load mod graph: %s",g->name->value);
+      vcontext_graph_load(ctx,g);
     }
 
     symbol = vcontext_graph_load(ctx,mod->entry);
@@ -185,6 +189,7 @@ int vcontext_load(vcontext* ctx,vps_t* vps){
     break;
   }
   case vdfgk_grp:{
+    ulog("vcontext_load graph");
     vcontext_graph_load(ctx,(vdfg_graph*)vps);
     break;
   }

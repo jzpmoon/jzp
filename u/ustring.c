@@ -59,14 +59,19 @@ void ustring_dest(ustring* str){
 }
 
 int ustring_comp(ustring* s1,ustring* s2){
-	if(s1->len==s2->len){
-		return memcmp(
-			s1->value,s2->value,s1->len);
-	}else if(s1->len<s2->len){
-		return -1;
-	}else{
-		return 1;
-	}
+  if(s1 == s2){
+    return 0;
+  }else if(s1->len == s2->len){
+    if(s1->value == s2->value){
+      return 0;
+    }
+    return memcmp(
+		  s1->value,s2->value,s1->len);
+  }else if(s1->len<s2->len){
+    return -1;
+  }else{
+    return 1;
+  }
 }
 
 double ustring_to_number(ustring* str){

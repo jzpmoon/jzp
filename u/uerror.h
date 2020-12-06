@@ -10,17 +10,24 @@
     abort();		\
   }while(0)
 
-#ifndef NDEBUG
-
-#define ulog1(msg,a1)				\
-  do{						\
-    printf((msg),(a1));				\
-    printf("\n");				\
+#define uabort1(msg,a1)	\
+  do{			\
+    printf((msg),(a1));	\
+    printf("\n");	\
+    abort();		\
   }while(0)
+
+#ifndef NDEBUG
 
 #define ulog(msg)				\
   do{						\
     printf(msg);				\
+    printf("\n");				\
+  }while(0)
+
+#define ulog1(msg,a1)				\
+  do{						\
+    printf((msg),(a1));				\
     printf("\n");				\
   }while(0)
 

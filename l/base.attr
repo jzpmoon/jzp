@@ -33,6 +33,7 @@ static vdfg_graph* subr(vps_mod* vps,vps_dfg* parent,last_obj* ast_obj){
 
   obj = last_car(next);
   if(obj){
+    int arg_idx = 0;
     if(obj->t != lastk_cons){
       uabort("subr args invalid!");
     }
@@ -52,8 +53,10 @@ static vdfg_graph* subr(vps_mod* vps,vps_dfg* parent,last_obj* ast_obj){
       if(!data){
 	uabort("vps_any_new error!");
       }
+      data->idx = arg_idx;
       vdfg_grp_dtapd(grp,data);
       args = last_cdr(args);
+      arg_idx++;
     }
   }
   
@@ -131,7 +134,7 @@ LDEFATTR(load,"load",{
     obj = last_car(next);
     if(obj->t == lastk_symbol){
       last_symbol* sym = (last_symbol*)obj;
-      inst = vps_inst_new(vinstk_data,Bload,sym->name,NULL,NULL);
+      inst = vps_inst_new(vinstk_locdt,Bload,sym->name,NULL,NULL);
     }else if(obj->t == lastk_number){
       last_number* num = (last_number*)obj;
       vps_data* data = vps_num_new(NULL,num->dnum,vstk_heap);
@@ -159,7 +162,7 @@ LDEFATTR(push,"push",{
     obj = last_car(next);
     if(obj->t == lastk_symbol){
       last_symbol* sym = (last_symbol*)obj;
-      inst = vps_inst_new(vinstk_data,Bpush,sym->name,NULL,NULL);
+      inst = vps_inst_new(vinstk_locdt,Bpush,sym->name,NULL,NULL);
     }else if(obj->t == lastk_number){
       last_number* num = (last_number*)obj;
       vps_data* data = vps_num_new(NULL,num->dnum,vstk_heap);
