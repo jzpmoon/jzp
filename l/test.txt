@@ -5,7 +5,7 @@
   (return))
 
 (subr test (x)
-  (push x)
+  (push main)
   (push 2)
   (add)
   (return))

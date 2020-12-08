@@ -228,7 +228,7 @@ last_obj* lparser_atom_parse(ltoken_state* ts){
     }
   case ltk_number:
     {
-      last_number* num = last_number_new(ts->num);
+      last_number* num = last_number_new(ts->id,ts->num);
       if(!num){
 	uabort("lparser_atom_parse error!");
       }
@@ -374,10 +374,11 @@ last_symbol* last_symbol_new(ustring* name,last_attr* attr){
   return symbol;
 }
 
-last_number* last_number_new(double dnum){
+last_number* last_number_new(ustring* name,double dnum){
   last_number* number = ualloc(sizeof(last_number));
   if(number){
     number->t = lastk_number;
+    number->name = name;
     number->dnum = dnum;
   }
   return number;

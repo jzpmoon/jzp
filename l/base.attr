@@ -137,9 +137,8 @@ LDEFATTR(load,"load",{
       inst = vps_inst_new(vinstk_locdt,Bload,sym->name,NULL,NULL);
     }else if(obj->t == lastk_number){
       last_number* num = (last_number*)obj;
-      vps_data* data = vps_num_new(NULL,num->dnum,vstk_heap);
-      vps_mod_data_put((vps_mod*)vps,data);
-      inst = vps_inst_new(vinstk_imm,Bload,NULL,data,NULL);
+      inst = vps_inst_new(vinstk_imm,Bload,NULL,NULL,NULL);
+      inst->inst.operand = (usize_t)num->dnum;
     }else{
       uabort("load inst error!");      
     }
@@ -162,10 +161,12 @@ LDEFATTR(push,"push",{
     obj = last_car(next);
     if(obj->t == lastk_symbol){
       last_symbol* sym = (last_symbol*)obj;
-      inst = vps_inst_new(vinstk_locdt,Bpush,sym->name,NULL,NULL);
+      vps_data* data = vps_any_new(sym->name,vstk_heap);
+      vps_mod_data_put(vps,data);
+      inst = vps_inst_new(vinstk_glodt,Bpush,sym->name,data,NULL);
     }else if(obj->t == lastk_number){
       last_number* num = (last_number*)obj;
-      vps_data* data = vps_num_new(NULL,num->dnum,vstk_heap);
+      vps_data* data = vps_num_new(num->name,num->dnum,vstk_heap);
       vps_mod_data_put((vps_mod*)vps,data);
       inst = vps_inst_new(vinstk_imm,Bpush,NULL,data,NULL);
     }else{

@@ -43,6 +43,12 @@ vslot vgc_array_pop(vgc_array* array){
   return array->objs[array->top];
 }
 
+void vgc_array_set(vgc_array* array,int idx,vslot slot){
+  if (idx >= 0 && idx < array->_len) {
+    array->objs[idx] = slot;
+  }
+}
+
 vgc_string* vgc_string_new(vgc_heap* heap,
 			   usize_t string_length,
 			   int area_type){

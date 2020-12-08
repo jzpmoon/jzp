@@ -1,6 +1,8 @@
 #include "uhstb_tpl.c"
+#include "ulist_tpl.c"
 #include "vcontext.h"
 
+ulist_def_tpl(vreloc);
 uhstb_def_tpl(vsymbol);
 
 #define VCONTEXT_OBJTB_SIZE 17
@@ -10,6 +12,7 @@ uhstb_def_tpl(vsymbol);
 
 vcontext* vcontext_new(vgc_heap* heap){
   vcontext* ctx;
+  ulist_vreloc* rells;
   uhstb_vsymbol* objtb;
   ustring_table* symtb;
   ustring_table* strtb;
@@ -22,6 +25,11 @@ vcontext* vcontext_new(vgc_heap* heap){
 
   if(!ctx){
     uabort("vcontext_new: ctx new error!");
+  }
+
+  rells = ulist_vreloc_new();
+  if(!rells){
+    uabort("vcontext_new:rells new error!");
   }
   
   objtb = uhstb_vsymbol_new(VCONTEXT_OBJTB_SIZE);
@@ -46,6 +54,7 @@ vcontext* vcontext_new(vgc_heap* heap){
   }
 
   ctx->heap = heap;
+  ctx->rells = rells;
   ctx->objtb = objtb;
   ctx->symtb = symtb;
   ctx->strtb = strtb;
@@ -64,7 +73,7 @@ vsymbol* vsymbol_new(ustring* name,vslot slot){
 }
 
 static int vobjtb_key_comp(vsymbol* sym1,vsymbol* sym2){
-  return (sym1->name - sym2->name);
+  return ustring_comp(sym1->name, sym2->name);
 }
 
 vsymbol* vcontext_obj_put(vcontext* ctx,ustring* name,vgc_obj* obj){
@@ -88,6 +97,18 @@ vsymbol* vcontext_slot_put(vcontext* ctx,ustring* name,vslot obj){
   return new_symbol;
 }
 
+vsymbol* vcontext_symbol_get(vcontext* ctx,ustring* name){
+  vsymbol symbol_in;
+  vsymbol* symbol_out;
+  symbol_in.name = name;
+  uhstb_vsymbol_get(ctx->objtb,
+		    name->hash_code,
+		    &symbol_in,
+		    &symbol_out,
+		    vobjtb_key_comp);
+  return symbol_out;
+}
+
 vsymbol* vcontext_graph_load(vcontext* ctx,vdfg_graph* grp){
   vsymbol* symbol;
   ulist_vps_dfgp* dfgs = grp->dfgs;
@@ -106,7 +127,7 @@ vsymbol* vcontext_graph_load(vcontext* ctx,vdfg_graph* grp){
       uabort("vps_dfg not a block!");
     }
     blk = (vdfg_block*)(*dfgp);
-    if(vdfg_blk2inst(blk,insts)){
+    if(vdfg_blk2inst(ctx,blk,insts)){
       uabort("vdfg_blk2inst error!");
     }
   }
@@ -130,7 +151,7 @@ int vcontext_load(vcontext* ctx,vps_t* vps){
     vgc_array* consts = vgc_obj_ref_get(ctx,consts,vgc_array);
     vslot slot;
     int top;
-    ulog("vcontext_load data");
+
     if(data->dtk == vdtk_num){
       vslot_num_set(slot,data->u.number);      
     }else if(data->dtk == vdtk_int){
@@ -147,6 +168,8 @@ int vcontext_load(vcontext* ctx,vps_t* vps){
       uabort("vcontext_load consts overflow!");
     }
     data->idx = top;
+    ulog1("vcontext_load data:%s",data->name->value);
+    ulog1("vcontext_load data idx:%d",top);
     break;
   }
   case vpsk_mod:{
@@ -201,4 +224,21 @@ int vcontext_load(vcontext* ctx,vps_t* vps){
     uabort("vcontext_load unknow vps type!");
   }
   return 0;
+}
+
+void vcontext_relocate(vcontext* ctx){
+  ulist_vreloc* rells = ctx->rells;
+  ucursor cursor;
+  rells->iterate(&cursor);
+  while(1){
+    vsymbol* symbol;
+    vreloc* reloc = rells->next((uset*)rells,&cursor);
+    if(!reloc){
+      break;
+    }
+    symbol = vcontext_symbol_get(ctx,reloc->ref_name);
+    if(symbol){
+      vgc_array_set(reloc->rel_obj,reloc->rel_idx,symbol->slot);
+    }
+  }
 }

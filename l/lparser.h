@@ -44,6 +44,7 @@ typedef struct _last_symbol{
 
 typedef struct _last_number{
   LASTHEADER;
+  ustring* name;
   double dnum;
 } last_number;
 
@@ -58,7 +59,7 @@ last_cons* last_cons_new(last_obj* car,last_obj* cdr);
 
 last_symbol* last_symbol_new(ustring* name,last_attr* attr);
 
-last_number* last_number_new(double dnum);
+last_number* last_number_new(ustring* name,double dnum);
 
 last_string* last_string_new(ustring* string);
 

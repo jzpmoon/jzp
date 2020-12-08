@@ -156,7 +156,7 @@ vdfg_block* vdfg_block_new(){
   return b;
 }
 
-int vdfg_blk2inst(vdfg_block* blk,ulist_vinstp* insts){
+int vdfg_blk2inst(vcontext* ctx,vdfg_block* blk,ulist_vinstp* insts){
   ulist_vps_instp* insts_l1;
   ucursor cursor;
   insts_l1 = blk->insts;
@@ -174,10 +174,9 @@ int vdfg_blk2inst(vdfg_block* blk,ulist_vinstp* insts){
     switch(inst_l1->instk){
     case vinstk_imm:
       inst = &inst_l1->inst;
-      if(inst_l1->u.data == NULL){
-	uabort("inst imm not find!");
+      if(inst_l1->u.data){
+	inst->operand = inst_l1->u.data->idx;
       }
-      inst->operand = inst_l1->u.data->idx;
       ulog("inst imm");
       ulist_vinstp_append(insts,inst);
       break;
@@ -196,8 +195,21 @@ int vdfg_blk2inst(vdfg_block* blk,ulist_vinstp* insts){
       }
       inst = &inst_l1->inst;
       inst->operand = data->idx;
-      ulog("inst data");
+      ulog("inst local data");
       ulist_vinstp_append(insts,inst);
+    }
+      break;
+    case vinstk_glodt:{
+      ulist_vreloc* rells = ctx->rells;
+      vps_data* data = inst_l1->u.data;
+      vgc_array* consts;
+      vreloc reloc;
+      consts = vgc_obj_ref_get(ctx,consts,vgc_array);
+      reloc.ref_name = data->name;
+      reloc.rel_idx = data->idx;
+      reloc.rel_obj = consts;
+      ulist_vreloc_append(rells,reloc);
+      ulog("inst global data");      
     }
       break;
     case vinstk_code:

@@ -2,10 +2,11 @@
 #define _VGC_OBJ_H_
 
 #include "udef.h"
-#include "ustack_tpl.h"
 #include "ustring_table.h"
 #include "ubuffer.h"
+#include "ustack_tpl.h"
 #include "uhstb_tpl.h"
+#include "ulist_tpl.h"
 
 enum {
   vgc_obj_type_array,
@@ -208,23 +209,6 @@ typedef struct _vsymbol{
   vslot slot;
 } vsymbol;
 
-uhstb_decl_tpl(vsymbol);
-
-#define VCONTEXT_SYMTB_SIZE 17
-#define VCONTEXT_STRTB_SIZE 17
-
-typedef struct _vcontext{
-  VGCHEADER;
-  vgc_heap* heap;
-  uhstb_vsymbol* objtb;
-  ustring_table* symtb;
-  ustring_table* strtb;
-  vslot_define_begin
-    vslot_define(vgc_call,calling);
-    vslot_define(vgc_array,consts);
-  vslot_define_end
-} vcontext;
-
 typedef struct _vgc_array{
   VGCHEADER;
   int top;
@@ -238,6 +222,33 @@ vgc_array* vgc_array_new(vgc_heap* heap,
 int vgc_array_push(vgc_array* array,vslot slot);
 
 vslot vgc_array_pop(vgc_array* array);
+
+void vgc_array_set(vgc_array* array,int idx,vslot slot);
+
+typedef struct _vreloc{
+  ustring* ref_name;
+  vgc_array* rel_obj;
+  int rel_idx;
+} vreloc;
+
+ulist_decl_tpl(vreloc);
+uhstb_decl_tpl(vsymbol);
+
+#define VCONTEXT_SYMTB_SIZE 17
+#define VCONTEXT_STRTB_SIZE 17
+
+typedef struct _vcontext{
+  VGCHEADER;
+  vgc_heap* heap;
+  ulist_vreloc*  rells;
+  uhstb_vsymbol* objtb;
+  ustring_table* symtb;
+  ustring_table* strtb;
+  vslot_define_begin
+    vslot_define(vgc_call,calling);
+    vslot_define(vgc_array,consts);
+  vslot_define_end
+} vcontext;
 
 typedef struct _vgc_string{
   VGCHEADER;
