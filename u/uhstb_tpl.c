@@ -2,7 +2,7 @@
 #include <string.h>
 #include "ualloc.h"
 #include "uerror.h"
-#include "uhstb.h"
+#include "uhstb_tpl.h"
 
 #define uhstb_cursor_tpl(t)					\
   static void uhstb_##t##_cursor_init(ucursor* cursor){		\
@@ -38,6 +38,7 @@
     hstb->iterate = uhstb_##t##_cursor_init;		\
     hstb->next = uhstb_##t##_cursor_next;		\
     hstb->len = len;					\
+    hstb->count = 0;					\
     for(i = 0;i < len;i++){				\
       hstb->ndar[i] = NULL;				\
     }							\
@@ -84,6 +85,7 @@
     if(outk){						\
       *outk = &nd->k;					\
     }							\
+    hstb->count++;					\
     return 0;						\
   }
 

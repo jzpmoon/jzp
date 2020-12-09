@@ -53,12 +53,12 @@ int test_1(){
     if (ast_obj == NULL){
       break;
     }
-    last_obj_log(ast_obj);
+    /*last_obj_log(ast_obj);*/
     last2vps(ts,ast_obj,mod);
   }
   
   vcontext_load(ctx,(vps_t*)mod);
-  
+
   return 0;
 }
 

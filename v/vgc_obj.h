@@ -231,6 +231,11 @@ typedef struct _vreloc{
   int rel_idx;
 } vreloc;
 
+#define vreloc_log(reloc)				\
+  ulog1("ref_name:%s",reloc->ref_name->value);		\
+  ulog1("rel_obj:%lld",(long long)reloc->rel_obj);	\
+  ulog1("rel_idx:%d",reloc->rel_idx);
+
 ulist_decl_tpl(vreloc);
 uhstb_decl_tpl(vsymbol);
 

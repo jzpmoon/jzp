@@ -418,6 +418,7 @@ void bc_set(vcontext* ctx,
 #define NEXT2 do{op=FETCH;op+=FETCH<<8;}while(0)
 
 void vcontext_execute(vcontext* ctx){
+  ulog("vcontext_execute");
   bc_call(ctx);
   while(1){
     int op;

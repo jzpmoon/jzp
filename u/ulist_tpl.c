@@ -43,7 +43,7 @@
     ulsnd_##t* header=list->header;			\
     ulsnd_##t* footer=NULL;				\
     ulsnd_##t* node=NULL;				\
-    unew(node,sizeof(ulist_##t),return -1;)		\
+    unew(node,sizeof(ulsnd_##t),return -1;)		\
       if(header==NULL){					\
 	list->header=header=footer=node;		\
       }else{						\
@@ -73,6 +73,7 @@
     footer2->next = header1;					\
     header2->prev = footer1;					\
     footer1->next = header2;					\
+    list1->len += list2->len;					\
   }
 
 #define ulist_del_tpl(t)					\

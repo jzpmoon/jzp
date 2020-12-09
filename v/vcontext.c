@@ -135,7 +135,7 @@ vsymbol* vcontext_graph_load(vcontext* ctx,vdfg_graph* grp){
   vinst_to_str(ctx,insts);
   vgc_obj_slot_get(ctx->heap,ctx,consts);
   subr = vgc_subr_new(ctx->heap,
-		      grp->locals->len,
+		      grp->locals->count,
 		      0,
 		      vgc_heap_area_active);
   symbol = vcontext_obj_put(ctx,grp->name,(vgc_obj*)subr);
@@ -206,6 +206,7 @@ int vcontext_load(vcontext* ctx,vps_t* vps){
     }
 
     symbol = vcontext_graph_load(ctx,mod->entry);
+    vcontext_relocate(ctx);
     vgc_heap_stack_push(ctx->heap,symbol->slot);
     vcontext_execute(ctx);
     

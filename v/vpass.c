@@ -32,6 +32,93 @@ vps_inst_new(int instk,
   return inst;
 }
 
+vps_inst* vps_iloadimm(int operand){
+  vps_inst* inst;
+  inst = vps_inst_new(vinstk_imm,Bload,NULL,NULL,NULL);
+  if(inst){
+    inst->inst.operand = operand;
+  }
+  return inst;
+}
+
+vps_inst* vps_iloaddt(ustring* name){
+  vps_inst* inst;
+  inst = vps_inst_new(vinstk_locdt,Bload,name,NULL,NULL);
+  return inst;
+}
+
+vps_inst* vps_ipushimm(vps_mod* mod,ustring* name,double dnum){
+  vps_inst* inst;
+  vps_data* data;
+  data = vps_num_new(name,dnum,vstk_heap);
+  vps_mod_data_put(mod,data);
+  inst = vps_inst_new(vinstk_imm,Bpush,NULL,data,NULL);
+  return inst;
+}
+
+vps_inst* vps_ipushdt(vps_mod* mod,ustring* name){
+  vps_inst* inst;
+  vps_data* data;
+  data = vps_any_new(name,vstk_heap);
+  vps_mod_data_put(mod,data);
+  inst = vps_inst_new(vinstk_glodt,Bpush,NULL,data,NULL);
+  return inst;
+}
+
+vps_inst* vps_iadd(){
+  vps_inst* inst;
+  inst = vps_inst_new(vinstk_non,Badd,NULL,NULL,NULL);
+  return inst;
+}
+
+vps_inst* vps_isub(){
+  vps_inst* inst;
+  inst = vps_inst_new(vinstk_non,Bsub,NULL,NULL,NULL);
+  return inst;  
+}
+
+vps_inst* vps_ijmpiimm(int operand){
+  vps_inst* inst;
+  inst = vps_inst_new(vinstk_imm,Bjmpi,NULL,NULL,NULL);
+  if(inst){
+    inst->inst.operand = operand;
+  }
+  return inst;  
+}
+
+vps_inst* vps_ijmpimm(int operand){
+  vps_inst* inst;
+  inst = vps_inst_new(vinstk_imm,Bjmp,NULL,NULL,NULL);
+  if(inst){
+    inst->inst.operand = operand;
+  }
+  return inst;  
+}
+
+vps_inst* vps_ieq(){
+  vps_inst* inst;
+  inst = vps_inst_new(vinstk_non,Beq,NULL,NULL,NULL);
+  return inst;
+}
+
+vps_inst* vps_icall(){
+  vps_inst* inst;
+  inst = vps_inst_new(vinstk_non,Bcall,NULL,NULL,NULL);
+  return inst;
+}
+
+vps_inst* vps_ireturn(){
+  vps_inst* inst;
+  inst = vps_inst_new(vinstk_non,Breturn,NULL,NULL,NULL);
+  return inst;
+}
+
+vps_inst* vps_inop(){
+  vps_inst* inst;
+  inst = vps_inst_new(vinstk_non,Bnop,NULL,NULL,NULL);
+  return inst;  
+}
+
 usize_t
 vinst_full_length(ulist_vinstp* insts){
   ucursor cursor;
@@ -177,8 +264,8 @@ int vdfg_blk2inst(vcontext* ctx,vdfg_block* blk,ulist_vinstp* insts){
       if(inst_l1->u.data){
 	inst->operand = inst_l1->u.data->idx;
       }
-      ulog("inst imm");
       ulist_vinstp_append(insts,inst);
+      ulog("inst imm");
       break;
     case vinstk_locdt:{
       vps_t* dfg = blk->parent;
@@ -195,8 +282,8 @@ int vdfg_blk2inst(vcontext* ctx,vdfg_block* blk,ulist_vinstp* insts){
       }
       inst = &inst_l1->inst;
       inst->operand = data->idx;
-      ulog("inst local data");
       ulist_vinstp_append(insts,inst);
+      ulog("inst local data");
     }
       break;
     case vinstk_glodt:{
@@ -209,16 +296,19 @@ int vdfg_blk2inst(vcontext* ctx,vdfg_block* blk,ulist_vinstp* insts){
       reloc.rel_idx = data->idx;
       reloc.rel_obj = consts;
       ulist_vreloc_append(rells,reloc);
+      inst = &inst_l1->inst;
+      inst->operand = data->idx;
+      ulist_vinstp_append(insts,inst);
       ulog("inst global data");      
     }
       break;
     case vinstk_code:
-      ulog("inst non");
+      ulog("inst code");
       break;
     case vinstk_non:
       inst = &inst_l1->inst;
-      ulog("inst non");
       ulist_vinstp_append(insts,inst);
+      ulog("inst non");
       break;
     default:
       break;

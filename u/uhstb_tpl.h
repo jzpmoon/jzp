@@ -15,6 +15,7 @@
   typedef struct _uhstb_##t{			\
     USETHEADER;					\
     int len;					\
+    int count;					\
     uhsnd_##t* ndar[1];				\
   } uhstb_##t
 

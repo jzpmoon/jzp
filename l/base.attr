@@ -48,7 +48,6 @@ static vdfg_graph* subr(vps_mod* vps,vps_dfg* parent,last_obj* ast_obj){
 	uabort("arg not a symbol!");
       }
       sym = (last_symbol*)arg;
-      ulog1("arg symbol:%s\n",sym->name->value);
       data = vps_any_new(sym->name,vstk_stack);
       if(!data){
 	uabort("vps_any_new error!");
@@ -60,8 +59,6 @@ static vdfg_graph* subr(vps_mod* vps,vps_dfg* parent,last_obj* ast_obj){
     }
   }
   
-  ulog1("attr subr:%s",subr_name->name->value);
-
   grp->name = subr_name->name;
   blk = vdfg_block_new();
   if(!blk){
@@ -134,11 +131,10 @@ LDEFATTR(load,"load",{
     obj = last_car(next);
     if(obj->t == lastk_symbol){
       last_symbol* sym = (last_symbol*)obj;
-      inst = vps_inst_new(vinstk_locdt,Bload,sym->name,NULL,NULL);
+      inst = vps_iloaddt(sym->name);
     }else if(obj->t == lastk_number){
       last_number* num = (last_number*)obj;
-      inst = vps_inst_new(vinstk_imm,Bload,NULL,NULL,NULL);
-      inst->inst.operand = (usize_t)num->dnum;
+      inst = vps_iloadimm((usize_t)num->dnum);
     }else{
       uabort("load inst error!");      
     }
@@ -161,14 +157,10 @@ LDEFATTR(push,"push",{
     obj = last_car(next);
     if(obj->t == lastk_symbol){
       last_symbol* sym = (last_symbol*)obj;
-      vps_data* data = vps_any_new(sym->name,vstk_heap);
-      vps_mod_data_put(vps,data);
-      inst = vps_inst_new(vinstk_glodt,Bpush,sym->name,data,NULL);
+      inst = vps_ipushdt(vps,sym->name);
     }else if(obj->t == lastk_number){
       last_number* num = (last_number*)obj;
-      vps_data* data = vps_num_new(num->name,num->dnum,vstk_heap);
-      vps_mod_data_put((vps_mod*)vps,data);
-      inst = vps_inst_new(vinstk_imm,Bpush,NULL,data,NULL);
+      inst = vps_ipushimm(vps,num->name,num->dnum);
     }else{
       uabort("push inst error!");
     }
@@ -181,8 +173,88 @@ LDEFATTR(push,"push",{
  */
 LDEFATTR(add,"add",{
     vps_inst* inst;
-    inst = vps_inst_new(vinstk_non,Badd,NULL,NULL,NULL);
+    inst = vps_iadd();
     ulog("add");
+    return (vps_t*)inst;
+  })
+
+/*
+ * define attribute sub
+ */
+LDEFATTR(sub,"sub",{
+    vps_inst* inst;
+    inst = vps_isub();
+    ulog("sub");
+    return (vps_t*)inst;
+  })
+
+/*
+ * define attribute jmpi
+ */
+LDEFATTR(jmpi,"jmpi",{
+    vps_inst* inst;
+    last_obj* obj;
+    last_obj* next;
+
+    next = last_cdr(ast_obj);
+    if(next->t != lastk_cons){
+      uabort("jmpi inst error!");
+    }
+    obj = last_car(next);
+    if(obj->t == lastk_symbol){
+      uabort("jmpi inst error!");
+    }else if(obj->t == lastk_number){
+      last_number* num = (last_number*)obj;
+      inst = vps_ijmpiimm((usize_t)num->dnum);
+    }else{
+      uabort("jmpi inst error!");
+    }
+    ulog("jmpi");
+    return (vps_t*)inst;
+  })
+
+/*
+ * define attribute jmp
+ */
+LDEFATTR(jmp,"jmp",{
+    vps_inst* inst;
+    last_obj* obj;
+    last_obj* next;
+
+    next = last_cdr(ast_obj);
+    if(next->t != lastk_cons){
+      uabort("jmp inst error!");
+    }
+    obj = last_car(next);
+    if(obj->t == lastk_symbol){
+      uabort("jmp inst error!");
+    }else if(obj->t == lastk_number){
+      last_number* num = (last_number*)obj;
+      inst = vps_ijmpimm((usize_t)num->dnum);
+    }else{
+      uabort("jmp inst error!");
+    }
+    ulog("jmp");
+    return (vps_t*)inst;
+  })
+
+/*
+ * define attribute eq
+ */
+LDEFATTR(eq,"eq",{
+    vps_inst* inst;
+    inst = vps_ieq();
+    ulog("eq");
+    return (vps_t*)inst;
+  })
+
+/*
+ * define attribute call
+ */
+LDEFATTR(call,"call",{
+    vps_inst* inst;
+    inst = vps_icall();
+    ulog("call");
     return (vps_t*)inst;
   })
 
@@ -191,8 +263,18 @@ LDEFATTR(add,"add",{
  */
 LDEFATTR(return,"return",{
     vps_inst* inst;
-    inst = vps_inst_new(vinstk_non,Breturn,NULL,NULL,NULL);
+    inst = vps_ireturn();
     ulog("return");
+    return (vps_t*)inst;
+  })
+
+/*
+ * define attribute nop
+ */
+LDEFATTR(nop,"nop",{
+    vps_inst* inst;
+    inst = vps_inop();
+    ulog("nop");
     return (vps_t*)inst;
   })
 
@@ -205,5 +287,11 @@ LATTRONLOAD(base,{
     LDECLATTR(load);
     LDECLATTR(push);
     LDECLATTR(add);
+    LDECLATTR(sub);
+    LDECLATTR(jmp);
+    LDECLATTR(jmpi);
+    LDECLATTR(eq);
+    LDECLATTR(call);
     LDECLATTR(return);
+    LDECLATTR(nop);
   })

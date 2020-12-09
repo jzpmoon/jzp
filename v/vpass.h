@@ -120,6 +120,19 @@ vps_inst_new(int instk,
 	     vps_data* data,
 	     vps_dfg* code);
 
+vps_inst* vps_iloadimm(int operand);
+vps_inst* vps_iloaddt(ustring* name);
+vps_inst* vps_ipushimm(vps_mod* mod,ustring* name,double dnum);
+vps_inst* vps_ipushdt(vps_mod* mod,ustring* name);
+vps_inst* vps_iadd();
+vps_inst* vps_isub();
+vps_inst* vps_ijmpiimm(int operand);
+vps_inst* vps_ijmpimm(int operand);
+vps_inst* vps_ieq();
+vps_inst* vps_icall();
+vps_inst* vps_ireturn();
+vps_inst* vps_inop();
+
 vps_data* vps_num_new(ustring* name,
 		      double num,
 		      int stk);
