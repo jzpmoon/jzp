@@ -27,9 +27,10 @@ vslot bc_locals(vcontext* ctx,
   usize_t count = subr->params_count + subr->locals_count;
   usize_t base = calling->base;
   vslot slot;
-  if(index >= count)
+  usize_t real_index = base - subr->params_count + index;
+  if(index > count)
     uabort("vm:local varable error!");
-  slot = vgc_heap_stack_get(ctx->heap,base - count + index);
+  slot = vgc_heap_stack_get(ctx->heap,real_index);
   return slot;
 }
 
@@ -41,10 +42,11 @@ void bc_store(vcontext* ctx,
   vgc_subr* subr = vgc_obj_ref_get(calling,subr,vgc_subr);
   usize_t count = subr->params_count + subr->locals_count;
   usize_t base = calling->base;
-  if(index < base - count || index >= base)
+  usize_t real_index = base - subr->params_count + index;
+  if(index > count)
     uabort("vm:local varable error!");
   vgc_heap_stack_pop(heap,&slot);
-  vgc_heap_stack_set(heap,index,slot);
+  vgc_heap_stack_set(heap,real_index,slot);
 }
 
 void bc_jmp(vcontext* ctx,
@@ -149,7 +151,7 @@ void bc_eq(vcontext* ctx){
 
   vgc_heap_stack_pop(ctx->heap,&slot1);
   vgc_heap_stack_pop(ctx->heap,&slot2);
-  
+
   if(vslot_is_num(slot1) && vslot_is_num(slot2)){
     bool = vslot_num_eq(slot1,slot2);
   }else if(vslot_is_ref(slot1) && vslot_is_ref(slot2)){

@@ -238,8 +238,9 @@ void vcontext_relocate(vcontext* ctx){
       break;
     }
     symbol = vcontext_symbol_get(ctx,reloc->ref_name);
-    if(symbol){
-      vgc_array_set(reloc->rel_obj,reloc->rel_idx,symbol->slot);
+    if(!symbol){
+      uabort1("relocate global symbol:%s not find!",reloc->ref_name->value);
     }
+    vgc_array_set(reloc->rel_obj,reloc->rel_idx,symbol->slot);
   }
 }

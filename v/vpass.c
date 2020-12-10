@@ -32,11 +32,11 @@ vps_inst_new(int instk,
   return inst;
 }
 
-vps_inst* vps_iloadimm(int operand){
+vps_inst* vps_iloadimm(int imm){
   vps_inst* inst;
   inst = vps_inst_new(vinstk_imm,Bload,NULL,NULL,NULL);
   if(inst){
-    inst->inst.operand = operand;
+    inst->inst.operand = imm;
   }
   return inst;
 }
@@ -44,6 +44,21 @@ vps_inst* vps_iloadimm(int operand){
 vps_inst* vps_iloaddt(ustring* name){
   vps_inst* inst;
   inst = vps_inst_new(vinstk_locdt,Bload,name,NULL,NULL);
+  return inst;
+}
+
+vps_inst* vps_istoreimm(int imm){
+  vps_inst* inst;
+  inst = vps_inst_new(vinstk_imm,Bstore,NULL,NULL,NULL);
+  if(inst){
+    inst->inst.operand = imm;
+  }
+  return inst;  
+}
+
+vps_inst* vps_istoredt(ustring* name){
+  vps_inst* inst;
+  inst = vps_inst_new(vinstk_locdt,Bstore,name,NULL,NULL);
   return inst;
 }
 
@@ -65,6 +80,12 @@ vps_inst* vps_ipushdt(vps_mod* mod,ustring* name){
   return inst;
 }
 
+vps_inst* vps_ipop(){
+  vps_inst* inst;
+  inst = vps_inst_new(vinstk_non,Bpop,NULL,NULL,NULL);
+  return inst;
+}
+
 vps_inst* vps_iadd(){
   vps_inst* inst;
   inst = vps_inst_new(vinstk_non,Badd,NULL,NULL,NULL);
@@ -74,23 +95,35 @@ vps_inst* vps_iadd(){
 vps_inst* vps_isub(){
   vps_inst* inst;
   inst = vps_inst_new(vinstk_non,Bsub,NULL,NULL,NULL);
-  return inst;  
+  return inst;
 }
 
-vps_inst* vps_ijmpiimm(int operand){
+vps_inst* vps_imul(){
+  vps_inst* inst;
+  inst = vps_inst_new(vinstk_non,Bmul,NULL,NULL,NULL);
+  return inst;
+}
+
+vps_inst* vps_idiv(){
+  vps_inst* inst;
+  inst = vps_inst_new(vinstk_non,Bdiv,NULL,NULL,NULL);
+  return inst;
+}
+
+vps_inst* vps_ijmpiimm(int imm){
   vps_inst* inst;
   inst = vps_inst_new(vinstk_imm,Bjmpi,NULL,NULL,NULL);
   if(inst){
-    inst->inst.operand = operand;
+    inst->inst.operand = imm;
   }
   return inst;  
 }
 
-vps_inst* vps_ijmpimm(int operand){
+vps_inst* vps_ijmpimm(int imm){
   vps_inst* inst;
   inst = vps_inst_new(vinstk_imm,Bjmp,NULL,NULL,NULL);
   if(inst){
-    inst->inst.operand = operand;
+    inst->inst.operand = imm;
   }
   return inst;  
 }
@@ -98,6 +131,36 @@ vps_inst* vps_ijmpimm(int operand){
 vps_inst* vps_ieq(){
   vps_inst* inst;
   inst = vps_inst_new(vinstk_non,Beq,NULL,NULL,NULL);
+  return inst;
+}
+
+vps_inst* vps_igt(){
+  vps_inst* inst;
+  inst = vps_inst_new(vinstk_non,Bgt,NULL,NULL,NULL);
+  return inst;
+}
+
+vps_inst* vps_ilt(){
+  vps_inst* inst;
+  inst = vps_inst_new(vinstk_non,Blt,NULL,NULL,NULL);
+  return inst;
+}
+
+vps_inst* vps_iand(){
+  vps_inst* inst;
+  inst = vps_inst_new(vinstk_non,Band,NULL,NULL,NULL);
+  return inst;
+}
+
+vps_inst* vps_ior(){
+  vps_inst* inst;
+  inst = vps_inst_new(vinstk_non,Bor,NULL,NULL,NULL);
+  return inst;
+}
+
+vps_inst* vps_inot(){
+  vps_inst* inst;
+  inst = vps_inst_new(vinstk_non,Bnot,NULL,NULL,NULL);
   return inst;
 }
 
@@ -113,9 +176,33 @@ vps_inst* vps_ireturn(){
   return inst;
 }
 
+vps_inst* vps_iretvoid(){
+  vps_inst* inst;
+  inst = vps_inst_new(vinstk_non,Bretvoid,NULL,NULL,NULL);
+  return inst;
+}
+
 vps_inst* vps_inop(){
   vps_inst* inst;
   inst = vps_inst_new(vinstk_non,Bnop,NULL,NULL,NULL);
+  return inst;  
+}
+
+vps_inst* vps_irefimm(int imm){
+  vps_inst* inst;
+  inst = vps_inst_new(vinstk_imm,Bref,NULL,NULL,NULL);
+  if(inst){
+    inst->inst.operand = imm;
+  }
+  return inst;  
+}
+
+vps_inst* vps_isetimm(int imm){
+  vps_inst* inst;
+  inst = vps_inst_new(vinstk_imm,Bset,NULL,NULL,NULL);
+  if(inst){
+    inst->inst.operand = imm;
+  }
   return inst;  
 }
 

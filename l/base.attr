@@ -143,6 +143,32 @@ LDEFATTR(load,"load",{
   })
 
 /*
+ * define attribute store
+ */
+LDEFATTR(store,"store",{
+    vps_inst* inst;
+    last_obj* obj;
+    last_obj* next;
+
+    next = last_cdr(ast_obj);
+    if(next->t != lastk_cons){
+      uabort("store inst error!");
+    }
+    obj = last_car(next);
+    if(obj->t == lastk_symbol){
+      last_symbol* sym = (last_symbol*)obj;
+      inst = vps_istoredt(sym->name);
+    }else if(obj->t == lastk_number){
+      last_number* num = (last_number*)obj;
+      inst = vps_istoreimm((usize_t)num->dnum);
+    }else{
+      uabort("store inst error!");      
+    }
+    ulog("store");
+    return (vps_t*)inst;
+  })
+
+/*
  * define attribute push
  */
 LDEFATTR(push,"push",{
@@ -169,6 +195,16 @@ LDEFATTR(push,"push",{
   })
 
 /*
+ * define attribute pop
+ */
+LDEFATTR(pop,"pop",{
+    vps_inst* inst;
+    inst = vps_ipop();
+    ulog("pop");
+    return (vps_t*)inst;
+  })
+
+/*
  * define attribute add
  */
 LDEFATTR(add,"add",{
@@ -185,6 +221,26 @@ LDEFATTR(sub,"sub",{
     vps_inst* inst;
     inst = vps_isub();
     ulog("sub");
+    return (vps_t*)inst;
+  })
+
+/*
+ * define attribute mul
+ */
+LDEFATTR(mul,"mul",{
+    vps_inst* inst;
+    inst = vps_imul();
+    ulog("mul");
+    return (vps_t*)inst;
+  })
+
+/*
+ * define attribute div
+ */
+LDEFATTR(div,"div",{
+    vps_inst* inst;
+    inst = vps_idiv();
+    ulog("div");
     return (vps_t*)inst;
   })
 
@@ -249,6 +305,56 @@ LDEFATTR(eq,"eq",{
   })
 
 /*
+ * define attribute gt
+ */
+LDEFATTR(gt,"gt",{
+    vps_inst* inst;
+    inst = vps_igt();
+    ulog("gt");
+    return (vps_t*)inst;
+  })
+
+/*
+ * define attribute lt
+ */
+LDEFATTR(lt,"lt",{
+    vps_inst* inst;
+    inst = vps_ilt();
+    ulog("lt");
+    return (vps_t*)inst;
+  })
+
+/*
+ * define attribute and
+ */
+LDEFATTR(and,"and",{
+    vps_inst* inst;
+    inst = vps_iand();
+    ulog("and");
+    return (vps_t*)inst;
+  })
+
+/*
+ * define attribute or
+ */
+LDEFATTR(or,"or",{
+    vps_inst* inst;
+    inst = vps_ior();
+    ulog("or");
+    return (vps_t*)inst;
+  })
+
+/*
+ * define attribute not
+ */
+LDEFATTR(not,"not",{
+    vps_inst* inst;
+    inst = vps_inot();
+    ulog("not");
+    return (vps_t*)inst;
+  })
+
+/*
  * define attribute call
  */
 LDEFATTR(call,"call",{
@@ -269,6 +375,66 @@ LDEFATTR(return,"return",{
   })
 
 /*
+ * define attribute retvoid
+ */
+LDEFATTR(retvoid,"retvoid",{
+    vps_inst* inst;
+    inst = vps_iretvoid();
+    ulog("retvoid");
+    return (vps_t*)inst;
+  })
+
+/*
+ * define attribute ref
+ */
+LDEFATTR(ref,"ref",{
+    vps_inst* inst;
+    last_obj* obj;
+    last_obj* next;
+
+    next = last_cdr(ast_obj);
+    if(next->t != lastk_cons){
+      uabort("ref inst error!");
+    }
+    obj = last_car(next);
+    if(obj->t == lastk_symbol){
+      uabort("ref inst error!");
+    }else if(obj->t == lastk_number){
+      last_number* num = (last_number*)obj;
+      inst = vps_irefimm((usize_t)num->dnum);
+    }else{
+      uabort("ref inst error!");
+    }
+    ulog("ref");
+    return (vps_t*)inst;
+  })
+
+/*
+ * define attribute set
+ */
+LDEFATTR(set,"set",{
+    vps_inst* inst;
+    last_obj* obj;
+    last_obj* next;
+
+    next = last_cdr(ast_obj);
+    if(next->t != lastk_cons){
+      uabort("set inst error!");
+    }
+    obj = last_car(next);
+    if(obj->t == lastk_symbol){
+      uabort("set inst error!");
+    }else if(obj->t == lastk_number){
+      last_number* num = (last_number*)obj;
+      inst = vps_isetimm((usize_t)num->dnum);
+    }else{
+      uabort("set inst error!");
+    }
+    ulog("set");
+    return (vps_t*)inst;
+  })
+
+/*
  * define attribute nop
  */
 LDEFATTR(nop,"nop",{
@@ -284,14 +450,26 @@ LDEFATTR(nop,"nop",{
 LATTRONLOAD(base,{
     LDECLATTR(entry);
     LDECLATTR(subr);
+    LDECLATTR(nop);
     LDECLATTR(load);
+    LDECLATTR(store);
     LDECLATTR(push);
-    LDECLATTR(add);
-    LDECLATTR(sub);
+    LDECLATTR(pop);
     LDECLATTR(jmp);
     LDECLATTR(jmpi);
     LDECLATTR(eq);
+    LDECLATTR(gt);
+    LDECLATTR(lt);
+    LDECLATTR(and);
+    LDECLATTR(or);
+    LDECLATTR(not);
+    LDECLATTR(add);
+    LDECLATTR(sub);
+    LDECLATTR(mul);
+    LDECLATTR(div);
     LDECLATTR(call);
     LDECLATTR(return);
-    LDECLATTR(nop);
+    LDECLATTR(retvoid);
+    LDECLATTR(ref);
+    LDECLATTR(set);
   })
