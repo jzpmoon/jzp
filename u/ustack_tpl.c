@@ -82,29 +82,33 @@
       return -1;						\
     }								\
     stack->curr_block->ptr[index] = data;			\
-    return index;						\
+    return 0;							\
   }
 
 #define ustack_get_tpl(t)					\
   int ustack_##t##_get(ustack_##t* stack,int index,t* data){	\
     int top = index;						\
     if(top < 0){						\
-      top = stack->block_pos + index;				\
+      top += stack->block_pos;					\
     }								\
-    if(top < 0){						\
+    if(top < 0 || top >= stack->block_pos){			\
       return -1;						\
     }								\
     *data = stack->curr_block->ptr[top];			\
-    return top;							\
+    return 0;							\
   }
 
-#define ustack_top_set_tpl(t)				\
-  int ustack_##t##_top_set(ustack_##t* stack,int top){	\
-    if(top < 0 || top >= stack->block_size){		\
-      return -1;					\
-    }							\
-    stack->block_pos = top;				\
-    return top;						\
+#define ustack_top_set_tpl(t)					\
+  int ustack_##t##_top_set(ustack_##t* stack,int index){	\
+    int top = index;						\
+    if(top < 0){						\
+      top += stack->block_pos;					\
+    }								\
+    if(top < 0 || top >= stack->block_size){			\
+      return -1;						\
+    }								\
+    stack->block_pos = top;					\
+    return 0;							\
   }
 
 #define ustack_top_get_tpl(t)			\

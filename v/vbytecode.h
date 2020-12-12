@@ -8,8 +8,8 @@
   DF(Bjmpi,"jmpi",0044,3)				      		\
   DF(Bref,"ref",0054,3)						        \
   DF(Bset,"set",0064,3)							\
-									\
-  DF(Bpushv,"push void",0360,1)					        \
+  DF(Btop,"top",0074,2)							\
+    									\
   DF(Bpop,"pop",0361,1)							\
   DF(Beq,"eq",0362,1)							\
   DF(Bgt,"gt",0363,1)							\

@@ -281,14 +281,14 @@ vgc_obj* vgc_heap_data_new(vgc_heap* heap,
 
 vslot vgc_heap_stack_get(vgc_heap* heap,usize_t index){
   vslot slot;
-  if(-1 == ustack_vslot_get(&heap->root_set,index,&slot)){
+  if(ustack_vslot_get(&heap->root_set,index,&slot)){
     uabort("vgc_heap_stack:index over of bound!");
   }
   return slot;
 }
 
 void vgc_heap_stack_set(vgc_heap* heap,usize_t index,vslot slot){
-  if(-1 == ustack_vslot_set(&heap->root_set,index,slot)){
+  if(ustack_vslot_set(&heap->root_set,index,slot)){
     uabort("vgc_heap_stack:index over of bound!");
   }
 }
@@ -298,7 +298,7 @@ int vgc_heap_stack_top_get(vgc_heap* heap){
 }
 
 void vgc_heap_stack_top_set(vgc_heap* heap,usize_t index){
-  if(-1 == ustack_vslot_top_set(&heap->root_set,index)){
+  if(ustack_vslot_top_set(&heap->root_set,index)){
     uabort("vgc_heap_stack:index over of bound!");
   }
 }

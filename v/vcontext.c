@@ -135,8 +135,8 @@ vsymbol* vcontext_graph_load(vcontext* ctx,vdfg_graph* grp){
   vinst_to_str(ctx,insts);
   vgc_obj_slot_get(ctx->heap,ctx,consts);
   subr = vgc_subr_new(ctx->heap,
-		      grp->locals->count,
-		      0,
+		      grp->params_count,
+		      grp->locals_count,
 		      vgc_heap_area_active);
   symbol = vcontext_obj_put(ctx,grp->name,(vgc_obj*)subr);
   ulist_vinstp_del(insts,NULL);

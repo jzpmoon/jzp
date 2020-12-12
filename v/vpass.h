@@ -92,6 +92,8 @@ typedef struct _vdfg_graph{
   uhstb_vps_datap* locals;
   ulist_vps_dfgp* dfgs;
   vps_dfg* entry;
+  int params_count;
+  int locals_count;
 } vdfg_graph,*vdfg_graphp;
 
 #define VDFG_GRP_DATA_TABLE_SIZE 17
@@ -127,7 +129,7 @@ vps_inst* vps_istoreimm(int imm);
 vps_inst* vps_istoredt(ustring* name);
 vps_inst* vps_ipushimm(vps_mod* mod,ustring* name,double dnum);
 vps_inst* vps_ipushdt(vps_mod* mod,ustring* name);
-vps_inst* vps_ipushvoid();
+vps_inst* vps_itop(int imm);
 vps_inst* vps_ipop();
 vps_inst* vps_iadd();
 vps_inst* vps_isub();
@@ -166,7 +168,9 @@ vdfg_graph* vdfg_graph_new();
 #define vdfg_grp_cdapd(grp,dfg)			\
   ulist_vps_dfgp_append((grp)->dfgs,dfg)
 
-void vdfg_grp_dtapd(vdfg_graph* grp,vps_data* dt);
+void vdfg_grp_params_apd(vdfg_graph* grp,vps_data* dt);
+
+void vdfg_grp_locals_apd(vdfg_graph* grp,vps_data* dt);
 
 vps_data* vdfg_grp_dtget(vdfg_graph* grp,ustring* name);
 

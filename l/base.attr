@@ -53,7 +53,7 @@ static vdfg_graph* subr(vps_mod* vps,vps_dfg* parent,last_obj* ast_obj){
 	uabort("vps_any_new error!");
       }
       data->idx = arg_idx;
-      vdfg_grp_dtapd(grp,data);
+      vdfg_grp_params_apd(grp,data);
       args = last_cdr(args);
       arg_idx++;
     }
@@ -86,10 +86,12 @@ static vdfg_graph* subr(vps_mod* vps,vps_dfg* parent,last_obj* ast_obj){
     if(inst_name->attr){
       last_attr* attr = inst_name->attr;
       vps_t* inst = (attr->action)(vps,(vps_dfg*)blk,obj);
-      if(inst == NULL || inst->t != vpsk_inst){
-	uabort("not a inst!");
-      }
-      vdfg_blk_apd(blk,(vps_inst*)inst);
+      if(inst){
+	if(inst->t != vpsk_inst){
+	  uabort("not a inst!");
+	}
+	vdfg_blk_apd(blk,(vps_inst*)inst);
+      }      
     }
     next = last_cdr(next);
   }
@@ -102,6 +104,9 @@ static vdfg_graph* subr(vps_mod* vps,vps_dfg* parent,last_obj* ast_obj){
  */
 LDEFATTR(entry,"entry",{
     vdfg_graph* grp;
+    if (vps->entry) {
+      uabort("mod entry already exists!");
+    }
     grp = subr(vps,parent,ast_obj);
     vps->entry = grp;
     return NULL;
@@ -117,6 +122,60 @@ LDEFATTR(subr,"subr",{
   })
 
 /*
+ * define attribute var
+ */
+LDEFATTR(var,"var",{
+    vps_inst* inst;
+    last_obj* obj;
+    last_obj* next;
+
+    if(parent){
+      vdfg_graph* grp;
+      vdfg_block* blk;
+      if(parent->t != vdfgk_blk){
+	uabort("var inst can not use here!");
+      }
+      blk = (vdfg_block*)parent;
+      if(!blk->parent){
+	uabort("var inst can not use here!");
+      }
+      if(blk->parent->t != vdfgk_grp){
+	uabort("var inst can not use here!");
+      }
+      grp = (vdfg_graph*)blk->parent;
+      
+      next = last_cdr(ast_obj);
+      if(!next){
+	uabort("var inst have no operand!");
+      }
+      if(next->t != lastk_cons){
+	uabort("var inst error!");
+      }
+      obj = last_car(next);
+      if(obj->t == lastk_symbol){
+	last_symbol* sym = (last_symbol*)obj;
+	vps_data* data;
+	if(vdfg_grp_dtget(grp,sym->name)){
+	  uabort1("var name:%s already exists!",sym->name->value);
+	}
+	data = vps_any_new(sym->name,vstk_stack);
+	data->idx = grp->locals->count;
+	vdfg_grp_locals_apd(grp,data);
+	inst = vps_inop();
+      }else{
+	uabort("var inst error!");      
+      }
+      ulog("local var");
+      return (vps_t*)inst;
+    }else if(!parent){
+      ulog("global var");
+      return NULL;
+    }else{
+      uabort("var inst can not use here!");
+    }
+  })
+
+/*
  * define attribute load
  */
 LDEFATTR(load,"load",{
@@ -124,6 +183,9 @@ LDEFATTR(load,"load",{
     last_obj* obj;
     last_obj* next;
 
+    if(!parent || parent->t != vdfgk_blk){
+      uabort("load inst can not use here!");
+    }
     next = last_cdr(ast_obj);
     if(!next){
       uabort("load inst have no operand!");
@@ -153,6 +215,9 @@ LDEFATTR(store,"store",{
     last_obj* obj;
     last_obj* next;
 
+    if(!parent || parent->t != vdfgk_blk){
+      uabort("store inst can not use here!");
+    }
     next = last_cdr(ast_obj);
     if(!next){
       uabort("store inst have no operand!");
@@ -182,25 +247,55 @@ LDEFATTR(push,"push",{
     last_obj* obj;
     last_obj* next;
 
+    if(!parent || parent->t != vdfgk_blk){
+      uabort("push inst can not use here!");
+    }
     next = last_cdr(ast_obj);
     if(!next){
-      inst = vps_ipushvoid();
+      uabort("push inst have no operand!");
+    }
+    if(next->t != lastk_cons){
+      uabort("push inst error!");
+    }
+    obj = last_car(next);
+    if(obj->t == lastk_symbol){
+      last_symbol* sym = (last_symbol*)obj;
+      inst = vps_ipushdt(vps,sym->name);
+    }else if(obj->t == lastk_number){
+      last_number* num = (last_number*)obj;
+      inst = vps_ipushimm(vps,num->name,num->dnum);
     }else{
-      if(next->t != lastk_cons){
-	uabort("push inst error!");
-      }
-      obj = last_car(next);
-      if(obj->t == lastk_symbol){
-	last_symbol* sym = (last_symbol*)obj;
-	inst = vps_ipushdt(vps,sym->name);
-      }else if(obj->t == lastk_number){
-	last_number* num = (last_number*)obj;
-	inst = vps_ipushimm(vps,num->name,num->dnum);
-      }else{
-	uabort("push inst error!");
-      }  
+      uabort("push inst error!");
     }
     ulog("push");
+    return (vps_t*)inst;
+  })
+/*
+ * define attribute top
+ */
+LDEFATTR(top,"top",{
+    vps_inst* inst;
+    last_obj* obj;
+    last_obj* next;
+
+    if(!parent || parent->t != vdfgk_blk){
+      uabort("top inst can not use here!");
+    }
+    next = last_cdr(ast_obj);
+    if(!next){
+      uabort("top inst have no operand!");
+    }
+    if(next->t != lastk_cons){
+      uabort("top inst error!");
+    }
+    obj = last_car(next);
+    if(obj->t == lastk_number){
+      last_number* num = (last_number*)obj;
+      inst = vps_itop(num->dnum);
+    }else{
+      uabort("top inst error!");
+    }
+    ulog("top");
     return (vps_t*)inst;
   })
 
@@ -209,6 +304,10 @@ LDEFATTR(push,"push",{
  */
 LDEFATTR(pop,"pop",{
     vps_inst* inst;
+
+    if(!parent || parent->t != vdfgk_blk){
+      uabort("pop inst can not use here!");
+    }
     inst = vps_ipop();
     ulog("pop");
     return (vps_t*)inst;
@@ -219,6 +318,10 @@ LDEFATTR(pop,"pop",{
  */
 LDEFATTR(add,"add",{
     vps_inst* inst;
+
+    if(!parent || parent->t != vdfgk_blk){
+      uabort("add inst can not use here!");
+    }
     inst = vps_iadd();
     ulog("add");
     return (vps_t*)inst;
@@ -229,6 +332,10 @@ LDEFATTR(add,"add",{
  */
 LDEFATTR(sub,"sub",{
     vps_inst* inst;
+
+    if(!parent || parent->t != vdfgk_blk){
+      uabort("sub inst can not use here!");
+    }    
     inst = vps_isub();
     ulog("sub");
     return (vps_t*)inst;
@@ -239,6 +346,10 @@ LDEFATTR(sub,"sub",{
  */
 LDEFATTR(mul,"mul",{
     vps_inst* inst;
+
+    if(!parent || parent->t != vdfgk_blk){
+      uabort("mul inst can not use here!");
+    }
     inst = vps_imul();
     ulog("mul");
     return (vps_t*)inst;
@@ -249,6 +360,10 @@ LDEFATTR(mul,"mul",{
  */
 LDEFATTR(div,"div",{
     vps_inst* inst;
+
+    if(!parent || parent->t != vdfgk_blk){
+      uabort("div inst can not use here!");
+    }
     inst = vps_idiv();
     ulog("div");
     return (vps_t*)inst;
@@ -262,6 +377,9 @@ LDEFATTR(jmpi,"jmpi",{
     last_obj* obj;
     last_obj* next;
 
+    if(!parent || parent->t != vdfgk_blk){
+      uabort("jmpi inst can not use here!");
+    }
     next = last_cdr(ast_obj);
     if(!next){
       uabort("jmpi inst have no operand!");
@@ -290,6 +408,9 @@ LDEFATTR(jmp,"jmp",{
     last_obj* obj;
     last_obj* next;
 
+    if(!parent || parent->t != vdfgk_blk){
+      uabort("jmp inst can not use here!");
+    }
     next = last_cdr(ast_obj);
     if(!next){
       uabort("jmp inst have no operand!");
@@ -315,6 +436,10 @@ LDEFATTR(jmp,"jmp",{
  */
 LDEFATTR(eq,"eq",{
     vps_inst* inst;
+
+    if(!parent || parent->t != vdfgk_blk){
+      uabort("eq inst can not use here!");
+    }
     inst = vps_ieq();
     ulog("eq");
     return (vps_t*)inst;
@@ -325,6 +450,10 @@ LDEFATTR(eq,"eq",{
  */
 LDEFATTR(gt,"gt",{
     vps_inst* inst;
+
+    if(!parent || parent->t != vdfgk_blk){
+      uabort("gt inst can not use here!");
+    }
     inst = vps_igt();
     ulog("gt");
     return (vps_t*)inst;
@@ -335,6 +464,10 @@ LDEFATTR(gt,"gt",{
  */
 LDEFATTR(lt,"lt",{
     vps_inst* inst;
+
+    if(!parent || parent->t != vdfgk_blk){
+      uabort("lt inst can not use here!");
+    }
     inst = vps_ilt();
     ulog("lt");
     return (vps_t*)inst;
@@ -345,6 +478,10 @@ LDEFATTR(lt,"lt",{
  */
 LDEFATTR(and,"and",{
     vps_inst* inst;
+
+    if(!parent || parent->t != vdfgk_blk){
+      uabort("and inst can not use here!");
+    }
     inst = vps_iand();
     ulog("and");
     return (vps_t*)inst;
@@ -355,6 +492,10 @@ LDEFATTR(and,"and",{
  */
 LDEFATTR(or,"or",{
     vps_inst* inst;
+
+    if(!parent || parent->t != vdfgk_blk){
+      uabort("or inst can not use here!");
+    }
     inst = vps_ior();
     ulog("or");
     return (vps_t*)inst;
@@ -365,6 +506,10 @@ LDEFATTR(or,"or",{
  */
 LDEFATTR(not,"not",{
     vps_inst* inst;
+
+    if(!parent || parent->t != vdfgk_blk){
+      uabort("not inst can not use here!");
+    }
     inst = vps_inot();
     ulog("not");
     return (vps_t*)inst;
@@ -375,6 +520,10 @@ LDEFATTR(not,"not",{
  */
 LDEFATTR(call,"call",{
     vps_inst* inst;
+
+    if(!parent || parent->t != vdfgk_blk){
+      uabort("call inst can not use here!");
+    }
     inst = vps_icall();
     ulog("call");
     return (vps_t*)inst;
@@ -385,6 +534,10 @@ LDEFATTR(call,"call",{
  */
 LDEFATTR(return,"return",{
     vps_inst* inst;
+
+    if(!parent || parent->t != vdfgk_blk){
+      uabort("return inst can not use here!");
+    }
     inst = vps_ireturn();
     ulog("return");
     return (vps_t*)inst;
@@ -395,6 +548,10 @@ LDEFATTR(return,"return",{
  */
 LDEFATTR(retvoid,"retvoid",{
     vps_inst* inst;
+
+    if(!parent || parent->t != vdfgk_blk){
+      uabort("retvoid inst can not use here!");
+    }
     inst = vps_iretvoid();
     ulog("retvoid");
     return (vps_t*)inst;
@@ -408,6 +565,9 @@ LDEFATTR(ref,"ref",{
     last_obj* obj;
     last_obj* next;
 
+    if(!parent || parent->t != vdfgk_blk){
+      uabort("ref inst can not use here!");
+    }
     next = last_cdr(ast_obj);
     if(!next){
       uabort("ref inst have no operand!");
@@ -436,6 +596,9 @@ LDEFATTR(set,"set",{
     last_obj* obj;
     last_obj* next;
 
+    if(!parent || parent->t != vdfgk_blk){
+      uabort("set inst can not use here!");
+    }
     next = last_cdr(ast_obj);
     if(!next){
       uabort("set inst have no operand!");
@@ -461,6 +624,10 @@ LDEFATTR(set,"set",{
  */
 LDEFATTR(nop,"nop",{
     vps_inst* inst;
+
+    if(!parent || parent->t != vdfgk_blk){
+      uabort("nop inst can not use here!");
+    }
     inst = vps_inop();
     ulog("nop");
     return (vps_t*)inst;
@@ -472,10 +639,12 @@ LDEFATTR(nop,"nop",{
 LATTRONLOAD(base,{
     LDECLATTR(entry);
     LDECLATTR(subr);
+    LDECLATTR(var);
     LDECLATTR(nop);
     LDECLATTR(load);
     LDECLATTR(store);
     LDECLATTR(push);
+    LDECLATTR(top);
     LDECLATTR(pop);
     LDECLATTR(jmp);
     LDECLATTR(jmpi);

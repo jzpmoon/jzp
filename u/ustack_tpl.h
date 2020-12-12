@@ -40,7 +40,7 @@
   int ustack_##t##_get(ustack_##t* stack,int index,t* data);
 
 #define ustack_top_set_decl_tpl(t)			\
-  int ustack_##t##_top_set(ustack_##t* stack,int top);
+  int ustack_##t##_top_set(ustack_##t* stack,int index);
 
 #define ustack_top_get_decl_tpl(t)			\
   int ustack_##t##_top_get(ustack_##t* stack);

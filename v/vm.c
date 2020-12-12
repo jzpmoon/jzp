@@ -3,8 +3,8 @@
 #include "uerror.h"
 #include "vm.h"
 
-void bc_pushv(vcontext* ctx){
-  vgc_heap_stack_pushv(ctx->heap);
+void bc_top(vcontext* ctx,usize_t index){
+  vgc_heap_stack_top_set(ctx->heap,index);
 }
 
 void bc_push(vcontext* ctx,
@@ -26,8 +26,8 @@ vslot bc_locals(vcontext* ctx,
   usize_t count = subr->params_count + subr->locals_count;
   usize_t base = calling->base;
   vslot slot;
-  usize_t real_index = base - subr->params_count + index;
-  if(index > count)
+  usize_t real_index = base - count + index;
+  if(index >= count)
     uabort("vm:local varable error!");
   slot = vgc_heap_stack_get(ctx->heap,real_index);
   return slot;
@@ -41,8 +41,8 @@ void bc_store(vcontext* ctx,
   vgc_subr* subr = vgc_obj_ref_get(calling,subr,vgc_subr);
   usize_t count = subr->params_count + subr->locals_count;
   usize_t base = calling->base;
-  usize_t real_index = base - subr->params_count + index;
-  if(index > count)
+  usize_t real_index = base - count + index;
+  if(index >= count)
     uabort("vm:local varable error!");
   vgc_heap_stack_pop(heap,&slot);
   vgc_heap_stack_set(heap,real_index,slot);
@@ -94,7 +94,7 @@ void bc_sub(vcontext* ctx){
   vgc_heap_stack_pop(heap,&slot2);
   if(!vslot_is_num(slot1) ||
      !vslot_is_num(slot2)){
-    uabort("vm:add not a number!");
+    uabort("vm:sub not a number!");
   }
   num1 = vslot_num_get(slot1);
   num2 = vslot_num_get(slot2);
@@ -113,7 +113,7 @@ void bc_mul(vcontext* ctx){
   vgc_heap_stack_pop(heap,&slot2);
   if(!vslot_is_num(slot1) ||
      !vslot_is_num(slot2)){
-    uabort("vm:add not a number!");
+    uabort("vm:mul not a number!");
   }
   num1 = vslot_num_get(slot1);
   num2 = vslot_num_get(slot2);
@@ -132,7 +132,7 @@ void bc_div(vcontext* ctx){
   vgc_heap_stack_pop(heap,&slot2);
   if(!vslot_is_num(slot1) ||
      !vslot_is_num(slot2)){
-    uabort("vm:add not a number!");
+    uabort("vm:div not a number!");
   }
   num1 = vslot_num_get(slot1);
   num2 = vslot_num_get(slot2);
@@ -314,8 +314,12 @@ void bc_call(vcontext* ctx){
   }
   obj = vslot_ref_get(slot,vgc_obj);
   if(vgc_obj_typeof(obj,vgc_obj_type_subr)){
+    vgc_subr* subr;
     vgc_call* call;
-    usize_t base = vgc_heap_stack_top_get(heap);
+    usize_t base;
+    subr = (vgc_subr*)obj;
+    base = vgc_heap_stack_top_get(heap) + subr->locals_count;
+    vgc_heap_stack_top_set(heap,base);
     vgc_heap_obj_push(heap,calling);
     vgc_heap_obj_push(heap,obj);
     call = vgc_call_new(heap,
@@ -324,6 +328,7 @@ void bc_call(vcontext* ctx){
     if(!call){
       uabort("bc_call:subr out of memory!");
     }
+    calling = vgc_obj_ref_get(ctx,calling,vgc_call);
     vgc_obj_ref_set(ctx,calling,call);
     vgc_heap_obj_push(heap,call);
   } else if(vgc_obj_typeof(obj,vgc_obj_type_cfun)){
@@ -338,6 +343,7 @@ void bc_call(vcontext* ctx){
     if(!call){
       uabort("bc_call:cfun out of memory!");
     }
+    calling = vgc_obj_ref_get(ctx,calling,vgc_call);
     vgc_obj_ref_set(ctx,calling,call);
     cfun = vgc_obj_ref_get(call,cfun,vgc_cfun);
     (cfun->entry)(ctx);
@@ -444,9 +450,11 @@ void vcontext_execute(vcontext* ctx){
       ulog1("Bpush %d",op);
       bc_push(ctx,bc_constant(ctx,op));
       break;
-    case Bpushv:
-      ulog("Bpush void");
-      bc_pushv(ctx);
+    case Btop:
+      NEXT;
+      op = (signed char)op;
+      ulog1("Btop %d",op);
+      bc_top(ctx,op);
       break;
     case Bpop:
       ulog("Bpop");

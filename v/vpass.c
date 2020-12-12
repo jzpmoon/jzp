@@ -80,9 +80,13 @@ vps_inst* vps_ipushdt(vps_mod* mod,ustring* name){
   return inst;
 }
 
-vps_inst* vps_ipushvoid(){
+vps_inst* vps_itop(int imm){
   vps_inst* inst;
-  inst = vps_inst_new(vinstk_non,Bpushv,NULL,NULL,NULL);
+  inst = vps_inst_new(vinstk_imm,Btop,NULL,NULL,NULL);
+  ulog1("vps_itop:%d",imm);
+  if(inst){
+    inst->inst.operand = imm;
+  }
   return inst;
 }
 
@@ -419,6 +423,8 @@ vdfg_graph* vdfg_graph_new(){
     g->locals = uhstb_vps_datap_new(VDFG_GRP_DATA_TABLE_SIZE);
     g->dfgs = ulist_vps_dfgp_new();
     g->entry = NULL;
+    g->params_count = 0;
+    g->locals_count = 0;
   }
   return g;
 }
@@ -435,18 +441,38 @@ static int vdfg_grp_dt_put_comp(vps_datap* data1,vps_datap* data2){
   return ustring_comp(n1,n2);
 }
 
-void vdfg_grp_dtapd(vdfg_graph* grp,vps_data* dt){
+void vdfg_grp_params_apd(vdfg_graph* grp,vps_data* dt){
   ustring* name = dt->name;
   unsigned int hscd = 0;
   if(name){
     hscd = name->hash_code;
   }
-  uhstb_vps_datap_put(grp->locals,
-		      hscd,
-		      &dt,
-		      NULL,
-		      NULL,
-		      vdfg_grp_dt_put_comp);
+  if(uhstb_vps_datap_put(grp->locals,
+			 hscd,
+			 &dt,
+			 NULL,
+			 NULL,
+			 vdfg_grp_dt_put_comp)){
+    uabort("vdfg_grp_params_apd error!");
+  }
+  grp->params_count++;
+}
+
+void vdfg_grp_locals_apd(vdfg_graph* grp,vps_data* dt){
+  ustring* name = dt->name;
+  unsigned int hscd = 0;
+  if(name){
+    hscd = name->hash_code;
+  }
+  if(uhstb_vps_datap_put(grp->locals,
+			 hscd,
+			 &dt,
+			 NULL,
+			 NULL,
+			 vdfg_grp_dt_put_comp)){
+    uabort("vdfg_grp_locals_apd error!");
+  }
+  grp->locals_count++;
 }
 
 static int vdfg_grp_dt_get_comp(vps_datap* data1,vps_datap* data2){
@@ -526,12 +552,14 @@ void vps_mod_data_put(vps_mod* mod,vps_data* data){
   if(name){
     hscd = name->hash_code;
   }
-  uhstb_vps_datap_put(mod->data,
-		      hscd,
-		      &data,
-		      NULL,
-		      NULL,
-		      vps_mod_data_comp);
+  if(uhstb_vps_datap_put(mod->data,
+			 hscd,
+			 &data,
+			 NULL,
+			 NULL,
+			 vps_mod_data_comp)){
+    uabort("vps_mod_data_put error!");
+  }
 }
 
 void vps_mod_code_put(vps_mod* mod,vdfg_graph* code){
@@ -540,12 +568,14 @@ void vps_mod_code_put(vps_mod* mod,vdfg_graph* code){
   if(name){
     hscd = name->hash_code;
   }
-  uhstb_vdfg_graphp_put(mod->code,
-			hscd,
-			&code,
-			NULL,
-			NULL,
-			vps_mod_code_comp);
+  if(uhstb_vdfg_graphp_put(mod->code,
+			   hscd,
+			   &code,
+			   NULL,
+			   NULL,
+			   vps_mod_code_comp)){
+    uabort("vps_mod_code_put error!");
+  }
 }
 
 vgc_string* vpass_dfg2bin(vps_dfg* dfg){
