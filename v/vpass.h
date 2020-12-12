@@ -127,6 +127,7 @@ vps_inst* vps_istoreimm(int imm);
 vps_inst* vps_istoredt(ustring* name);
 vps_inst* vps_ipushimm(vps_mod* mod,ustring* name,double dnum);
 vps_inst* vps_ipushdt(vps_mod* mod,ustring* name);
+vps_inst* vps_ipushvoid();
 vps_inst* vps_ipop();
 vps_inst* vps_iadd();
 vps_inst* vps_isub();

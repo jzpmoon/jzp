@@ -80,6 +80,12 @@ vps_inst* vps_ipushdt(vps_mod* mod,ustring* name){
   return inst;
 }
 
+vps_inst* vps_ipushvoid(){
+  vps_inst* inst;
+  inst = vps_inst_new(vinstk_non,Bpushv,NULL,NULL,NULL);
+  return inst;
+}
+
 vps_inst* vps_ipop(){
   vps_inst* inst;
   inst = vps_inst_new(vinstk_non,Bpop,NULL,NULL,NULL);

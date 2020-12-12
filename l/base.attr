@@ -125,6 +125,9 @@ LDEFATTR(load,"load",{
     last_obj* next;
 
     next = last_cdr(ast_obj);
+    if(!next){
+      uabort("load inst have no operand!");
+    }
     if(next->t != lastk_cons){
       uabort("load inst error!");
     }
@@ -151,6 +154,9 @@ LDEFATTR(store,"store",{
     last_obj* next;
 
     next = last_cdr(ast_obj);
+    if(!next){
+      uabort("store inst have no operand!");
+    }
     if(next->t != lastk_cons){
       uabort("store inst error!");
     }
@@ -177,18 +183,22 @@ LDEFATTR(push,"push",{
     last_obj* next;
 
     next = last_cdr(ast_obj);
-    if(next->t != lastk_cons){
-      uabort("push inst error!");
-    }
-    obj = last_car(next);
-    if(obj->t == lastk_symbol){
-      last_symbol* sym = (last_symbol*)obj;
-      inst = vps_ipushdt(vps,sym->name);
-    }else if(obj->t == lastk_number){
-      last_number* num = (last_number*)obj;
-      inst = vps_ipushimm(vps,num->name,num->dnum);
+    if(!next){
+      inst = vps_ipushvoid();
     }else{
-      uabort("push inst error!");
+      if(next->t != lastk_cons){
+	uabort("push inst error!");
+      }
+      obj = last_car(next);
+      if(obj->t == lastk_symbol){
+	last_symbol* sym = (last_symbol*)obj;
+	inst = vps_ipushdt(vps,sym->name);
+      }else if(obj->t == lastk_number){
+	last_number* num = (last_number*)obj;
+	inst = vps_ipushimm(vps,num->name,num->dnum);
+      }else{
+	uabort("push inst error!");
+      }  
     }
     ulog("push");
     return (vps_t*)inst;
@@ -253,6 +263,9 @@ LDEFATTR(jmpi,"jmpi",{
     last_obj* next;
 
     next = last_cdr(ast_obj);
+    if(!next){
+      uabort("jmpi inst have no operand!");
+    }
     if(next->t != lastk_cons){
       uabort("jmpi inst error!");
     }
@@ -278,6 +291,9 @@ LDEFATTR(jmp,"jmp",{
     last_obj* next;
 
     next = last_cdr(ast_obj);
+    if(!next){
+      uabort("jmp inst have no operand!");
+    }
     if(next->t != lastk_cons){
       uabort("jmp inst error!");
     }
@@ -393,6 +409,9 @@ LDEFATTR(ref,"ref",{
     last_obj* next;
 
     next = last_cdr(ast_obj);
+    if(!next){
+      uabort("ref inst have no operand!");
+    }
     if(next->t != lastk_cons){
       uabort("ref inst error!");
     }
@@ -418,6 +437,9 @@ LDEFATTR(set,"set",{
     last_obj* next;
 
     next = last_cdr(ast_obj);
+    if(!next){
+      uabort("set inst have no operand!");
+    }
     if(next->t != lastk_cons){
       uabort("set inst error!");
     }

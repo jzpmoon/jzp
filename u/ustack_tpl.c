@@ -57,13 +57,59 @@
 
 #define ustack_push_tpl(t)			\
   int ustack_##t##_push(ustack_##t* stack,	\
-		      t data){			\
+			t data){		\
     ublock_##t* block;				\
     if((block=ublock_##t##_push(stack))!=NULL){	\
       block->ptr[stack->block_pos++]=data;	\
       return 0;					\
     }						\
     return -1;					\
+  }
+
+#define ustack_pushv_tpl(t)			\
+  int ustack_##t##_pushv(ustack_##t* stack){	\
+    ublock_##t* block;				\
+    if((block=ublock_##t##_push(stack))!=NULL){	\
+      stack->block_pos++;			\
+      return 0;					\
+    }						\
+    return -1;					\
+  }
+
+#define ustack_set_tpl(t)					\
+  int ustack_##t##_set(ustack_##t* stack,int index,t data){	\
+    if(index < 0 || index >= stack->block_pos){			\
+      return -1;						\
+    }								\
+    stack->curr_block->ptr[index] = data;			\
+    return index;						\
+  }
+
+#define ustack_get_tpl(t)					\
+  int ustack_##t##_get(ustack_##t* stack,int index,t* data){	\
+    int top = index;						\
+    if(top < 0){						\
+      top = stack->block_pos + index;				\
+    }								\
+    if(top < 0){						\
+      return -1;						\
+    }								\
+    *data = stack->curr_block->ptr[top];			\
+    return top;							\
+  }
+
+#define ustack_top_set_tpl(t)				\
+  int ustack_##t##_top_set(ustack_##t* stack,int top){	\
+    if(top < 0 || top >= stack->block_size){		\
+      return -1;					\
+    }							\
+    stack->block_pos = top;				\
+    return top;						\
+  }
+
+#define ustack_top_get_tpl(t)			\
+  int ustack_##t##_top_get(ustack_##t* stack){	\
+    return stack->block_pos;			\
   }
 
 #define ublock_pop_tpl(t)					\
@@ -103,5 +149,10 @@
   ublock_new_tpl(t)				\
   ublock_push_tpl(t)				\
   ustack_push_tpl(t)				\
+  ustack_pushv_tpl(t)				\
+  ustack_set_tpl(t)				\
+  ustack_get_tpl(t)				\
+  ustack_top_set_tpl(t)			        \
+  ustack_top_get_tpl(t)			        \
   ublock_pop_tpl(t)				\
   ustack_pop_tpl(t)

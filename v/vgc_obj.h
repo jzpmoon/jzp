@@ -171,6 +171,11 @@ void vgc_heap_stack_set(vgc_heap* heap,usize_t index,vslot slot);
 usize_t vgc_heap_stack_top_get(vgc_heap* heap);
 void vgc_heap_stack_top_set(vgc_heap* heap,usize_t index);
 
+#define vgc_heap_stack_pushv(heap)		\
+  if(ustack_vslot_pushv(&(heap)->root_set)){	\
+    uabort("vgc_heap_stack: overflow!");	\
+  }
+
 #define vgc_heap_obj_push(heap,obj)		\
   do{						\
     vslot __slot;				\

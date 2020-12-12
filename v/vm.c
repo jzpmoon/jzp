@@ -3,9 +3,8 @@
 #include "uerror.h"
 #include "vm.h"
 
-void bc_top(vcontext* ctx,usize_t top){
-  vgc_heap* heap = ctx->heap;
-  vgc_heap_stack_top_set(heap,top);
+void bc_pushv(vcontext* ctx){
+  vgc_heap_stack_pushv(ctx->heap);
 }
 
 void bc_push(vcontext* ctx,
@@ -444,6 +443,10 @@ void vcontext_execute(vcontext* ctx){
       NEXT;
       ulog1("Bpush %d",op);
       bc_push(ctx,bc_constant(ctx,op));
+      break;
+    case Bpushv:
+      ulog("Bpush void");
+      bc_pushv(ctx);
       break;
     case Bpop:
       ulog("Bpop");

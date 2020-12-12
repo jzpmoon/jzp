@@ -27,8 +27,23 @@
 #define ustack_push_decl_tpl(t)				\
   int ustack_##t##_push(ustack_##t* stack,t data);
 
+#define ustack_pushv_decl_tpl(t)			\
+  int ustack_##t##_pushv(ustack_##t* stack);
+
 #define ustack_pop_decl_tpl(t)				\
   int ustack_##t##_pop(ustack_##t* stack,t* data);
+
+#define ustack_set_decl_tpl(t)				\
+  int ustack_##t##_set(ustack_##t* stack,int index,t data);
+
+#define ustack_get_decl_tpl(t)				\
+  int ustack_##t##_get(ustack_##t* stack,int index,t* data);
+
+#define ustack_top_set_decl_tpl(t)			\
+  int ustack_##t##_top_set(ustack_##t* stack,int top);
+
+#define ustack_top_get_decl_tpl(t)			\
+  int ustack_##t##_top_get(ustack_##t* stack);
 
 #define UBLOCK_SIZE_GET(SIZE)			\
   SIZE > 0 ? SIZE : BLOCK_SIZE
@@ -48,6 +63,11 @@
   ustack_tpl(t)					\
   ustack_log_decl_tpl(t)			\
   ustack_push_decl_tpl(t)			\
+  ustack_pushv_decl_tpl(t)			\
+  ustack_set_decl_tpl(t)			\
+  ustack_get_decl_tpl(t)			\
+  ustack_top_set_decl_tpl(t)			\
+  ustack_top_get_decl_tpl(t)			\
   ustack_pop_decl_tpl(t)
 
 #endif
