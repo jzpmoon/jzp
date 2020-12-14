@@ -328,26 +328,37 @@ void bc_call(vcontext* ctx){
     if(!call){
       uabort("bc_call:subr out of memory!");
     }
-    calling = vgc_obj_ref_get(ctx,calling,vgc_call);
+
     vgc_obj_ref_set(ctx,calling,call);
     vgc_heap_obj_push(heap,call);
   } else if(vgc_obj_typeof(obj,vgc_obj_type_cfun)){
     vgc_call* call;
     vgc_cfun* cfun;
-    usize_t base = vgc_heap_stack_top_get(heap);
+    int has_retval;
+    usize_t after_base;
+    usize_t before_base = vgc_heap_stack_top_get(heap);
     vgc_heap_obj_push(heap,calling);
     vgc_heap_obj_push(heap,obj);
     call = vgc_call_new(heap,
 			vgc_call_type_cfun,
-			base);
+			before_base);
     if(!call){
       uabort("bc_call:cfun out of memory!");
     }
-    calling = vgc_obj_ref_get(ctx,calling,vgc_call);
+
     vgc_obj_ref_set(ctx,calling,call);
     cfun = vgc_obj_ref_get(call,cfun,vgc_cfun);
+    has_retval = cfun->has_retval;
     (cfun->entry)(ctx);
-    vgc_heap_stack_top_set(heap,base);
+    if(has_retval){
+      after_base = vgc_heap_stack_top_get(heap);
+      if (after_base - before_base != 1) {
+	uabort("cfun claim return value but has no return!");
+      }
+    }
+    call = vgc_obj_ref_get(ctx,calling,vgc_call);
+    calling = vgc_obj_ref_get(call,caller,vgc_call);
+    vgc_obj_ref_set(ctx,calling,calling);
   }else{
     uabort("bc_call:can not execute!");
   }

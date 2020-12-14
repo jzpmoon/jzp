@@ -1,0 +1,11 @@
+/*
+ *define cfun make-stream
+ */
+LDEFUN(make_stream,"make-stream",0,RETVAL_NO,{
+    ulog("call make-stream");
+    return 0;
+  });
+
+LFUNONLOAD(base,{
+    LDECLFUN(make_stream);
+  })

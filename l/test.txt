@@ -1,8 +1,14 @@
 (entry main ()
   (push 5)
-  (push factorial)
+  (push test-cfun)
   (call)
   (return))
+
+(subr test-cfun ()
+  (push make-stream)
+  (call)
+  (return)
+)
 
 (subr test-count (x)
   (var tmp)

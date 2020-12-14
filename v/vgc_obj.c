@@ -78,14 +78,21 @@ void vgc_string_log(vgc_heap* heap){
 
 vgc_cfun* vgc_cfun_new(vgc_heap* heap,
 		       vcfun_ft entry,
+		       int params_count,
+		       int has_retval,
 		       int area_type){
   vgc_cfun* cfun;
+  if(params_count < 0){
+    return NULL;
+  }
   cfun = vgc_heap_obj_new(heap,
 			  vgc_cfun,
 			  vgc_obj_type_cfun,
 			  area_type);
   if(cfun){
     cfun->entry = entry;
+    cfun->params_count = params_count;
+    cfun->has_retval = has_retval;
   }
   return cfun;
 }

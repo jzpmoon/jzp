@@ -283,6 +283,8 @@ typedef int(*vcfun_ft)(vcontext*);
 typedef struct _vgc_cfun{
   VGCHEADER;
   vcfun_ft entry;
+  int params_count;
+  int has_retval;
   vslot_define_begin
   /*
    *void member
@@ -292,6 +294,8 @@ typedef struct _vgc_cfun{
 
 vgc_cfun* vgc_cfun_new(vgc_heap* heap,
 		       vcfun_ft entry,
+		       int params_count,
+		       int has_retval,
 		       int area_type);
 
 typedef struct _vgc_subr{

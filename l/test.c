@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "vm.h"
 #include "lparser.h"
+#include "lcfun.h"
 
 ltoken_state ts;
 
@@ -43,6 +44,8 @@ int test_1(){
     uabort("new token state error!");
   }
 
+  lcfun_init(ctx);
+  
   mod = vps_mod_new();
   if (!mod) {
     uabort("new mod error!");
