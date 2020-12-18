@@ -1,5 +1,5 @@
 bin = libl.so
-obj = lparser.o lattr.o lcfun.o
+obj = lparser.o lattr.o lcfun.o lobj.o
 temp_attr_file = _ltemp.attr
 temp_cfun_file = _ltemp.cfun
 

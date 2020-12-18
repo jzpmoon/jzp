@@ -6,6 +6,11 @@ LDEFUN(make_stream,"make-stream",0,RETVAL_NO,{
     return 0;
   });
 
+LDEFVAR(system_iostream,"system-iostream",{
+    return NULL;
+  });
+
 LFUNONLOAD(base,{
     LDECLFUN(make_stream);
+    LDECLVAR(system_iostream);
   })

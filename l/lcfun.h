@@ -11,6 +11,14 @@ struct _lcfun_infor{
   vcfun_ft entry;
 };
 
+typedef vgc_obj*(*lvar_gen_ft)();
+
+struct _lvar_infor{
+  char* lname;
+  ustring* name;
+  lvar_gen_ft var_gen;
+};
+
 #define RETVAL_YES 1
 
 #define RETVAL_NO 0
@@ -21,6 +29,13 @@ struct _lcfun_infor{
   }							\
   static struct _lcfun_infor _lcfun_infor_##FNAME =	\
     {LNAME,NULL,PCOUNT,RETVAL,_lcfun_entry_##FNAME};
+
+#define LDEFVAR(FNAME,LNAME,BODY)			\
+  vgc_obj* _lvar_gen_##FNAME(){				\
+    BODY;						\
+  }							\
+  static struct _lvar_infor _lvar_infor_##FNAME =	\
+    {LNAME,NULL,_lvar_gen_##FNAME};  
 
 #define LFUNONLOAD(fname,body)				\
   void _lcfun_file_init_##fname(vcontext* ctx){		\
@@ -51,13 +66,20 @@ struct _lcfun_infor{
 		     (vgc_obj*)cfun);				\
   }while(0)
 
-#define LVAR_INIT(CTX,NAME,VAR)					\
-  do{								\
-    ustring* str;						\
-    str = ustring_table_put((CTX)->symtb,			\
-			    NAME);				\
-    if(!str){uabort("init var error!");}			\
-    vcontext_obj_put(CTX,NAME,slotp);				\
+#define LDECLVAR(NAME) LVAR_INIT(ctx,NAME)
+  
+#define LVAR_INIT(CTX,VNAME)				\
+  do{							\
+    ustring* str;					\
+    vgc_obj* var;					\
+    str = ustring_table_put((CTX)->symtb,		\
+			    _lvar_infor_##VNAME.lname,	\
+			    -1);			\
+    if(!str){uabort("init var error!");}		\
+    var = _lvar_infor_##VNAME.var_gen();		\
+    if(var){						\
+      vcontext_obj_put(CTX,str,var);			\
+    }							\
   } while(0)
 
 void lcfun_init(vcontext* ctx);

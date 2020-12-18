@@ -350,10 +350,14 @@ void bc_call(vcontext* ctx){
     cfun = vgc_obj_ref_get(call,cfun,vgc_cfun);
     has_retval = cfun->has_retval;
     (cfun->entry)(ctx);
+    after_base = vgc_heap_stack_top_get(heap);
     if(has_retval){
-      after_base = vgc_heap_stack_top_get(heap);
       if (after_base - before_base != 1) {
 	uabort("cfun claim return value but has no return!");
+      }
+    }else{
+      if (after_base != before_base) {
+	uabort("cfun claim has no return value!");
       }
     }
     call = vgc_obj_ref_get(ctx,calling,vgc_call);

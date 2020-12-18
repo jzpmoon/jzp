@@ -177,12 +177,15 @@ vslot vslot_ref_eq(vslot slot1,vslot slot2){
 }
 
 vgc_extend* vgc_extend_new(vgc_heap* heap,
-			   vgc_objex_t* oet){
-  vgc_extend* extend;
-  extend = vgc_heap_obj_new(heap,
-			    vgc_extend,
-			    vgc_obj_type_extend,
-			    vgc_heap_area_active);
+			   int struct_size,
+			   int ref_count,
+			   vgc_objex_t oet){
+  vgc_extend* extend =
+    (vgc_extend*)vgc_heap_data_new(heap,
+				struct_size,
+				ref_count,
+				vgc_obj_type_extend,
+				vgc_heap_area_active);
   if(extend){
     extend->oet = oet;
   }
