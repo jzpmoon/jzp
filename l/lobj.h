@@ -15,7 +15,12 @@ typedef struct _lobj_stream{
   vslot_define_end
 } lobj_stream;
 
-void lobj_stream_new_by_file(vgc_heap* heap,
-			     char* file_path);
+extern vgc_objex_t lobj_stream_type;
+
+lobj_stream* lobj_istream_new_by_file(vgc_heap* heap,
+				      FILE* file);
+
+lobj_stream* lobj_ostream_new_by_file(vgc_heap* heap,
+				      FILE* file);
 
 #endif

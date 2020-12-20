@@ -1,6 +1,6 @@
 (entry main ()
   (push 5)
-  (push test-cfun)
+  (push test-output)
   (call)
   (return))
 
@@ -40,5 +40,13 @@
   (call)
   (load n)
   (mul)
+  (return)
+)
+
+(subr test-output ()
+  (push 1)
+  (push system-ostream)
+  (push stream-output)
+  (call)
   (return)
 )

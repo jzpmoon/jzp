@@ -31,4 +31,5 @@ int ustream_read_next(ustream* stream,URI_DECL);
 
 int ustream_look_ahead(ustream* stream,URI_DECL);
 
+int ustream_write_dnum(ustream* stream,double dnum,URI_DECL);
 #endif

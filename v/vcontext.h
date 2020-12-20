@@ -13,7 +13,7 @@ vsymbol* vcontext_slot_put(vcontext* ctx,ustring* name,vslot obj);
 
 vsymbol* vcontext_symbol_get(vcontext* ctx,ustring* name);
 
-vsymbol* vcontext_graph_load(vcontext* ctx,vdfg_graph* grp);
+vslot vcontext_params_get(vcontext* ctx,int index);
 
 int vcontext_load(vcontext* ctx,vps_t* vps);
 

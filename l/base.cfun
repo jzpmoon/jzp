@@ -6,11 +6,52 @@ LDEFUN(make_stream,"make-stream",0,RETVAL_NO,{
     return 0;
   });
 
-LDEFVAR(system_iostream,"system-iostream",{
-    return NULL;
+/*
+ *define cfun stream-output
+ */
+LDEFUN(stream_output,"stream-output",2,RETVAL_NO,{
+    URI_DEFINE;
+    vslot slot_num = vcontext_params_get(ctx,0);
+    vslot slot_stream = vcontext_params_get(ctx,1);
+    vgc_obj* obj;
+    vgc_extend* extend;
+    lobj_stream* lstream;
+
+    if (!vslot_is_ref(slot_stream)) {
+      uabort("stream-output:stream error, not a ref!");
+    }
+    obj = vslot_ref_get(slot_stream,vgc_obj);
+    if(!vgc_obj_typeof(obj,vgc_obj_type_extend)){
+      uabort("stream-output:stream error, not a extend!");
+    }
+    extend = (vgc_extend*)obj;
+    if(extend->oet != &lobj_stream_type){
+      uabort("stream-output:stream error, not a stream!");
+    }
+    lstream = (lobj_stream*)extend;
+    if (vslot_is_num(slot_num)) {
+      double num = vslot_num_get(slot_num);
+      if(ustream_write_dnum(lstream->stream,num,URI_REF)){
+	uabort("stream-output:stream write error!");	
+      }
+    }
+
+    return 0;
+  });
+
+LDEFVAR(system_istream,"system-istream",{
+    lobj_stream* lstream = lobj_istream_new_by_file(ctx->heap,stdin);
+    return (vgc_obj*)lstream;
+  });
+
+LDEFVAR(system_ostream,"system-ostream",{
+    lobj_stream* lstream = lobj_ostream_new_by_file(ctx->heap,stdout);
+    return (vgc_obj*)lstream;
   });
 
 LFUNONLOAD(base,{
     LDECLFUN(make_stream);
-    LDECLVAR(system_iostream);
+    LDECLFUN(stream_output);
+    LDECLVAR(system_istream);
+    LDECLVAR(system_ostream);
   })

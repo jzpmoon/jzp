@@ -343,7 +343,7 @@ typedef struct _vgc_obj_ex_t{
 
 #define VGCHEADEREX \
   VGCHEADER;	    \
-  vgc_objex_t oet
+  vgc_objex_t* oet
 
 typedef struct _vgc_extend{
   VGCHEADEREX;
@@ -357,7 +357,7 @@ typedef struct _vgc_extend{
 vgc_extend* vgc_extend_new(vgc_heap* heap,
 			   int struct_size,
 			   int ref_count,
-			   vgc_objex_t oet);
+			   vgc_objex_t* oet);
 
 #define vgc_objex_new(heap,stype,oet)					\
   (stype*) vgc_extend_new(heap,sizeof(stype),vgc_obj_slot_count(stype),oet);

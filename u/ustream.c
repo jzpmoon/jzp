@@ -16,12 +16,14 @@ ustream* ustream_new_by_buff(int iot,ubuffer* buff,URI_DECL){
 
 ustream* ustream_new_by_file(int iot,FILE* file,URI_DECL){
   ustream* stream;
-  udbuffer* dbuff;
+  udbuffer* dbuff = NULL;
   unew(stream,sizeof(ustream),URI_RETVAL(UERR_OFM,NULL););
-  dbuff = udbuffer_new(USTREAM_FILE_BUFF_SIZE);
-  if(!dbuff){
-    ufree(stream);
-    URI_RETVAL(UERR_OFM,NULL);
+  if(iot == USTREAM_INPUT){
+    dbuff = udbuffer_new(USTREAM_FILE_BUFF_SIZE);
+    if(!dbuff){
+      ufree(stream);
+      URI_RETVAL(UERR_OFM,NULL);
+    }
   }
   stream->iot    = iot;
   stream->dst    = USTREAM_FILE;
@@ -103,4 +105,21 @@ int ustream_look_ahead(ustream* stream,URI_DECL){
     URI_RETVAL(UERR_DST,next);
   }
   URI_RETVAL(UERR_SUCC,next);
+}
+
+int ustream_write_dnum(ustream* stream,double dnum,URI_DECL){
+  if(stream->iot != USTREAM_OUTPUT){
+    URI_RETVAL(UERR_IOT,-1);
+  }
+  if(stream->dst == USTREAM_BUFF){
+
+  }else if(stream->dst == USTREAM_FILE){
+    FILE*     file  = USTREAM_FILE_GET(stream);
+    if(fprintf(file,"%f",dnum) < 0){
+      URI_RETVAL(UERR_ERR,-1);
+    }
+  }else{
+    URI_RETVAL(UERR_DST,-1);
+  }
+  URI_RETVAL(UERR_SUCC,0);
 }

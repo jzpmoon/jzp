@@ -31,7 +31,7 @@ struct _lvar_infor{
     {LNAME,NULL,PCOUNT,RETVAL,_lcfun_entry_##FNAME};
 
 #define LDEFVAR(FNAME,LNAME,BODY)			\
-  vgc_obj* _lvar_gen_##FNAME(){				\
+  vgc_obj* _lvar_gen_##FNAME(vcontext* ctx){		\
     BODY;						\
   }							\
   static struct _lvar_infor _lvar_infor_##FNAME =	\
@@ -76,7 +76,7 @@ struct _lvar_infor{
 			    _lvar_infor_##VNAME.lname,	\
 			    -1);			\
     if(!str){uabort("init var error!");}		\
-    var = _lvar_infor_##VNAME.var_gen();		\
+    var = _lvar_infor_##VNAME.var_gen(CTX);		\
     if(var){						\
       vcontext_obj_put(CTX,str,var);			\
     }							\

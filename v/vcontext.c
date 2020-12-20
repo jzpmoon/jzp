@@ -8,7 +8,7 @@ uhstb_def_tpl(vsymbol);
 #define VCONTEXT_OBJTB_SIZE 17
 #define VCONTEXT_SYMTB_SIZE 17
 #define VCONTEXT_STRTB_SIZE 17
-#define VCONTEXT_CONSTS_SIZE 10
+#define VCONTEXT_CONSTS_SIZE 20
 
 vcontext* vcontext_new(vgc_heap* heap){
   vcontext* ctx;
@@ -243,4 +243,27 @@ void vcontext_relocate(vcontext* ctx){
     }
     vgc_array_set(reloc->rel_obj,reloc->rel_idx,symbol->slot);
   }
+}
+
+vslot vcontext_params_get(vcontext* ctx,int index){
+  vgc_call* calling;
+  vgc_cfun* cfun;
+  usize_t count;
+  usize_t base;
+  vslot slot;
+  usize_t real_index;
+
+  calling = vgc_obj_ref_get(ctx,calling,vgc_call);
+  if(calling->call_type != vgc_call_type_cfun){
+    uabort("vcontext_params_get:current call not a cfun!");
+  }
+  cfun = vgc_obj_ref_get(calling,cfun,vgc_cfun);
+  count = cfun->params_count;
+  base = calling->base;
+  real_index = base - count + index;
+
+  if(index < 0 || index >= count)
+    uabort("vm:local varable error!");
+  slot = vgc_heap_stack_get(ctx->heap,real_index);
+  return slot;
 }

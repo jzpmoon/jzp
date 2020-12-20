@@ -179,7 +179,7 @@ vslot vslot_ref_eq(vslot slot1,vslot slot2){
 vgc_extend* vgc_extend_new(vgc_heap* heap,
 			   int struct_size,
 			   int ref_count,
-			   vgc_objex_t oet){
+			   vgc_objex_t* oet){
   vgc_extend* extend =
     (vgc_extend*)vgc_heap_data_new(heap,
 				struct_size,

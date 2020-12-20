@@ -27,7 +27,7 @@ vslot bc_locals(vcontext* ctx,
   usize_t base = calling->base;
   vslot slot;
   usize_t real_index = base - count + index;
-  if(index >= count)
+  if(index < 0 || index >= count)
     uabort("vm:local varable error!");
   slot = vgc_heap_stack_get(ctx->heap,real_index);
   return slot;
@@ -42,7 +42,7 @@ void bc_store(vcontext* ctx,
   usize_t count = subr->params_count + subr->locals_count;
   usize_t base = calling->base;
   usize_t real_index = base - count + index;
-  if(index >= count)
+  if(index < 0 || index >= count)
     uabort("vm:local varable error!");
   vgc_heap_stack_pop(heap,&slot);
   vgc_heap_stack_set(heap,real_index,slot);
