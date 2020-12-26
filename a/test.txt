@@ -10,6 +10,9 @@
   (return)
 )
 
+;
+; test cpmment
+;
 (subr test-count (x)
   (var tmp)
   (load x)

@@ -79,6 +79,24 @@ void ltoken_skip_blank(ltoken_state* ts){
   }
 }
 
+void ltoken_skip_comment(ltoken_state* ts){
+  int c;
+  c = ltoken_look_ahead(ts);
+  if(c == ';'){
+    ltoken_next_char(ts);
+    while(1){
+      c = ltoken_look_ahead(ts);
+      if (c == '\n') {
+	ltoken_next_char(ts);
+	ltoken_new_line(ts);
+	break;
+      } else if (c == LEOF){
+	break;
+      }
+    }
+  }
+}
+
 int ltoken_lex_string(ltoken_state* ts){
   ustring* str;
   int      c;
@@ -158,7 +176,10 @@ int ltoken_lex_identify(ltoken_state* ts){
 
 int ltoken_next(ltoken_state* ts){
   int c;
+  
   ltoken_skip_blank(ts);
+  ltoken_skip_comment(ts);
+  
   c = ltoken_next_char(ts);
   switch(c){
   case '(':

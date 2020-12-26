@@ -10,6 +10,8 @@ libv_path = ../v/
 libu_path = ../u/
 
 l_somk   = $(libl_path)libl.mk
+v_somk   = $(libv_path)libv.mk
+u_somk   = $(libu_path)libu.mk
 CFLAGS   = -std=c89 -Wall $(DEBUG_MODE)
 
 &(bin_name):$(obj_list) $(l_lib)
@@ -19,9 +21,14 @@ CFLAGS   = -std=c89 -Wall $(DEBUG_MODE)
 $(l_lib):
 	make -C $(libl_path) -f $(l_somk)
 install:
-	cp $(bin_name) ~/../usr/bin/;make -C $(libl_path) -f $(l_somk) install
+	cp $(bin_name) ~/../usr/bin/; \
+	make -C $(libl_path) -f $(l_somk) install; \
+	make -C $(libv_path) -f $(v_somk) install; \
+	make -C $(libu_path) -f $(u_somk) install
 uninstall:
-	rm ~/../usr/bin/$(bin_name);make -C $(libl_path) -f $(l_somk) uninstall
-
+	rm ~/../usr/bin/$(bin_name); \
+	make -C $(libl_path) -f $(l_somk) uninstall; \
+	make -C $(libv_path) -f $(v_somk) uninstall; \
+	make -C $(libu_path) -f $(u_somk) uninstall
 clean:
 	make -C $(libl_path) -f $(l_somk) clean;rm -f $(bin_name) $(obj_list)

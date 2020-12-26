@@ -11,5 +11,9 @@ $(bin):$(obj) $(sobj)
 	$(CC) -c -o $@ $< -I $(lib_path) $(CFLAGS) -fPIC
 $(sobj):
 	make -C $(lib_path) -f $(somk) DEBUG_MODE=$(DEBUG_MODE)
+install:
+	cp $(bin) ~/../usr/lib/
+uninstall:
+	rm ~/../usr/lib/$(bin)
 clean:
 	make -C $(lib_path) -f $(somk) clean;rm -f $(bin) $(obj)

@@ -41,5 +41,9 @@ $(temp_cfun_file):
 	$(call gen_cfun_file)
 $(v_sobj):
 	make -C $(libv_path) -f $(v_somk) DEBUG_MODE=$(DEBUG_MODE)
+install:
+	cp $(bin) ~/../usr/lib/
+uninstall:
+	rm ~/../usr/lib/$(bin)
 clean:
 	make -C $(libv_path) -f $(v_somk) clean;rm -f $(bin) $(obj) $(temp_attr_file) $(temp_cfun_file)
