@@ -370,11 +370,21 @@ void bc_call(vcontext* ctx){
 
 void bc_return(vcontext* ctx){
   vgc_heap* heap = ctx->heap;
-  vgc_call* calling = vgc_obj_ref_get(ctx,calling,vgc_call);
+  vgc_call* calling;
   vgc_call* called;
+  vgc_subr* subr;
   vslot slot_val;
+  int base;
+
+  calling = vgc_obj_ref_get(ctx,calling,vgc_call);
+  if(calling->call_type == vgc_call_type_subr){
+    subr = vgc_obj_ref_get(calling,subr,vgc_subr);
+    base = calling->base + subr->locals_count;
+  }else{
+    base = calling->base;
+  }
   vgc_heap_stack_pop(heap,&slot_val);
-  vgc_heap_stack_top_set(heap,calling->base);
+  vgc_heap_stack_top_set(heap,base);
   vgc_heap_stack_push(heap,slot_val);
   called = vgc_obj_ref_get(calling,caller,vgc_call);
   vgc_obj_ref_set(ctx,calling,called);
@@ -382,12 +392,19 @@ void bc_return(vcontext* ctx){
 
 void bc_return_void(vcontext* ctx){
   vgc_heap* heap = ctx->heap;
-  vgc_call* calling = vgc_obj_ref_get(ctx,calling,vgc_call);
+  vgc_call* calling;
   vgc_call* called;
-  vslot slot;
-  vgc_heap_stack_top_set(heap,calling->base);
-  vslot_null_set(slot);
-  vgc_heap_stack_push(heap,slot);
+  vgc_subr* subr;
+  int base;
+  
+  calling = vgc_obj_ref_get(ctx,calling,vgc_call);
+  if(calling->call_type == vgc_call_type_subr){
+    subr = vgc_obj_ref_get(calling,subr,vgc_subr);
+    base = calling->base + subr->locals_count;
+  }else{
+    base = calling->base;
+  }
+  vgc_heap_stack_top_set(heap,base);
   called = vgc_obj_ref_get(calling,caller,vgc_call);
   vgc_obj_ref_set(ctx,calling,called);
 }

@@ -1,6 +1,9 @@
 (entry main ()
-  (push 5)
-  (push test-output)
+  (push 3)
+  (push factorial)
+  (call)
+  (push system-ostream)
+  (push stream-output)
   (call)
   (return))
 
@@ -11,7 +14,7 @@
 )
 
 ;
-; test cpmment
+; test comment
 ;
 (subr test-count (x)
   (var tmp)
