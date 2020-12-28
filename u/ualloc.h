@@ -22,4 +22,6 @@
 #define TYPE_SIZE_OF(stype,mtype,length)	\
   sizeof(stype)+sizeof(mtype)*((length)-1)
 
+#define uoffsetof(stype,member) offsetof(stype,member)
+
 #endif

@@ -2,8 +2,10 @@
 #define _UMEMPOOL_H_
 
 typedef struct _umem_node{
-  umem_node* next;
-  int size;
+  struct _umem_node* next;
+  int total_size;
+  int remain_size;
+  void* index;
   unsigned char mem[1];
 } umem_node;
 

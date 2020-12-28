@@ -7,7 +7,8 @@ obj_list=ulist.o         \
 	 ubuffer.o       \
 	 udbuffer.o	 \
 	 ustream.o       \
-	 uhstb.o
+	 uhstb.o         \
+	 umempool.o
 
 CFLAGS=-std=c89 -Wall $(DEBUG_MODE)
 $(lib_name):$(obj_list)

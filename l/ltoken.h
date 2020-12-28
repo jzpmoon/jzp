@@ -4,6 +4,7 @@
 #include "ustring.h"
 #include "ustream.h"
 #include "uhstb_tpl.h"
+#include "umempool.h"
 #include "vgc_obj.h"
 
 enum ltoken{
@@ -18,6 +19,7 @@ enum ltoken{
 };
 
 typedef struct _ltoken_state{
+  umem_pool* pool;
   ustream* stream;
   ubuffer* buff;
   int token;
