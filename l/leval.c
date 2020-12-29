@@ -70,6 +70,8 @@ void leval_load(char* file_path){
     }
     last2vps(eval_instance.state,ast_obj,mod);
   }
+
+  umem_pool_clean(&eval_instance.state->pool);
   
   vcontext_load(eval_instance.ctx,(vps_t*)mod);
 }

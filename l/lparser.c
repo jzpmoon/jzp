@@ -225,7 +225,7 @@ last_obj* lparser_atom_parse(ltoken_state* ts){
   switch(tk){
   case ltk_string:
     {
-      last_string* str = last_string_new(ts->str);
+      last_string* str = last_string_new(ts,ts->str);
       if(!str){
 	uabort("lparser_atom_parse error!");
       }
@@ -241,7 +241,7 @@ last_obj* lparser_atom_parse(ltoken_state* ts){
 			  &in_attr,
 			  &attr,
 			  last_attr_get_comp);
-      sym = last_symbol_new(ts->id,attr);
+      sym = last_symbol_new(ts,ts->id,attr);
       if(!sym){
 	uabort("lparser_atom_parse error!");
       }
@@ -249,7 +249,7 @@ last_obj* lparser_atom_parse(ltoken_state* ts){
     }
   case ltk_number:
     {
-      last_number* num = last_number_new(ts->id,ts->num);
+      last_number* num = last_number_new(ts,ts->id,ts->num);
       if(!num){
 	uabort("lparser_atom_parse error!");
       }
@@ -277,7 +277,7 @@ last_obj* lparser_exp_parse(ltoken_state* ts){
       car = lparser_atom_parse(ts);
     }
     {
-      last_obj* tmp = (last_obj*)last_cons_new(NULL,NULL);
+      last_obj* tmp = (last_obj*)last_cons_new(ts,NULL,NULL);
       if(!tmp){
 	uabort("lparser_parse error!");
       }
@@ -375,8 +375,12 @@ void last_obj_log(last_obj* ast_obj){
   lparser_atom_log(s_exp);
 }
 
-last_cons* last_cons_new(last_obj* car,last_obj* cdr){
-  last_cons* cons = ualloc(sizeof(last_cons));
+last_cons* last_cons_new(ltoken_state* ts,last_obj* car,last_obj* cdr){
+  umem_pool* pool;
+  last_cons* cons;
+
+  pool = &ts->pool;
+  cons = umem_pool_alloc(pool,sizeof(last_cons));
   if(cons){
     cons->t = lastk_cons;
     cons->car = car;
@@ -385,8 +389,12 @@ last_cons* last_cons_new(last_obj* car,last_obj* cdr){
   return cons;
 }
 
-last_symbol* last_symbol_new(ustring* name,last_attr* attr){
-  last_symbol* symbol = ualloc(sizeof(last_symbol));
+last_symbol* last_symbol_new(ltoken_state* ts,ustring* name,last_attr* attr){
+  umem_pool* pool;
+  last_symbol* symbol;
+
+  pool = &ts->pool;
+  symbol = umem_pool_alloc(pool,sizeof(last_symbol));
   if(symbol){
     symbol->t = lastk_symbol;
     symbol->name = name;
@@ -395,8 +403,12 @@ last_symbol* last_symbol_new(ustring* name,last_attr* attr){
   return symbol;
 }
 
-last_number* last_number_new(ustring* name,double dnum){
-  last_number* number = ualloc(sizeof(last_number));
+last_number* last_number_new(ltoken_state* ts,ustring* name,double dnum){
+  umem_pool* pool;
+  last_number* number;
+  
+  pool = &ts->pool;
+  number = umem_pool_alloc(pool,sizeof(last_number));
   if(number){
     number->t = lastk_number;
     number->name = name;
@@ -405,8 +417,12 @@ last_number* last_number_new(ustring* name,double dnum){
   return number;
 }
 
-last_string* last_string_new(ustring* string){
-  last_string* str = ualloc(sizeof(last_string));
+last_string* last_string_new(ltoken_state* ts,ustring* string){
+  umem_pool* pool;
+  last_string* str;
+  
+  pool = &ts->pool;
+  str = umem_pool_alloc(pool,sizeof(last_string));
   if(str){
     str->t = lastk_string;
     str->string = string;
@@ -452,6 +468,8 @@ ltoken_state* ltoken_state_new(ustream* stream,
   ts->symtb = symtb;
   ts->strtb = strtb;
   ts->attrtb = attrtb;
+
+  umem_pool_init(&ts->pool);
   
   ltoken_state_init(ts,stream);
   ltoken_state_attr_init(ts);

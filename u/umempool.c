@@ -1,3 +1,4 @@
+#include "uerror.h"
 #include "ualloc.h"
 #include "umempool.h"
 
@@ -20,6 +21,11 @@ umem_node* umem_node_new(int size){
     node->index = node->mem;
   }
   return node;
+}
+
+void umem_pool_init(umem_pool* pool) {
+  pool->count = 0;
+  pool->node = NULL;
 }
 
 void* umem_pool_alloc(umem_pool* pool,int size){
@@ -48,11 +54,15 @@ void* umem_pool_alloc(umem_pool* pool,int size){
     if (curr_node->remain_size >= align_size) {
       break;
     }
+    prev_node = curr_node;
     curr_node = curr_node->next;
   }
   data = curr_node->index;
   curr_node->index += align_size;
   curr_node->remain_size -= align_size;
+  ulog1("align_size :%d",align_size);
+  ulog1("size       :%d",size);
+  ulog1("remain_size:%d",curr_node->remain_size);  
   return data;
 }
 
@@ -61,6 +71,7 @@ void umem_pool_clean(umem_pool* pool){
 
   node = pool->node;
   while (node) {
+    ulog1("remain_size:%d",node->remain_size);
     node->remain_size = node->total_size;
     node->index = node->mem;
     node = node->next;

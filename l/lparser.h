@@ -55,13 +55,13 @@ typedef struct _last_string{
 
 uhstb_decl_tpl(last_attr);
 
-last_cons* last_cons_new(last_obj* car,last_obj* cdr);
+last_cons* last_cons_new(ltoken_state* ts,last_obj* car,last_obj* cdr);
 
-last_symbol* last_symbol_new(ustring* name,last_attr* attr);
+last_symbol* last_symbol_new(ltoken_state* ts,ustring* name,last_attr* attr);
 
-last_number* last_number_new(ustring* name,double dnum);
+last_number* last_number_new(ltoken_state* ts,ustring* name,double dnum);
 
-last_string* last_string_new(ustring* string);
+last_string* last_string_new(ltoken_state* ts,ustring* string);
 
 void last_obj_log(last_obj* ast_obj);
 

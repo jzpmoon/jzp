@@ -14,6 +14,8 @@ typedef struct _umem_pool{
   umem_node* node;
 } umem_pool;
 
+void umem_pool_init(umem_pool* pool);
+
 void* umem_pool_alloc(umem_pool* pool,int size);
 
 void umem_pool_clean(umem_pool* pool);
