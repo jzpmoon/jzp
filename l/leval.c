@@ -7,6 +7,7 @@ typedef struct _leval{
   vgc_heap* heap;
   vcontext* ctx;
   ltoken_state* state;
+  vps_cntr vps;
 } leval;
 
 static leval eval_instance;
@@ -38,6 +39,8 @@ void lstartup(){
   if (!state) {
     uabort("new token state error!");
   }
+
+  vps_cntr_init(&eval_instance.vps);
 
   lcfun_init(ctx);
 

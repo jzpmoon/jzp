@@ -2,6 +2,7 @@
 #define _UHSTB_TPL_H_
 
 #include "uset.h"
+#include "umempool.h"
 
 #define uhstb_tpl(t)				\
   typedef struct _uhsnd_##t{			\
@@ -16,6 +17,7 @@
     USETHEADER;					\
     int len;					\
     int count;					\
+    umem_pool* pool;				\
     uhsnd_##t* ndar[1];				\
   } uhstb_##t
 
@@ -26,7 +28,10 @@
   typedef int(*uhstb_##t##_comp_ft)(t*,t*)
 
 #define uhstb_new_decl_tpl(t)			\
-  uhstb_##t* uhstb_##t##_new(int size)
+  uhstb_##t* uhstb_##t##_new(int len)
+
+#define uhstb_newmp_decl_tpl(t)				\
+  uhstb_##t* uhstb_##t##_newmp(umem_pool*pool,int len)
 
 #define uhstb_put_decl_tpl(t)				\
   int uhstb_##t##_put(uhstb_##t*          hstb,		\
@@ -48,6 +53,7 @@
   uhstb_key_ft_tpl(t);				\
   uhstb_comp_ft_tpl(t);				\
   uhstb_new_decl_tpl(t);			\
+  uhstb_newmp_decl_tpl(t);			\
   uhstb_put_decl_tpl(t);			\
   uhstb_get_decl_tpl(t)
 

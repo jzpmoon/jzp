@@ -105,10 +105,20 @@ typedef struct _vps_mod{
   uhstb_vps_datap* data;
   uhstb_vdfg_graphp* code;
   vdfg_graph* entry;
+  ustring* name;
 } vps_mod;
 
 #define VPS_MOD_DATA_TABLE_SIZE 17
 #define VPS_MOD_CODE_TABLE_SIZE 17
+
+uhstb_decl_tpl(vps_mod);
+
+typedef struct _vps_cntr{
+  umem_pool pool;
+  uhstb_vps_mod* mods;
+} vps_cntr;
+
+#define VPS_CNTR_MOD_TABLE_SIZE 17
 
 ulist_decl_tpl(vinstp);
 
@@ -180,6 +190,8 @@ void vps_mod_data_put(vps_mod* mod,vps_data* data);
 
 void vps_mod_code_put(vps_mod* mod,vdfg_graph* code);
 
-vgc_string* vps_dfg2bin(vps_dfg* dfg);
+void vps_cntr_init(vps_cntr* cntr);
+
+int vps_cntr_load(vps_cntr* vps,vps_mod* mod);
 
 #endif

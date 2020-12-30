@@ -6,6 +6,7 @@
 
 uhstb_def_tpl(vps_datap);
 uhstb_def_tpl(vdfg_graphp);
+uhstb_def_tpl(vps_mod);
 ulist_def_tpl(vpsp);
 ulist_def_tpl(vps_instp);
 ulist_def_tpl(vps_dfgp);
@@ -578,6 +579,28 @@ void vps_mod_code_put(vps_mod* mod,vdfg_graph* code){
   }
 }
 
-vgc_string* vpass_dfg2bin(vps_dfg* dfg){
-  return NULL;
+void vps_cntr_init(vps_cntr* cntr) {
+  umem_pool_init(&cntr->pool);
+  cntr->mods = uhstb_vps_mod_newmp(&cntr->pool,VPS_CNTR_MOD_TABLE_SIZE);
+}
+
+static int vps_cntr_mod_comp(vps_mod* mod1,vps_mod* mod2){
+  ustring* name1 = mod1->name;
+  ustring* name2 = mod2->name;
+  return ustring_comp(name1,name2);
+}
+
+int vps_cntr_load(vps_cntr* vps,vps_mod* mod){
+  ustring* name = mod->name;
+  unsigned int hscd = name->hash_code;
+  
+  if (uhstb_vps_mod_put(vps->mods,
+			hscd,
+			mod,
+			NULL,
+			NULL,
+			vps_cntr_mod_comp)) {
+    uabort("vps_cntr_load error!");
+  }
+  return 0;
 }
