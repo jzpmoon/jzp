@@ -38,24 +38,47 @@
     return list;					\
   }
 
-#define ulist_append_tpl(t)				\
-  int ulist_##t##_append(ulist_##t* list,t value){	\
-    ulsnd_##t* header=list->header;			\
-    ulsnd_##t* footer=NULL;				\
-    ulsnd_##t* node=NULL;				\
-    unew(node,sizeof(ulsnd_##t),return -1;)		\
-      if(header==NULL){					\
-	list->header=header=footer=node;		\
-      }else{						\
-	footer=header->prev;				\
-      }							\
-    header->prev=node;					\
-    footer->next=node;					\
-    node->prev=footer;					\
-    node->next=header;					\
-    node->value=value;					\
-    list->len++;					\
-    return 0;						\
+#define ulist_newmp_tpl(t)				\
+  ulist_##t* ulist_##t##_newmp(umem_pool* pool){	\
+    ulist_##t* list;					\
+							\
+    list = umem_pool_alloc(pool,sizeof(ulist_##t));	\
+    if(list){						\
+      list->iterate = ulist_##t##_cursor_init;		\
+      list->next = ulist_##t##_cursor_next;		\
+      list->pool = pool;				\
+      list->len = 0;					\
+      list->header = NULL;				\
+    }							\
+    return list;					\
+  }
+
+#define ulist_append_tpl(t)					\
+  int ulist_##t##_append(ulist_##t* list,t value){		\
+    ulsnd_##t* header=list->header;				\
+    ulsnd_##t* footer=NULL;					\
+    ulsnd_##t* node=NULL;					\
+								\
+    if (list->pool){						\
+      node = umem_pool_alloc(list->pool,sizeof(ulsnd_##t));	\
+    }else{							\
+      node = ualloc(sizeof(ulsnd_##t));				\
+    }								\
+    if (!node) {						\
+      return -1;						\
+    }								\
+    if(header==NULL){						\
+      list->header=header=footer=node;				\
+    }else{							\
+      footer=header->prev;					\
+    }								\
+    header->prev=node;						\
+    footer->next=node;						\
+    node->prev=footer;						\
+    node->next=header;						\
+    node->value=value;						\
+    list->len++;						\
+    return 0;							\
   }
 
 #define ulist_concat_tpl(t)					\
@@ -85,6 +108,7 @@
   ulist_cursor_tpl(t);				\
   ulist_cursor_next_tpl(t);			\
   ulist_new_tpl(t);				\
+  ulist_newmp_tpl(t);				\
   ulist_append_tpl(t);				\
   ulist_concat_tpl(t);				\
   ulist_del_tpl(t)

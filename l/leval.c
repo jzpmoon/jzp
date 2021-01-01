@@ -6,7 +6,7 @@
 typedef struct _leval{
   vgc_heap* heap;
   vcontext* ctx;
-  ltoken_state* state;
+  ltoken_state* ts;
   vps_cntr vps;
 } leval;
 
@@ -16,7 +16,7 @@ void lstartup(){
   vgc_heap* heap;
   vcontext* ctx;
   ustream* stream;
-  ltoken_state* state;
+  ltoken_state* ts;
 
   heap = vgc_heap_new(1024,
 		      1024*10,
@@ -35,8 +35,8 @@ void lstartup(){
     uabort("new file input stream error!");
   }
 
-  state = ltoken_state_new(stream,ctx->symtb,ctx->strtb);
-  if (!state) {
+  ts = ltoken_state_new(stream,ctx->symtb,ctx->strtb);
+  if (!ts) {
     uabort("new token state error!");
   }
 
@@ -46,7 +46,7 @@ void lstartup(){
 
   eval_instance.heap = heap;
   eval_instance.ctx = ctx;
-  eval_instance.state = state;
+  eval_instance.ts = ts;
   ulog("lstartup");
 }
 
@@ -54,27 +54,35 @@ void leval_load(char* file_path){
   FILE* file;
   vps_mod* mod;
   last_obj* ast_obj;
-
+  ustring* mod_name;
+  
   file = fopen(file_path,"r");
   if(!file){
     uabort("open file error!");
   }
-  ltoken_state_reset(eval_instance.state,file);
-  ulog1("open file: %s",file_path);
-  mod = vps_mod_new();
+  ltoken_state_reset(eval_instance.ts,file);
+
+  mod_name = ustring_table_put(eval_instance.ctx->symtb,file_path,-1);
+  if (!mod_name) {
+    uabort("mod name put symtb error!");
+  }
+
+  mod = vps_mod_new(&eval_instance.vps,mod_name);
   if (!mod) {
     uabort("new mod error!");
   }
 
+  vps_cntr_load(&eval_instance.vps,mod);
+
   while(1){
-    ast_obj = lparser_parse(eval_instance.state);
+    ast_obj = lparser_parse(eval_instance.ts);
     if (ast_obj == NULL){
       break;
     }
-    last2vps(eval_instance.state,ast_obj,mod);
+    last2vps(eval_instance.ts,ast_obj,mod);
   }
 
-  umem_pool_clean(&eval_instance.state->pool);
+  umem_pool_clean(&eval_instance.ts->pool);
   
   vcontext_load(eval_instance.ctx,(vps_t*)mod);
 }

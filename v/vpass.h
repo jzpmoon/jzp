@@ -102,6 +102,7 @@ uhstb_decl_tpl(vdfg_graphp);
 
 typedef struct _vps_mod{
   VPSHEADER;
+  struct _vps_cntr* vps;
   uhstb_vps_datap* data;
   uhstb_vdfg_graphp* code;
   vdfg_graph* entry;
@@ -126,54 +127,57 @@ int vinst_to_str(vcontext* ctx,
 		 ulist_vinstp* insts);
 
 vps_inst*
-vps_inst_new(int instk,
+vps_inst_new(vps_cntr* vps,
+	     int instk,
 	     usize_t opcode,
 	     ustring* label,
 	     vps_data* data,
 	     vps_dfg* code);
 
-vps_inst* vps_inop();
-vps_inst* vps_iloadimm(int imm);
-vps_inst* vps_iloaddt(ustring* name);
-vps_inst* vps_istoreimm(int imm);
-vps_inst* vps_istoredt(ustring* name);
-vps_inst* vps_ipushimm(vps_mod* mod,ustring* name,double dnum);
-vps_inst* vps_ipushdt(vps_mod* mod,ustring* name);
-vps_inst* vps_itop(int imm);
-vps_inst* vps_ipop();
-vps_inst* vps_iadd();
-vps_inst* vps_isub();
-vps_inst* vps_imul();
-vps_inst* vps_idiv();
-vps_inst* vps_ijmpiimm(int imm);
-vps_inst* vps_ijmpimm(int imm);
-vps_inst* vps_ieq();
-vps_inst* vps_igt();
-vps_inst* vps_ilt();
-vps_inst* vps_iand();
-vps_inst* vps_ior();
-vps_inst* vps_inot();
-vps_inst* vps_icall();
-vps_inst* vps_ireturn();
-vps_inst* vps_iretvoid();
-vps_inst* vps_irefimm(int imm);
-vps_inst* vps_isetimm(int imm);
+vps_inst* vps_inop(vps_cntr* vps);
+vps_inst* vps_iloadimm(vps_cntr* vps,int imm);
+vps_inst* vps_iloaddt(vps_cntr* vps,ustring* name);
+vps_inst* vps_istoreimm(vps_cntr* vps,int imm);
+vps_inst* vps_istoredt(vps_cntr* vps,ustring* name);
+vps_inst* vps_ipushimm(vps_cntr* vps,vps_mod* mod,ustring* name,double dnum);
+vps_inst* vps_ipushdt(vps_cntr* vps,vps_mod* mod,ustring* name);
+vps_inst* vps_itop(vps_cntr* vps,int imm);
+vps_inst* vps_ipop(vps_cntr* vps);
+vps_inst* vps_iadd(vps_cntr* vps);
+vps_inst* vps_isub(vps_cntr* vps);
+vps_inst* vps_imul(vps_cntr* vps);
+vps_inst* vps_idiv(vps_cntr* vps);
+vps_inst* vps_ijmpiimm(vps_cntr* vps,int imm);
+vps_inst* vps_ijmpimm(vps_cntr* vps,int imm);
+vps_inst* vps_ieq(vps_cntr* vps);
+vps_inst* vps_igt(vps_cntr* vps);
+vps_inst* vps_ilt(vps_cntr* vps);
+vps_inst* vps_iand(vps_cntr* vps);
+vps_inst* vps_ior(vps_cntr* vps);
+vps_inst* vps_inot(vps_cntr* vps);
+vps_inst* vps_icall(vps_cntr* vps);
+vps_inst* vps_ireturn(vps_cntr* vps);
+vps_inst* vps_iretvoid(vps_cntr* vps);
+vps_inst* vps_irefimm(vps_cntr* vps,int imm);
+vps_inst* vps_isetimm(vps_cntr* vps,int imm);
 
-vps_data* vps_num_new(ustring* name,
+vps_data* vps_num_new(vps_cntr* vps,
+		      ustring* name,
 		      double num,
 		      int stk);
 
-vps_data* vps_any_new(ustring* name,
+vps_data* vps_any_new(vps_cntr* vps,
+		      ustring* name,
 		      int stk);
 
-vdfg_block* vdfg_block_new();
+vdfg_block* vdfg_block_new(vps_cntr* vps);
 
 int vdfg_blk2inst(vcontext* ctx,vdfg_block* blk,ulist_vinstp* insts);
 
 #define vdfg_blk_apd(blk,inst)			\
   ulist_vps_instp_append((blk)->insts,inst)
 
-vdfg_graph* vdfg_graph_new();
+vdfg_graph* vdfg_graph_new(vps_cntr* vps);
 
 #define vdfg_grp_cdapd(grp,dfg)			\
   ulist_vps_dfgp_append((grp)->dfgs,dfg)
@@ -184,7 +188,7 @@ void vdfg_grp_locals_apd(vdfg_graph* grp,vps_data* dt);
 
 vps_data* vdfg_grp_dtget(vdfg_graph* grp,ustring* name);
 
-vps_mod* vps_mod_new();
+vps_mod* vps_mod_new(vps_cntr* vps,ustring* name);
 
 void vps_mod_data_put(vps_mod* mod,vps_data* data);
 
@@ -193,5 +197,7 @@ void vps_mod_code_put(vps_mod* mod,vdfg_graph* code);
 void vps_cntr_init(vps_cntr* cntr);
 
 int vps_cntr_load(vps_cntr* vps,vps_mod* mod);
+
+void vps_cntr_clean(vps_cntr* vps);
 
 #endif

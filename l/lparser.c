@@ -469,7 +469,7 @@ ltoken_state* ltoken_state_new(ustream* stream,
   ts->strtb = strtb;
   ts->attrtb = attrtb;
 
-  umem_pool_init(&ts->pool);
+  umem_pool_init(&ts->pool,-1);
   
   ltoken_state_init(ts,stream);
   ltoken_state_attr_init(ts);

@@ -3,6 +3,7 @@
 #include "umempool.h"
 
 #define UMEM_NODE_SIZE 4*1024
+#define UMEM_POOL_MAX_SIZE 3*4*1024
 
 umem_node* umem_node_new(int size){
   int align_size;
@@ -23,8 +24,14 @@ umem_node* umem_node_new(int size){
   return node;
 }
 
-void umem_pool_init(umem_pool* pool) {
-  pool->count = 0;
+void umem_pool_init(umem_pool* pool,int max_size) {
+  pool->now_count = 0;
+  pool->now_size = 0;
+  if (max_size > -1) {
+    pool->max_size = max_size;
+  } else {
+    pool->max_size = UMEM_POOL_MAX_SIZE;
+  }
   pool->node = NULL;
 }
 
@@ -48,7 +55,8 @@ void* umem_pool_alloc(umem_pool* pool,int size){
       } else {
 	pool->node = curr_node;
       }
-      pool->count++;
+      pool->now_count++;
+      pool->now_size += curr_node->total_size;
       break;
     }
     if (curr_node->remain_size >= align_size) {
@@ -68,12 +76,20 @@ void* umem_pool_alloc(umem_pool* pool,int size){
 
 void umem_pool_clean(umem_pool* pool){
   umem_node* node;
-
+  
   node = pool->node;
+  ulog1("umem pool clean before size:%d",pool->now_size);
   while (node) {
-    ulog1("remain_size:%d",node->remain_size);
     node->remain_size = node->total_size;
     node->index = node->mem;
-    node = node->next;
+    if (pool->now_size > pool->max_size) {
+      pool->node = node->next;
+      pool->now_count--;
+      pool->now_size -= node->total_size;
+      ufree(node);
+    } else {
+      node = node->next;
+    }
   }
+  ulog1("umem pool clean after size:%d",pool->now_size);
 }

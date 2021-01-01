@@ -10,11 +10,13 @@ typedef struct _umem_node{
 } umem_node;
 
 typedef struct _umem_pool{
-  int count;
+  int now_count;
+  int now_size;
+  int max_size;
   umem_node* node;
 } umem_pool;
 
-void umem_pool_init(umem_pool* pool);
+void umem_pool_init(umem_pool* pool,int max_size);
 
 void* umem_pool_alloc(umem_pool* pool,int size);
 

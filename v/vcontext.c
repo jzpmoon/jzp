@@ -204,12 +204,16 @@ int vcontext_load(vcontext* ctx,vps_t* vps){
       ulog1("vcontext_load mod graph: %s",g->name->value);
       vcontext_graph_load(ctx,g);
     }
-
     symbol = vcontext_graph_load(ctx,mod->entry);
+    /* 
+     * 1. finish load mod
+     * 2. clean vps memory
+     * 3. execute mod entry
+     */
+    vps_cntr_clean(mod->vps);
     vcontext_relocate(ctx);
     vgc_heap_stack_push(ctx->heap,symbol->slot);
     vcontext_execute(ctx);
-    
     break;
   }
   case vdfgk_grp:{
