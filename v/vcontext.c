@@ -3,6 +3,7 @@
 #include "vcontext.h"
 
 ulist_def_tpl(vreloc);
+ulist_def_tpl(vmod);
 uhstb_def_tpl(vsymbol);
 
 #define VCONTEXT_OBJTB_SIZE 17
@@ -12,8 +13,7 @@ uhstb_def_tpl(vsymbol);
 
 vcontext* vcontext_new(vgc_heap* heap){
   vcontext* ctx;
-  ulist_vreloc* rells;
-  uhstb_vsymbol* objtb;
+  ulist_vmod* mods;
   ustring_table* symtb;
   ustring_table* strtb;
   vgc_array* consts;
@@ -27,16 +27,11 @@ vcontext* vcontext_new(vgc_heap* heap){
     uabort("vcontext_new: ctx new error!");
   }
 
-  rells = ulist_vreloc_new();
-  if(!rells){
-    uabort("vcontext_new:rells new error!");
+  mods = ulist_vmod_new();
+  if (!mods) {
+    uabort("vcontext_new:mods new error!");
   }
-  
-  objtb = uhstb_vsymbol_new(VCONTEXT_OBJTB_SIZE);
-  if(!objtb){
-    uabort("vcontext_new:objtb new error!");
-  }
-  
+    
   symtb = ustring_table_new(VCONTEXT_SYMTB_SIZE);
   if(!symtb){
     uabort("vcontext_new:symtb new error!");
@@ -54,8 +49,7 @@ vcontext* vcontext_new(vgc_heap* heap){
   }
 
   ctx->heap = heap;
-  ctx->rells = rells;
-  ctx->objtb = objtb;
+  ctx->mods = mods;
   ctx->symtb = symtb;
   ctx->strtb = strtb;
   vgc_obj_null_set(ctx,calling);
@@ -76,40 +70,7 @@ static int vobjtb_key_comp(vsymbol* sym1,vsymbol* sym2){
   return ustring_comp(sym1->name, sym2->name);
 }
 
-vsymbol* vcontext_obj_put(vcontext* ctx,ustring* name,vgc_obj* obj){
-  vslot slot;
-  vslot_ref_set(slot,obj);
-  return vcontext_slot_put(ctx,name,slot);
-}
-
-vsymbol* vcontext_slot_put(vcontext* ctx,ustring* name,vslot obj){
-  vsymbol symbol = (vsymbol){name,obj};
-  vsymbol* new_symbol;
-  int retval = uhstb_vsymbol_put(ctx->objtb,
-				 name->hash_code,
-				 &symbol,
-				 &new_symbol,
-				 NULL,
-				 vobjtb_key_comp);
-  if(retval == -1){
-    uabort("vcontext_obj_put error!");
-  }
-  return new_symbol;
-}
-
-vsymbol* vcontext_symbol_get(vcontext* ctx,ustring* name){
-  vsymbol symbol_in;
-  vsymbol* symbol_out;
-  symbol_in.name = name;
-  uhstb_vsymbol_get(ctx->objtb,
-		    name->hash_code,
-		    &symbol_in,
-		    &symbol_out,
-		    vobjtb_key_comp);
-  return symbol_out;
-}
-
-vsymbol* vcontext_graph_load(vcontext* ctx,vdfg_graph* grp){
+vsymbol* vcontext_graph_load(vcontext* ctx,vmod* mod,vdfg_graph* grp){
   vsymbol* symbol;
   ulist_vps_dfgp* dfgs = grp->dfgs;
   ulist_vinstp* insts = ulist_vinstp_new();
@@ -127,7 +88,7 @@ vsymbol* vcontext_graph_load(vcontext* ctx,vdfg_graph* grp){
       uabort("vps_dfg not a block!");
     }
     blk = (vdfg_block*)(*dfgp);
-    if(vdfg_blk2inst(ctx,blk,insts)){
+    if(vdfg_blk2inst(ctx,mod,blk,insts)){
       uabort("vdfg_blk2inst error!");
     }
   }
@@ -138,101 +99,126 @@ vsymbol* vcontext_graph_load(vcontext* ctx,vdfg_graph* grp){
 		      grp->params_count,
 		      grp->locals_count,
 		      vgc_heap_area_active);
-  symbol = vcontext_obj_put(ctx,grp->name,(vgc_obj*)subr);
+  symbol = vmod_lobj_put(mod,grp->name,(vgc_obj*)subr);
+  vmod_gobj_put(mod,grp->name,(vgc_obj*)subr);
   ulist_vinstp_del(insts,NULL);
   ulog("vcontext_graph_load");
   return symbol;
 }
 
-int vcontext_load(vcontext* ctx,vps_t* vps){
-  switch(vps->t){
-  case vpsk_dt:{
-    vps_data* data = (vps_data*)vps;
-    vgc_array* consts = vgc_obj_ref_get(ctx,consts,vgc_array);
-    vslot slot;
-    int top;
-
-    if(data->dtk == vdtk_num){
-      vslot_num_set(slot,data->u.number);      
-    }else if(data->dtk == vdtk_int){
-      vslot_int_set(slot,data->u.integer);
-    }else if(data->dtk == vdtk_arr){
-      break;
-    }else if(data->dtk == vdtk_any){
-      vslot_null_set(slot);
-    }else{
-      uabort("vcontext_load unknow data type");
-    }
-    top = vgc_array_push(consts,slot);
-    if(top == -1){
-      uabort("vcontext_load consts overflow!");
-    }
-    data->idx = top;
-    ulog1("vcontext_load data:%s",data->name->value);
-    ulog1("vcontext_load data idx:%d",top);
-    break;
-  }
-  case vpsk_mod:{
-    vps_mod* mod = (vps_mod*)vps;
-    ucursor cursor;
-    uhstb_vps_datap* data = mod->data;
-    uhstb_vdfg_graphp* code = mod->code;
-    vsymbol* symbol;
+int vcontext_mod_load(vcontext* ctx,vps_mod* mod)
+{
+  vmod ctx_mod;
+  ucursor cursor;
+  uhstb_vps_datap* data = mod->data;
+  uhstb_vdfg_graphp* code = mod->code;
+  vsymbol* symbol;
     
-    ulog("vcontext_load mod");
+  ulog("vcontext_load mod");
 
-    (data->iterate)(&cursor);
-    ulog("vcontext_load mod data");
-    while(1){
-      vps_datap* dp = (data->next)((uset*)data,&cursor);
-      if(!dp){
-	break;
-      }
-      ulog("vcontext_load mod data entry");
-      vcontext_load(ctx,(vps_t*)*dp);
+  vmod_init(&ctx_mod);
+  vcontext_mod_add(ctx,ctx_mod);
+    
+  (data->iterate)(&cursor);
+  ulog("vcontext_load mod data");
+  while(1){
+    vps_datap* dp = (data->next)((uset*)data,&cursor);
+    if(!dp){
+      break;
     }
+    ulog("vcontext_load mod data entry");
+    vcontext_data_load(ctx,*dp);
+  }
 
-    ulog("vcontext_load mod code");
-    (data->iterate)(&cursor);
-    while(1){
-      vdfg_graphp* gp = (code->next)((uset*)code,&cursor);
-      vdfg_graph* g;
-      if(!gp){
-	break;
-      }
-      g = *gp;
-      ulog1("vcontext_load mod graph: %s",g->name->value);
-      vcontext_graph_load(ctx,g);
+  ulog("vcontext_load mod code");
+  (data->iterate)(&cursor);
+  while(1){
+    vdfg_graphp* gp = (code->next)((uset*)code,&cursor);
+    vdfg_graph* g;
+    if(!gp){
+      break;
     }
-    symbol = vcontext_graph_load(ctx,mod->entry);
-    /* 
-     * 1. finish load mod
-     * 2. clean vps memory
-     * 3. execute mod entry
-     */
-    vps_cntr_clean(mod->vps);
-    vcontext_relocate(ctx);
-    vgc_heap_stack_push(ctx->heap,symbol->slot);
-    vcontext_execute(ctx);
-    break;
+    g = *gp;
+    ulog1("vcontext_load mod graph: %s",g->name->value);
+    vcontext_graph_load(ctx,&ctx_mod,g);
   }
-  case vdfgk_grp:{
-    ulog("vcontext_load graph");
-    vcontext_graph_load(ctx,(vdfg_graph*)vps);
-    break;
-  }
-  case vdfgk_blk:{
-    ulog("vcontext_load block");
-    break;
-  }
-  default:
-    uabort("vcontext_load unknow vps type!");
-  }
+  symbol = vcontext_graph_load(ctx,&ctx_mod,mod->entry);
+  /* 
+   * 1. finish load mod
+   * 2. clean vps memory
+   * 3. execute mod entry
+   */
+  vps_cntr_clean(mod->vps);
+  vcontext_relocate(ctx);
+  vgc_heap_stack_push(ctx->heap,symbol->slot);
+  vcontext_execute(ctx);
   return 0;
 }
 
-void vcontext_relocate(vcontext* ctx){
-  ulist_vreloc* rells = ctx->rells;
+int vcontext_data_load(vcontext* ctx,vps_data* data)
+{
+  vgc_array* consts = vgc_obj_ref_get(ctx,consts,vgc_array);
+  vslot slot;
+  int top;
+
+  if(data->dtk == vdtk_num){
+    vslot_num_set(slot,data->u.number);      
+  }else if(data->dtk == vdtk_int){
+    vslot_int_set(slot,data->u.integer);
+  }else if(data->dtk == vdtk_arr){
+    
+    return 0;
+  }else if(data->dtk == vdtk_any){
+    vslot_null_set(slot);
+  }else{
+    uabort("vcontext_load unknow data type");
+  }
+  top = vgc_array_push(consts,slot);
+  if(top == -1){
+    uabort("vcontext_load consts overflow!");
+  }
+  data->idx = top;
+  ulog1("vcontext_load data:%s",data->name->value);
+  ulog1("vcontext_load data idx:%d",top);
+  return 0;
+}
+
+vsymbol* vmod_symbol_get(vcontext* ctx,vmod* mod,ustring* name){
+  vsymbol symbol_in;
+  vsymbol* symbol_out;
+  ulist_vmod* mods;
+  ucursor cursor;
+
+  symbol_in.name = name;
+  uhstb_vsymbol_get(mod->lobjtb,
+		    name->hash_code,
+		    &symbol_in,
+		    &symbol_out,
+		    vobjtb_key_comp);
+  if (symbol_out) {
+    return symbol_out;
+  }
+  mods = ctx->mods;
+  mods->iterate(&cursor);
+  while (1) {
+    vmod* next = mods->next((uset*)mods,&cursor);
+    if (!next) {
+      break;
+    }
+    uhstb_vsymbol_get(next->gobjtb,
+		      name->hash_code,
+		      &symbol_in,
+		      &symbol_out,
+		      vobjtb_key_comp);
+    if (symbol_out) {
+      break;
+    }
+  }
+  return symbol_out;
+}
+
+void vmod_relocate(vcontext* ctx,vmod* mod){
+  ulist_vreloc* rells = mod->rells;
   ucursor cursor;
   rells->iterate(&cursor);
   while(1){
@@ -241,11 +227,24 @@ void vcontext_relocate(vcontext* ctx){
     if(!reloc){
       break;
     }
-    symbol = vcontext_symbol_get(ctx,reloc->ref_name);
+    symbol = vmod_symbol_get(ctx,mod,reloc->ref_name);
     if(!symbol){
       uabort1("relocate global symbol:%s not find!",reloc->ref_name->value);
     }
     vgc_array_set(reloc->rel_obj,reloc->rel_idx,symbol->slot);
+  }
+}
+
+void vcontext_relocate(vcontext* ctx){
+  ulist_vmod* mods = ctx->mods;
+  ucursor cursor;
+  mods->iterate(&cursor);
+  while(1){
+    vmod* mod = mods->next((uset*)mods,&cursor);
+    if(!mod){
+      break;
+    }
+    vmod_relocate(ctx,mod);
   }
 }
 
@@ -270,4 +269,86 @@ vslot vcontext_params_get(vcontext* ctx,int index){
     uabort("vm:local varable error!");
   slot = vgc_heap_stack_get(ctx->heap,real_index);
   return slot;
+}
+
+void vcontext_mod_add(vcontext* ctx,vmod mod)
+{
+  if (ulist_vmod_append(ctx->mods,mod)) {
+    uabort("vcontext add mod error!");
+  }
+}
+
+void vmod_init(vmod* mod)
+{
+  ulist_vreloc* rells;
+  uhstb_vsymbol* gobjtb;
+  uhstb_vsymbol* lobjtb;
+  
+  rells = ulist_vreloc_new();
+  if (!rells) {
+    uabort("vmod rells new error!");
+  }
+  
+  gobjtb = uhstb_vsymbol_new(VCONTEXT_OBJTB_SIZE);
+  if (!gobjtb) {
+    uabort("vmod gobjtb new error!");
+  }
+
+  lobjtb = uhstb_vsymbol_new(VCONTEXT_OBJTB_SIZE);
+  if (!lobjtb) {
+    uabort("vmod lobjtb new error!");
+  }
+
+  mod->rells = rells;
+  mod->gobjtb = gobjtb;
+  mod->lobjtb = lobjtb;
+}
+
+void vmod_add_reloc(vmod* mod,vreloc reloc)
+{
+  if (ulist_vreloc_append(mod->rells,reloc)){
+    uabort("vmod add reloc error!");
+  }
+}
+
+vsymbol* vmod_gobj_put(vmod* mod,ustring* name,vgc_obj* obj)
+{
+  vslot slot;
+  vsymbol symbol;
+  vsymbol* new_symbol;
+  int retval;
+
+  vslot_ref_set(slot,obj);
+  symbol = (vsymbol){name,slot};
+  retval = uhstb_vsymbol_put(mod->gobjtb,
+				 name->hash_code,
+				 &symbol,
+				 &new_symbol,
+				 NULL,
+				 vobjtb_key_comp);
+  if(retval == -1){
+    uabort("vmod_gobj_put error!");
+  }
+  return new_symbol;
+}
+
+vsymbol* vmod_lobj_put(vmod* mod,ustring* name,vgc_obj* obj)
+{
+  vslot slot;
+  vsymbol symbol;
+  vsymbol* new_symbol;
+  int retval;
+
+  vslot_ref_set(slot,obj);
+  symbol = (vsymbol){name,slot};
+  retval = uhstb_vsymbol_put(mod->lobjtb,
+				 name->hash_code,
+				 &symbol,
+				 &new_symbol,
+				 NULL,
+				 vobjtb_key_comp);
+  if(retval == -1){
+    uabort("vmod_lobj_put error!");
+  }
+  return new_symbol;  
 }

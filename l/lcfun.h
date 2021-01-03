@@ -37,14 +37,14 @@ struct _lvar_infor{
   static struct _lvar_infor _lvar_infor_##FNAME =	\
     {LNAME,NULL,_lvar_gen_##FNAME};  
 
-#define LFUNONLOAD(fname,body)				\
-  void _lcfun_file_init_##fname(vcontext* ctx){		\
-    body						\
+#define LFUNONLOAD(fname,body)					\
+  void _lcfun_file_init_##fname(vcontext* ctx,vmod* mod){	\
+    body							\
   }
 
-#define LDECLFUN(NAME) LFUN_INIT(ctx,NAME)
+#define LDECLFUN(NAME) LFUN_INIT(ctx,mod,NAME)
 
-#define LFUN_INIT(CTX,FNAME)					\
+#define LFUN_INIT(CTX,MOD,FNAME)				\
   do{								\
     vgc_cfun* cfun;						\
     ustring* str;						\
@@ -61,14 +61,17 @@ struct _lvar_infor{
     if(!cfun){							\
       uabort("LFUN_INIT:cfun new error!");			\
     }								\
-    vcontext_obj_put(CTX,					\
-		     _lcfun_infor_##FNAME.name,			\
-		     (vgc_obj*)cfun);				\
+    vmod_lobj_put(MOD,						\
+		  _lcfun_infor_##FNAME.name,			\
+		  (vgc_obj*)cfun);				\
+    vmod_gobj_put(MOD,						\
+		  _lcfun_infor_##FNAME.name,			\
+		  (vgc_obj*)cfun);				\
   }while(0)
 
-#define LDECLVAR(NAME) LVAR_INIT(ctx,NAME)
+#define LDECLVAR(NAME) LVAR_INIT(ctx,mod,NAME)
   
-#define LVAR_INIT(CTX,VNAME)				\
+#define LVAR_INIT(CTX,MOD,VNAME)			\
   do{							\
     ustring* str;					\
     vgc_obj* var;					\
@@ -78,10 +81,11 @@ struct _lvar_infor{
     if(!str){uabort("init var error!");}		\
     var = _lvar_infor_##VNAME.var_gen(CTX);		\
     if(var){						\
-      vcontext_obj_put(CTX,str,var);			\
+      vmod_lobj_put(MOD,str,var);			\
+      vmod_gobj_put(MOD,str,var);			\
     }							\
   } while(0)
 
-void lcfun_init(vcontext* ctx);
+void lcfun_init(vcontext* ctx,vmod* mod);
 
 #endif

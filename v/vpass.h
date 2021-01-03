@@ -105,6 +105,7 @@ typedef struct _vps_mod{
   struct _vps_cntr* vps;
   uhstb_vps_datap* data;
   uhstb_vdfg_graphp* code;
+  ustring_table* export;
   vdfg_graph* entry;
   ustring* name;
 } vps_mod;
@@ -172,7 +173,10 @@ vps_data* vps_any_new(vps_cntr* vps,
 
 vdfg_block* vdfg_block_new(vps_cntr* vps);
 
-int vdfg_blk2inst(vcontext* ctx,vdfg_block* blk,ulist_vinstp* insts);
+int vdfg_blk2inst(vcontext* ctx,
+		  vmod* mod,
+		  vdfg_block* blk,
+		  ulist_vinstp* insts);
 
 #define vdfg_blk_apd(blk,inst)			\
   ulist_vps_instp_append((blk)->insts,inst)

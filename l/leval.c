@@ -6,6 +6,7 @@
 typedef struct _leval{
   vgc_heap* heap;
   vcontext* ctx;
+  vmod mod;
   ltoken_state* ts;
   vps_cntr vps;
 } leval;
@@ -15,6 +16,7 @@ static leval eval_instance;
 void lstartup(){
   vgc_heap* heap;
   vcontext* ctx;
+  vmod mod;
   ustream* stream;
   ltoken_state* ts;
 
@@ -30,6 +32,9 @@ void lstartup(){
     uabort("new context error!");
   }
 
+  vmod_init(&mod);
+  vcontext_mod_add(ctx,mod);
+
   stream = ustream_new(USTREAM_INPUT,USTREAM_FILE);
   if (!stream) {
     uabort("new file input stream error!");
@@ -42,11 +47,13 @@ void lstartup(){
 
   vps_cntr_init(&eval_instance.vps);
 
-  lcfun_init(ctx);
-
   eval_instance.heap = heap;
   eval_instance.ctx = ctx;
+  eval_instance.mod = mod;
   eval_instance.ts = ts;
+  
+  lcfun_init(ctx,&eval_instance.mod);
+
   ulog("lstartup");
 }
 
@@ -84,5 +91,5 @@ void leval_load(char* file_path){
 
   umem_pool_clean(&eval_instance.ts->pool);
   
-  vcontext_load(eval_instance.ctx,(vps_t*)mod);
+  vcontext_mod_load(eval_instance.ctx,mod);
 }

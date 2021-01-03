@@ -245,11 +245,18 @@ uhstb_decl_tpl(vsymbol);
 #define VCONTEXT_SYMTB_SIZE 17
 #define VCONTEXT_STRTB_SIZE 17
 
+typedef struct _vmod{
+  ulist_vreloc* rells;
+  uhstb_vsymbol* gobjtb;
+  uhstb_vsymbol* lobjtb;
+} vmod;
+
+ulist_decl_tpl(vmod);
+
 typedef struct _vcontext{
   VGCHEADER;
   vgc_heap* heap;
-  ulist_vreloc*  rells;
-  uhstb_vsymbol* objtb;
+  ulist_vmod* mods;
   ustring_table* symtb;
   ustring_table* strtb;
   vslot_define_begin

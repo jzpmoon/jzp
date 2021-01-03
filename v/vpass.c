@@ -353,7 +353,8 @@ vdfg_block* vdfg_block_new(vps_cntr* vps){
   return b;
 }
 
-int vdfg_blk2inst(vcontext* ctx,vdfg_block* blk,ulist_vinstp* insts){
+int vdfg_blk2inst(vcontext* ctx,vmod* mod,vdfg_block* blk,ulist_vinstp* insts)
+{
   ulist_vps_instp* insts_l1;
   ucursor cursor;
   insts_l1 = blk->insts;
@@ -397,7 +398,6 @@ int vdfg_blk2inst(vcontext* ctx,vdfg_block* blk,ulist_vinstp* insts){
     }
       break;
     case vinstk_glodt:{
-      ulist_vreloc* rells = ctx->rells;
       vps_data* data = inst_l1->u.data;
       vgc_array* consts;
       vreloc reloc;
@@ -405,7 +405,7 @@ int vdfg_blk2inst(vcontext* ctx,vdfg_block* blk,ulist_vinstp* insts){
       reloc.ref_name = data->name;
       reloc.rel_idx = data->idx;
       reloc.rel_obj = consts;
-      ulist_vreloc_append(rells,reloc);
+      vmod_add_reloc(mod,reloc);
       inst = &inst_l1->inst;
       inst->operand = data->idx;
       ulist_vinstp_append(insts,inst);

@@ -24,9 +24,9 @@ endef
 
 define gen_cfun_file
 	cat $(shell echo ${CFUN}.cfun | sed 's: :.cfun :g') > $(temp_cfun_file)
-	echo "void lcfun_file_concat_init(vcontext* ctx){\
+	echo "void lcfun_file_concat_init(vcontext* ctx,vmod* mod){\
 	_lcfun_file_init_"$(shell echo ${CFUN} | \
-	sed 's: :(ctx);_lcfun_file_init:g')"(ctx);\
+	sed 's: :(ctx,mod);_lcfun_file_init:g')"(ctx,mod);\
 	}" >> $(temp_cfun_file)
 endef
 
