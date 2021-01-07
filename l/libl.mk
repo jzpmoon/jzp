@@ -11,22 +11,22 @@ u_sobj=u
 u_somk=libu.mk
 CFLAGS=-std=c89 -Wall $(DEBUG_MODE)
 
-ATTR=base
+ATTR=base mod
 CFUN=base
 
 define gen_attr_file
 	cat $(shell echo ${ATTR}.attr | sed 's: :.attr :g') > $(temp_attr_file)
-	echo "void lattr_file_concat_init(ltoken_state* ts){\
-	_lattr_file_init_"$(shell echo ${ATTR} | \
-	sed 's: :(ts);_lattr_file_init:g')"(ts);\
+	echo "void lattr_file_concat_init(ltoken_state* ts){ \
+	_lattr_file_init_$(shell echo ${ATTR} | \
+	sed 's: :(ts);_lattr_file_init_:g')(ts); \
 	}" >> $(temp_attr_file)
 endef
 
 define gen_cfun_file
 	cat $(shell echo ${CFUN}.cfun | sed 's: :.cfun :g') > $(temp_cfun_file)
-	echo "void lcfun_file_concat_init(vcontext* ctx,vmod* mod){\
-	_lcfun_file_init_"$(shell echo ${CFUN} | \
-	sed 's: :(ctx,mod);_lcfun_file_init:g')"(ctx,mod);\
+	echo "void lcfun_file_concat_init(vcontext* ctx,vmod* mod){ \
+	_lcfun_file_init_$(shell echo ${CFUN} | \
+	sed 's: :(ctx,mod);_lcfun_file_init_:g')(ctx,mod); \
 	}" >> $(temp_cfun_file)
 endef
 

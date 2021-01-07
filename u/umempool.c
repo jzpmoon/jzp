@@ -2,9 +2,6 @@
 #include "ualloc.h"
 #include "umempool.h"
 
-#define UMEM_NODE_SIZE 4*1024
-#define UMEM_POOL_MAX_SIZE 3*4*1024
-
 umem_node* umem_node_new(int size){
   int align_size;
   int offset_size;
@@ -68,9 +65,6 @@ void* umem_pool_alloc(umem_pool* pool,int size){
   data = curr_node->index;
   curr_node->index += align_size;
   curr_node->remain_size -= align_size;
-  ulog1("align_size :%d",align_size);
-  ulog1("size       :%d",size);
-  ulog1("remain_size:%d",curr_node->remain_size);  
   return data;
 }
 

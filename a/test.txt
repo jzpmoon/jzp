@@ -13,9 +13,7 @@
   (return)
 )
 
-;
-; test comment
-;
+;;test comment
 (subr test-count (x)
   (var tmp)
   (load x)

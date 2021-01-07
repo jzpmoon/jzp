@@ -1,0 +1,14 @@
+/*
+ * define attribute include
+ */
+LDEFATTR(include,"include",{
+  ulog("include");
+  return NULL;
+})
+
+/*
+ * declare attribute
+ */
+LATTRONLOAD(mod,{
+  LDECLATTR(include);
+})

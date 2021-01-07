@@ -1,6 +1,9 @@
 #ifndef _UMEMPOOL_H_
 #define _UMEMPOOL_H_
 
+#define UMEM_NODE_SIZE 4*1024
+#define UMEM_POOL_MAX_SIZE 3*4*1024
+
 typedef struct _umem_node{
   struct _umem_node* next;
   int total_size;

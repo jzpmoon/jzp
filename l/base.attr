@@ -56,6 +56,7 @@ static vdfg_graph* subr(vps_mod* top,vps_dfg* parent,last_obj* ast_obj){
 	uabort("vps_any_new error!");
       }
       data->idx = arg_idx;
+      data->scope = VPS_SCOPE_LOCAL;
       vdfg_grp_params_apd(grp,data);
       args = last_cdr(args);
       arg_idx++;
@@ -111,6 +112,7 @@ LDEFATTR(entry,"entry",{
       uabort("mod entry already exists!");
     }
     grp = subr(top,parent,ast_obj);
+    grp->scope = VPS_SCOPE_LOCAL;
     top->entry = grp;
     return NULL;
   })
@@ -118,8 +120,19 @@ LDEFATTR(entry,"entry",{
 /*
  * define attribute subr
  */
+LDEFATTR(g_subr,"g-subr",{
+    vdfg_graph* grp = subr(top,parent,ast_obj);
+    grp->scope = VPS_SCOPE_GLOBAL;
+    vps_mod_code_put(top,grp);
+    return NULL;
+  })
+  
+/*
+ * define attribute subr
+ */
 LDEFATTR(subr,"subr",{
     vdfg_graph* grp = subr(top,parent,ast_obj);
+    grp->scope = VPS_SCOPE_LOCAL;
     vps_mod_code_put(top,grp);
     return NULL;
   })
@@ -165,6 +178,7 @@ LDEFATTR(var,"var",{
 	}
 	data = vps_any_new(vps,sym->name,vstk_stack);
 	data->idx = grp->locals->count;
+	data->scope = VPS_SCOPE_LOCAL;
 	vdfg_grp_locals_apd(grp,data);
 	inst = vps_inop(vps);
       }else{
@@ -643,6 +657,7 @@ LDEFATTR(nop,"nop",{
  */
 LATTRONLOAD(base,{
     LDECLATTR(entry);
+    LDECLATTR(g_subr);
     LDECLATTR(subr);
     LDECLATTR(var);
     LDECLATTR(nop);

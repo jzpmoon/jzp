@@ -256,6 +256,7 @@ ulist_decl_tpl(vmod);
 typedef struct _vcontext{
   VGCHEADER;
   vgc_heap* heap;
+  umem_pool pool;
   ulist_vmod* mods;
   ustring_table* symtb;
   ustring_table* strtb;

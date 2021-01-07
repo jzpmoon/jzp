@@ -27,6 +27,8 @@ vcontext* vcontext_new(vgc_heap* heap){
     uabort("vcontext_new: ctx new error!");
   }
 
+  umem_pool_init(&ctx->pool,-1);
+  
   mods = ulist_vmod_new();
   if (!mods) {
     uabort("vcontext_new:mods new error!");
@@ -73,7 +75,7 @@ static int vobjtb_key_comp(vsymbol* sym1,vsymbol* sym2){
 vsymbol* vcontext_graph_load(vcontext* ctx,vmod* mod,vdfg_graph* grp){
   vsymbol* symbol;
   ulist_vps_dfgp* dfgs = grp->dfgs;
-  ulist_vinstp* insts = ulist_vinstp_new();
+  ulist_vinstp* insts = ulist_vinstp_newmp(&ctx->pool);
   vgc_subr* subr;
   ucursor cursor;
 
@@ -100,8 +102,10 @@ vsymbol* vcontext_graph_load(vcontext* ctx,vmod* mod,vdfg_graph* grp){
 		      grp->locals_count,
 		      vgc_heap_area_active);
   symbol = vmod_lobj_put(mod,grp->name,(vgc_obj*)subr);
-  vmod_gobj_put(mod,grp->name,(vgc_obj*)subr);
-  ulist_vinstp_del(insts,NULL);
+  if (grp->scope == VPS_SCOPE_GLOBAL) {
+    vmod_gobj_put(mod,grp->name,(vgc_obj*)subr);
+  }
+  umem_pool_clean(&ctx->pool);
   ulog("vcontext_graph_load");
   return symbol;
 }

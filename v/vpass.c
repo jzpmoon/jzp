@@ -71,6 +71,7 @@ vps_inst* vps_ipushimm(vps_cntr* vps,vps_mod* mod,ustring* name,double dnum){
   vps_data* data;
 
   data = vps_num_new(vps,name,dnum,vstk_heap);
+  data->scope = VPS_SCOPE_LOCAL;
   vps_mod_data_put(mod,data);
   inst = vps_inst_new(vps,vinstk_imm,Bpush,NULL,data,NULL);
   return inst;
@@ -80,6 +81,7 @@ vps_inst* vps_ipushdt(vps_cntr* vps,vps_mod* mod,ustring* name){
   vps_inst* inst;
   vps_data* data;
   data = vps_any_new(vps,name,vstk_heap);
+  data->scope = VPS_SCOPE_LOCAL;
   vps_mod_data_put(mod,data);
   inst = vps_inst_new(vps,vinstk_glodt,Bpush,NULL,data,NULL);
   return inst;

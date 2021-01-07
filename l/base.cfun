@@ -1,7 +1,7 @@
 /*
  *define cfun make-stream
  */
-LDEFUN(make_stream,"make-stream",0,RETVAL_NO,{
+LDEFUN(make_stream,"make-stream",LSCOPE_GLOBAL,0,LRETVAL_NO,{
     ulog("call make-stream");
     return 0;
   });
@@ -9,7 +9,7 @@ LDEFUN(make_stream,"make-stream",0,RETVAL_NO,{
 /*
  *define cfun stream-output
  */
-LDEFUN(stream_output,"stream-output",2,RETVAL_NO,{
+LDEFUN(stream_output,"stream-output",LSCOPE_GLOBAL,2,LRETVAL_NO,{
     URI_DEFINE;
     vslot slot_num = vcontext_params_get(ctx,0);
     vslot slot_stream = vcontext_params_get(ctx,1);
@@ -39,12 +39,12 @@ LDEFUN(stream_output,"stream-output",2,RETVAL_NO,{
     return 0;
   });
 
-LDEFVAR(system_istream,"system-istream",{
+LDEFVAR(system_istream,"system-istream",LSCOPE_GLOBAL,{
     lobj_stream* lstream = lobj_istream_new_by_file(ctx->heap,stdin);
     return (vgc_obj*)lstream;
   });
 
-LDEFVAR(system_ostream,"system-ostream",{
+LDEFVAR(system_ostream,"system-ostream",LSCOPE_GLOBAL,{
     lobj_stream* lstream = lobj_ostream_new_by_file(ctx->heap,stdout);
     return (vgc_obj*)lstream;
   });

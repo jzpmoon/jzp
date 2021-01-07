@@ -69,7 +69,7 @@ void ltoken_skip_blank(ltoken_state* ts){
     if(c == ' ' || c == '\t' || c== '\r'){
       ltoken_next_char(ts);
       continue;
-    }if(c== '\n'){
+    }else if(c== '\n'){
       ltoken_next_char(ts);
       ltoken_new_line(ts);
       continue;
@@ -81,18 +81,44 @@ void ltoken_skip_blank(ltoken_state* ts){
 
 void ltoken_skip_comment(ltoken_state* ts){
   int c;
-  c = ltoken_look_ahead(ts);
-  if(c == ';'){
-    ltoken_next_char(ts);
-    while(1){
-      c = ltoken_look_ahead(ts);
-      if (c == '\n') {
-	ltoken_next_char(ts);
-	ltoken_new_line(ts);
-	break;
-      } else if (c == LEOF){
-	break;
+  while (1) {
+    c = ltoken_look_ahead(ts);
+    if (c == ';') {
+      ltoken_next_char(ts);
+      while (1) {
+	c = ltoken_look_ahead(ts);
+	if (c == '\n') {
+	  ltoken_next_char(ts);
+	  ltoken_new_line(ts);
+	  break;
+	} else if (c == LEOF) {
+	  break;
+	} else {
+	  ltoken_next_char(ts);
+	}
       }
+    } else {
+      break;
+    }
+  }
+}
+
+void ltoken_skip(ltoken_state* ts){
+  int c;
+  while (1) {
+    c = ltoken_look_ahead(ts);
+    switch (c) {
+    case ' ':
+    case '\t':
+    case '\r':
+    case '\n':
+      ltoken_skip_blank(ts);
+      break;
+    case ';':
+      ltoken_skip_comment(ts);
+      break;
+    default:
+      return;
     }
   }
 }
@@ -177,8 +203,7 @@ int ltoken_lex_identify(ltoken_state* ts){
 int ltoken_next(ltoken_state* ts){
   int c;
   
-  ltoken_skip_blank(ts);
-  ltoken_skip_comment(ts);
+  ltoken_skip(ts);
   
   c = ltoken_next_char(ts);
   switch(c){

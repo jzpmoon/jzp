@@ -42,11 +42,15 @@ typedef struct _vps_t{
 
 ulist_decl_tpl(vpsp);
 
+#define VPS_SCOPE_GLOBAL 1
+#define VPS_SCOPE_LOCAL 2
+
 typedef struct _vps_data{
   VPSHEADER;
   int dtk;
   int stk;
   int idx;
+  int scope;
   ustring* name;
   union {
     ulist_vpsp* array;
@@ -94,6 +98,7 @@ typedef struct _vdfg_graph{
   vps_dfg* entry;
   int params_count;
   int locals_count;
+  int scope;
 } vdfg_graph,*vdfg_graphp;
 
 #define VDFG_GRP_DATA_TABLE_SIZE 17
@@ -105,7 +110,6 @@ typedef struct _vps_mod{
   struct _vps_cntr* vps;
   uhstb_vps_datap* data;
   uhstb_vdfg_graphp* code;
-  ustring_table* export;
   vdfg_graph* entry;
   ustring* name;
 } vps_mod;
