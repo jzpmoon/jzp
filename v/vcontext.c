@@ -3,9 +3,10 @@
 #include "vcontext.h"
 
 ulist_def_tpl(vreloc);
-ulist_def_tpl(vmod);
+uhstb_def_tpl(vmod);
 uhstb_def_tpl(vsymbol);
 
+#define VCONTEXT_MODTB_SIZE 17
 #define VCONTEXT_OBJTB_SIZE 17
 #define VCONTEXT_SYMTB_SIZE 17
 #define VCONTEXT_STRTB_SIZE 17
@@ -13,7 +14,7 @@ uhstb_def_tpl(vsymbol);
 
 vcontext* vcontext_new(vgc_heap* heap){
   vcontext* ctx;
-  ulist_vmod* mods;
+  uhstb_vmod* mods;
   ustring_table* symtb;
   ustring_table* strtb;
   vgc_array* consts;
@@ -29,7 +30,7 @@ vcontext* vcontext_new(vgc_heap* heap){
 
   umem_pool_init(&ctx->pool,-1);
   
-  mods = ulist_vmod_new();
+  mods = uhstb_vmod_new(VCONTEXT_MODTB_SIZE);
   if (!mods) {
     uabort("vcontext_new:mods new error!");
   }
@@ -52,6 +53,7 @@ vcontext* vcontext_new(vgc_heap* heap){
 
   ctx->heap = heap;
   ctx->mods = mods;
+  ctx->load = NULL;
   ctx->symtb = symtb;
   ctx->strtb = strtb;
   vgc_obj_null_set(ctx,calling);
@@ -106,35 +108,45 @@ vsymbol* vcontext_graph_load(vcontext* ctx,vmod* mod,vdfg_graph* grp){
     vmod_gobj_put(mod,grp->name,(vgc_obj*)subr);
   }
   umem_pool_clean(&ctx->pool);
-  ulog("vcontext_graph_load");
   return symbol;
+}
+
+void vcontext_mod_log(vcontext* ctx){
+  uhstb_vmod* mods;
+  ucursor cursor;
+  
+  mods = ctx->mods;
+  mods->iterate(&cursor);
+  while (1) {
+    vmod* next = mods->next((uset*)mods,&cursor);
+    if (!next) {
+      break;
+    }
+    ulog1("vcontext_mod_log:%s",next->name->value);
+  }
 }
 
 int vcontext_mod_load(vcontext* ctx,vps_mod* mod)
 {
-  vmod ctx_mod;
+  vmod* ctx_mod;
   ucursor cursor;
   uhstb_vps_datap* data = mod->data;
   uhstb_vdfg_graphp* code = mod->code;
-  vsymbol* symbol;
     
-  ulog("vcontext_load mod");
+  ctx_mod = vcontext_mod_add(ctx,mod->name);
+  if (vps_mod_isload(mod)) {
+    vmod_loaded(ctx_mod);
+  }
 
-  vmod_init(&ctx_mod);
-  vcontext_mod_add(ctx,ctx_mod);
-    
   (data->iterate)(&cursor);
-  ulog("vcontext_load mod data");
   while(1){
     vps_datap* dp = (data->next)((uset*)data,&cursor);
     if(!dp){
       break;
     }
-    ulog("vcontext_load mod data entry");
     vcontext_data_load(ctx,*dp);
   }
 
-  ulog("vcontext_load mod code");
   (data->iterate)(&cursor);
   while(1){
     vdfg_graphp* gp = (code->next)((uset*)code,&cursor);
@@ -143,19 +155,55 @@ int vcontext_mod_load(vcontext* ctx,vps_mod* mod)
       break;
     }
     g = *gp;
-    ulog1("vcontext_load mod graph: %s",g->name->value);
-    vcontext_graph_load(ctx,&ctx_mod,g);
+    vcontext_graph_load(ctx,ctx_mod,g);
   }
-  symbol = vcontext_graph_load(ctx,&ctx_mod,mod->entry);
-  /* 
-   * 1. finish load mod
-   * 2. clean vps memory
-   * 3. execute mod entry
-   */
-  vps_cntr_clean(mod->vps);
+  if (mod->entry) {
+    ctx_mod->init = vcontext_graph_load(ctx,ctx_mod,mod->entry);
+  }
+  return 0;
+}
+
+static void vcontext_mod_init(vcontext* ctx)
+{
+  uhstb_vmod* mods;
+  ucursor cursor;
+  
+  mods = ctx->mods;
+  mods->iterate(&cursor);
+  while (1) {
+    vmod* next = mods->next((uset*)mods,&cursor);
+    vsymbol* symbol;
+    if (!next) {
+      break;
+    }
+    symbol = next->init;
+    if (symbol) {
+      vgc_heap_stack_push(ctx->heap,symbol->slot);
+      vcontext_execute(ctx);
+    }
+  }
+}
+
+int vcontext_vps_load(vcontext* ctx,vps_cntr* vps)
+{
+  ucursor cursor;
+  uhstb_vps_modp* mods;
+
+  mods = vps->mods;
+  mods->iterate(&cursor);
+  while (1) {
+    vps_modp* next = mods->next((uset*)mods,&cursor);
+    vps_mod* mod;
+    if (!next) {
+      break;
+    }
+    mod = *next;
+    vcontext_mod_load(ctx,mod);
+  }
+  vps_cntr_clean(vps);
+  
   vcontext_relocate(ctx);
-  vgc_heap_stack_push(ctx->heap,symbol->slot);
-  vcontext_execute(ctx);
+  vcontext_mod_init(ctx);
   return 0;
 }
 
@@ -190,7 +238,7 @@ int vcontext_data_load(vcontext* ctx,vps_data* data)
 vsymbol* vmod_symbol_get(vcontext* ctx,vmod* mod,ustring* name){
   vsymbol symbol_in;
   vsymbol* symbol_out;
-  ulist_vmod* mods;
+  uhstb_vmod* mods;
   ucursor cursor;
 
   symbol_in.name = name;
@@ -209,6 +257,9 @@ vsymbol* vmod_symbol_get(vcontext* ctx,vmod* mod,ustring* name){
     if (!next) {
       break;
     }
+    if (!vmod_isload(next)) {
+      ctx->load(ctx,mod);
+    }
     uhstb_vsymbol_get(next->gobjtb,
 		      name->hash_code,
 		      &symbol_in,
@@ -224,6 +275,7 @@ vsymbol* vmod_symbol_get(vcontext* ctx,vmod* mod,ustring* name){
 void vmod_relocate(vcontext* ctx,vmod* mod){
   ulist_vreloc* rells = mod->rells;
   ucursor cursor;
+
   rells->iterate(&cursor);
   while(1){
     vsymbol* symbol;
@@ -240,15 +292,21 @@ void vmod_relocate(vcontext* ctx,vmod* mod){
 }
 
 void vcontext_relocate(vcontext* ctx){
-  ulist_vmod* mods = ctx->mods;
+  uhstb_vmod* mods = ctx->mods;
   ucursor cursor;
+
   mods->iterate(&cursor);
   while(1){
     vmod* mod = mods->next((uset*)mods,&cursor);
     if(!mod){
       break;
     }
-    vmod_relocate(ctx,mod);
+    if (vmod_isload(mod)) {
+      vmod_relocate(ctx,mod);
+    } else if (!ctx->load) {
+      ctx->load(ctx,mod);
+      vmod_relocate(ctx,mod);
+    }
   }
 }
 
@@ -275,14 +333,11 @@ vslot vcontext_params_get(vcontext* ctx,int index){
   return slot;
 }
 
-void vcontext_mod_add(vcontext* ctx,vmod mod)
-{
-  if (ulist_vmod_append(ctx->mods,mod)) {
-    uabort("vcontext add mod error!");
-  }
+static int vcontext_mod_comp(vmod* mod1,vmod* mod2){
+  return ustring_comp(mod1->name,mod2->name);
 }
 
-void vmod_init(vmod* mod)
+void vmod_init(vmod* mod,ustring* name)
 {
   ulist_vreloc* rells;
   uhstb_vsymbol* gobjtb;
@@ -306,6 +361,30 @@ void vmod_init(vmod* mod)
   mod->rells = rells;
   mod->gobjtb = gobjtb;
   mod->lobjtb = lobjtb;
+  mod->init = NULL;
+  mod->name = name;
+  mod->status = VMOD_STATUS_UNLOAD;
+}
+
+vmod* vcontext_mod_add(vcontext* ctx,ustring* name)
+{
+  vmod in_mod;
+  vmod* out_mod;
+  int retval;
+
+  vmod_init(&in_mod,name);
+  retval = uhstb_vmod_put(ctx->mods,
+			  name->hash_code,
+			  &in_mod,
+			  &out_mod,
+			  NULL,
+			  vcontext_mod_comp);
+  if (retval == 1) {
+    uabort("vcontext add mod exists!");
+  } else if (retval == -1) {
+    uabort("vcontext add mod error!");
+  }
+  return out_mod;
 }
 
 void vmod_add_reloc(vmod* mod,vreloc reloc)

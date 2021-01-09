@@ -6,17 +6,57 @@
 typedef struct _leval{
   vgc_heap* heap;
   vcontext* ctx;
-  vmod mod;
-  ltoken_state* ts;
+  vmod* mod;
   vps_cntr vps;
+  ltoken_state* ts;
 } leval;
 
 static leval eval_instance;
 
+static int leval_mod_load(vcontext* ctx,vmod* mod){
+  /*  FILE* file;
+  vps_mod* mod;
+  last_obj* ast_obj;
+  ustring* mod_name;
+  
+  file = fopen(mod->name->value,"r");
+  if(!file){
+    uabort("open file error!");
+  }
+  ltoken_state_reset(eval_instance.ts,file);
+
+  mod_name = ustring_table_put(eval_instance.ctx->symtb,file_path,-1);
+  if (!mod_name) {
+    uabort("mod name put symtb error!");
+  }
+
+  mod = vps_mod_new(&eval_instance.vps,mod_name);
+  if (!mod) {
+    uabort("new mod error!");
+  }
+
+  while(1){
+    ast_obj = lparser_parse(eval_instance.ts);
+    if (ast_obj == NULL){
+      break;
+    }
+    last2vps(eval_instance.ts,ast_obj,mod);
+  }
+
+  vps_cntr_load(&eval_instance.vps,mod);
+  vps_mod_loaded(mod);
+
+  umem_pool_clean(&eval_instance.ts->pool);*/
+
+  ulog("leval_mod_load");
+  return 0;
+}
+
 void lstartup(){
   vgc_heap* heap;
   vcontext* ctx;
-  vmod mod;
+  vmod* mod;
+  ustring* mod_name;
   ustream* stream;
   ltoken_state* ts;
 
@@ -31,9 +71,14 @@ void lstartup(){
   if(!ctx){
     uabort("new context error!");
   }
-
-  vmod_init(&mod);
-  vcontext_mod_add(ctx,mod);
+  ctx->load = leval_mod_load;
+  
+  mod_name = ustring_table_put(ctx->symtb,"sysmod",-1);
+  if (!mod_name) {
+    uabort("mod name put symtb error!");
+  }
+  
+  mod = vcontext_mod_add(ctx,mod_name);
 
   stream = ustream_new(USTREAM_INPUT,USTREAM_FILE);
   if (!stream) {
@@ -52,8 +97,9 @@ void lstartup(){
   eval_instance.mod = mod;
   eval_instance.ts = ts;
   
-  lcfun_init(ctx,&eval_instance.mod);
-
+  lcfun_init(ctx,eval_instance.mod);
+  vmod_loaded(mod);
+  
   ulog("lstartup");
 }
 
@@ -79,8 +125,6 @@ void leval_load(char* file_path){
     uabort("new mod error!");
   }
 
-  vps_cntr_load(&eval_instance.vps,mod);
-
   while(1){
     ast_obj = lparser_parse(eval_instance.ts);
     if (ast_obj == NULL){
@@ -89,7 +133,10 @@ void leval_load(char* file_path){
     last2vps(eval_instance.ts,ast_obj,mod);
   }
 
+  vps_cntr_load(&eval_instance.vps,mod);
+  vps_mod_loaded(mod);
+
   umem_pool_clean(&eval_instance.ts->pool);
   
-  vcontext_mod_load(eval_instance.ctx,mod);
+  vcontext_vps_load(eval_instance.ctx,&eval_instance.vps);
 }

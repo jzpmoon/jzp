@@ -105,6 +105,9 @@ typedef struct _vdfg_graph{
 
 uhstb_decl_tpl(vdfg_graphp);
 
+#define VPS_MOD_STATUS_LOADED 1
+#define VPS_MOD_STATUS_UNLOAD 0
+
 typedef struct _vps_mod{
   VPSHEADER;
   struct _vps_cntr* vps;
@@ -112,16 +115,17 @@ typedef struct _vps_mod{
   uhstb_vdfg_graphp* code;
   vdfg_graph* entry;
   ustring* name;
-} vps_mod;
+  int status;
+} vps_mod,*vps_modp;
 
 #define VPS_MOD_DATA_TABLE_SIZE 17
 #define VPS_MOD_CODE_TABLE_SIZE 17
 
-uhstb_decl_tpl(vps_mod);
+uhstb_decl_tpl(vps_modp);
 
 typedef struct _vps_cntr{
   umem_pool pool;
-  uhstb_vps_mod* mods;
+  uhstb_vps_modp* mods;
 } vps_cntr;
 
 #define VPS_CNTR_MOD_TABLE_SIZE 17
@@ -197,6 +201,11 @@ void vdfg_grp_locals_apd(vdfg_graph* grp,vps_data* dt);
 vps_data* vdfg_grp_dtget(vdfg_graph* grp,ustring* name);
 
 vps_mod* vps_mod_new(vps_cntr* vps,ustring* name);
+
+#define vps_mod_loaded(mod)			\
+  ((mod)->status = VPS_MOD_STATUS_LOADED)
+#define vps_mod_isload(mod)			\
+  ((mod)->status == VPS_MOD_STATUS_LOADED)
 
 void vps_mod_data_put(vps_mod* mod,vps_data* data);
 

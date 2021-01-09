@@ -1,14 +1,39 @@
 /*
- * define attribute include
+ * define attribute mod-load
  */
-LDEFATTR(include,"include",{
-  ulog("include");
-  return NULL;
-})
+LDEFATTR(mod_load,"mod-load",{
+    vps_cntr* vps;
+    last_obj* next;
+    last_obj* obj;
+    last_symbol* mod_name;
+    vps_mod* mod;
+
+    vps = top->vps;
+    
+    next = last_cdr(ast_obj);
+    if(next->t != lastk_cons){
+      uabort("mod load error!");
+    }
+
+    obj = last_car(next);
+    if(obj->t != lastk_symbol){
+      uabort("mod name invalid!");
+    }
+    mod_name = (last_symbol*)obj;
+
+    mod = vps_mod_new(vps,mod_name->name);
+    if (!mod) {
+      uabort("vps mod new error");
+    }
+
+    vps_cntr_load(vps,mod);
+    ulog("mod-load");
+    return NULL;
+  })
 
 /*
  * declare attribute
  */
 LATTRONLOAD(mod,{
-  LDECLATTR(include);
-})
+    LDECLATTR(mod_load);
+  })

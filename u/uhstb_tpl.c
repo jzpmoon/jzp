@@ -82,7 +82,7 @@
 	if(outk){						\
 	  *outk = &ls->k;					\
 	}							\
-	return 0;						\
+	return 1;						\
       }else if(c > 0){						\
 	prev_nd = ls;						\
 	ls = ls->next;						\

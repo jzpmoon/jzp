@@ -245,26 +245,42 @@ uhstb_decl_tpl(vsymbol);
 #define VCONTEXT_SYMTB_SIZE 17
 #define VCONTEXT_STRTB_SIZE 17
 
+#define VMOD_STATUS_LOADED 1
+#define VMOD_STATUS_UNLOAD 0
+
 typedef struct _vmod{
   ulist_vreloc* rells;
   uhstb_vsymbol* gobjtb;
   uhstb_vsymbol* lobjtb;
+  vsymbol* init;
+  ustring* name;
+  int status;
 } vmod;
 
-ulist_decl_tpl(vmod);
+#define vmod_loaded(mod)			\
+  ((mod)->status = VMOD_STATUS_LOADED)
+#define vmod_isload(mod)			\
+  ((mod)->status == VMOD_STATUS_LOADED)
 
-typedef struct _vcontext{
+
+uhstb_decl_tpl(vmod);
+
+typedef struct _vcontext vcontext;
+typedef int(*vcontext_mod_load_ft)(struct _vcontext* ctx,vmod* mod);
+
+struct _vcontext{
   VGCHEADER;
   vgc_heap* heap;
   umem_pool pool;
-  ulist_vmod* mods;
+  uhstb_vmod* mods;
+  vcontext_mod_load_ft load;
   ustring_table* symtb;
   ustring_table* strtb;
   vslot_define_begin
     vslot_define(vgc_call,calling);
     vslot_define(vgc_array,consts);
   vslot_define_end
-} vcontext;
+};
 
 typedef struct _vgc_string{
   VGCHEADER;

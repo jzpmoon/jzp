@@ -11,7 +11,7 @@ static vdfg_graph* subr(vps_mod* top,vps_dfg* parent,last_obj* ast_obj){
   vdfg_block* blk;
 
   vps = top->vps;
-  
+
   next = last_cdr(ast_obj);
   if(next->t != lastk_cons){
     uabort("subr error!");
@@ -62,7 +62,7 @@ static vdfg_graph* subr(vps_mod* top,vps_dfg* parent,last_obj* ast_obj){
       arg_idx++;
     }
   }
-  
+
   grp->name = subr_name->name;
   blk = vdfg_block_new(vps);
   if(!blk){
@@ -70,7 +70,7 @@ static vdfg_graph* subr(vps_mod* top,vps_dfg* parent,last_obj* ast_obj){
   }
   blk->parent = (vps_t*)grp;
   vdfg_grp_cdapd(grp,(vps_dfg*)blk);
-    
+
   next = last_cdr(next);
   while(next){
     last_obj* car;

@@ -1,18 +1,3 @@
-(entry main ()
-  (push 3)
-  (push factorial)
-  (call)
-  (push system-ostream)
-  (push stream-output)
-  (call)
-  (return))
-
-(subr test-cfun ()
-  (push make-stream)
-  (call)
-  (return)
-)
-
 ;;test comment
 (subr test-count (x)
   (var tmp)

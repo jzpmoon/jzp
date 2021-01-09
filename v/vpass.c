@@ -6,7 +6,7 @@
 
 uhstb_def_tpl(vps_datap);
 uhstb_def_tpl(vdfg_graphp);
-uhstb_def_tpl(vps_mod);
+uhstb_def_tpl(vps_modp);
 ulist_def_tpl(vpsp);
 ulist_def_tpl(vps_instp);
 ulist_def_tpl(vps_dfgp);
@@ -527,6 +527,7 @@ vps_mod* vps_mod_new(vps_cntr* vps,ustring* name){
   mod = umem_pool_alloc(&vps->pool,sizeof(vps_mod));
   if(mod){
     mod->t = vpsk_mod;
+    mod->vps = vps;
     mod->data = uhstb_vps_datap_newmp(&vps->pool,VPS_MOD_DATA_TABLE_SIZE);
     if(!mod->data){
       uabort("new hash table data error!");
@@ -537,6 +538,7 @@ vps_mod* vps_mod_new(vps_cntr* vps,ustring* name){
     }
     mod->entry = NULL;
     mod->name = name;
+    mod->status = VPS_MOD_STATUS_UNLOAD;
   }
   return mod;
 }
@@ -599,12 +601,12 @@ void vps_mod_code_put(vps_mod* mod,vdfg_graph* code){
 
 void vps_cntr_init(vps_cntr* cntr) {
   umem_pool_init(&cntr->pool,-1);
-  cntr->mods = uhstb_vps_mod_newmp(&cntr->pool,VPS_CNTR_MOD_TABLE_SIZE);
+  cntr->mods = uhstb_vps_modp_newmp(&cntr->pool,VPS_CNTR_MOD_TABLE_SIZE);
 }
 
-static int vps_cntr_mod_comp(vps_mod* mod1,vps_mod* mod2){
-  ustring* name1 = mod1->name;
-  ustring* name2 = mod2->name;
+static int vps_cntr_mod_comp(vps_modp* mod1,vps_modp* mod2){
+  ustring* name1 = (*mod1)->name;
+  ustring* name2 = (*mod2)->name;
   return ustring_comp(name1,name2);
 }
 
@@ -612,14 +614,18 @@ int vps_cntr_load(vps_cntr* vps,vps_mod* mod)
 {
   ustring* name = mod->name;
   unsigned int hscd = name->hash_code;
-
+  int retval;
+  
   mod->vps = vps;
-  if (uhstb_vps_mod_put(vps->mods,
-			hscd,
-			mod,
-			NULL,
-			NULL,
-			vps_cntr_mod_comp)) {
+  retval = uhstb_vps_modp_put(vps->mods,
+			      hscd,
+			      &mod,
+			      NULL,
+			      NULL,
+			      vps_cntr_mod_comp);
+  if (retval == 1) {
+    uabort("vps_cntr_load mod exists!");
+  } else   if (retval == -1) {
     uabort("vps_cntr_load error!");
   }
   return 0;
