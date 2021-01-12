@@ -4,31 +4,30 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define uabort(msg)	\
-  do{			\
-    printf("%s\n",msg); \
-    abort();		\
+#define uabort(msg)		\
+  do{				\
+    fprintf(stdout,"%s\n",msg); \
+    abort();			\
   }while(0)
 
-#define uabort1(msg,a1)	\
-  do{			\
-    printf((msg),(a1));	\
-    printf("\n");	\
-    abort();		\
+#define uabort1(msg,a1)		\
+  do{				\
+    fprintf(stdout,(msg),(a1));	\
+    abort();			\
   }while(0)
 
 #ifndef NDEBUG
 
 #define ulog(msg)				\
   do{						\
-    printf(msg);				\
-    printf("\n");				\
+    fprintf(stdout,(msg));			\
+    fprintf(stdout,"\n");			\
   }while(0)
 
 #define ulog1(msg,a1)				\
   do{						\
-    printf((msg),(a1));				\
-    printf("\n");				\
+    fprintf(stdout,(msg),(a1));			\
+    fprintf(stdout,"\n");			\
   }while(0)
 
 #else
