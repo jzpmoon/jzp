@@ -16,26 +16,9 @@
     abort();			\
   }while(0)
 
-#ifndef NDEBUG
-
-#define ulog(msg)				\
-  do{						\
-    fprintf(stdout,(msg));			\
-    fprintf(stdout,"\n");			\
-  }while(0)
-
-#define ulog1(msg,a1)				\
-  do{						\
-    fprintf(stdout,(msg),(a1));			\
-    fprintf(stdout,"\n");			\
-  }while(0)
-
-#else
-
-  #define ulog(msg) ((void)0)
-  #define ulog1(msg,a1) ((void)0)
-
-#endif
+int ulog_init();
+void ulog(char* msg);
+void ulog1(char* msg,...);
 
 typedef struct _ureturn_infor{
   char* code;
