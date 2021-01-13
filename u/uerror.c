@@ -20,7 +20,7 @@ int ulog_init(char* log_fn)
   FILE* log_fd = fopen(log_fn,"w");
   if (!log_fd) {
     log_fd = stdout;
-    retval = 0;
+    retval = -1;
   }
   _uli.log_fd = log_fd;
   _uli.log_fn = log_fn;
@@ -41,17 +41,13 @@ void ulog1(char* msg,...)
 {
   FILE* log_fd = _uli.log_fd;
   va_list ap;
-  int retval;
 
   if (!log_fd) {
     log_fd = stdout;
   }
   va_start(ap,msg);
-  retval = vfprintf(log_fd,msg,ap);
+  vfprintf(log_fd,msg,ap);
   va_end(ap);
-  if (retval < 0) {
-    fprintf(log_fd,"ulog error!");
-  }
   fprintf(log_fd,"\n");
 }
 
