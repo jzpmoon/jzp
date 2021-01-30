@@ -3,7 +3,6 @@
 #include "uerror.h"
 #include "vgc_obj.h"
 
-
 vgc_array* vgc_array_new(vgc_heap* heap,
 			 usize_t array_length,
 			 int area_type){
@@ -74,27 +73,6 @@ void vgc_string_log(vgc_heap* heap){
     i++;
   }
   vgc_heap_obj_push(heap,string);
-}
-
-vgc_cfun* vgc_cfun_new(vgc_heap* heap,
-		       vcfun_ft entry,
-		       int params_count,
-		       int has_retval,
-		       int area_type){
-  vgc_cfun* cfun;
-  if(params_count < 0){
-    return NULL;
-  }
-  cfun = vgc_heap_obj_new(heap,
-			  vgc_cfun,
-			  vgc_obj_type_cfun,
-			  area_type);
-  if(cfun){
-    cfun->entry = entry;
-    cfun->params_count = params_count;
-    cfun->has_retval = has_retval;
-  }
-  return cfun;
 }
 
 vgc_subr* vgc_subr_new(vgc_heap* heap,

@@ -207,11 +207,6 @@ void vgc_heap_stack_top_set(vgc_heap* heap,usize_t index);
 #define vgc_obj_ref_set(obj,slot,vobj)		\
   vslot_ref_set((obj)->_u.slot,vobj)
 
-typedef struct _vsymbol{
-  ustring* name;
-  vslot slot;
-} vsymbol;
-
 typedef struct _vgc_array{
   VGCHEADER;
   int top;
@@ -227,60 +222,6 @@ int vgc_array_push(vgc_array* array,vslot slot);
 vslot vgc_array_pop(vgc_array* array);
 
 void vgc_array_set(vgc_array* array,int idx,vslot slot);
-
-typedef struct _vreloc{
-  ustring* ref_name;
-  vgc_array* rel_obj;
-  int rel_idx;
-} vreloc;
-
-#define vreloc_log(reloc)				\
-  ulog1("ref_name:%s",reloc->ref_name->value);		\
-  ulog1("rel_obj:%lld",(long long)reloc->rel_obj);	\
-  ulog1("rel_idx:%d",reloc->rel_idx);
-
-ulist_decl_tpl(vreloc);
-uhstb_decl_tpl(vsymbol);
-
-#define VCONTEXT_SYMTB_SIZE 17
-#define VCONTEXT_STRTB_SIZE 17
-
-#define VMOD_STATUS_LOADED 1
-#define VMOD_STATUS_UNLOAD 0
-
-typedef struct _vmod{
-  ulist_vreloc* rells;
-  uhstb_vsymbol* gobjtb;
-  uhstb_vsymbol* lobjtb;
-  vsymbol* init;
-  ustring* name;
-  int status;
-} vmod;
-
-#define vmod_loaded(mod)			\
-  ((mod)->status = VMOD_STATUS_LOADED)
-#define vmod_isload(mod)			\
-  ((mod)->status == VMOD_STATUS_LOADED)
-
-
-uhstb_decl_tpl(vmod);
-
-typedef struct _vcontext vcontext;
-typedef int(*vcontext_mod_load_ft)(struct _vcontext* ctx,vmod* mod);
-
-struct _vcontext{
-  VGCHEADER;
-  vgc_heap* heap;
-  umem_pool pool;
-  uhstb_vmod* mods;
-  vcontext_mod_load_ft load;
-  ustring_table* symtb;
-  ustring_table* strtb;
-  vslot_define_begin
-    vslot_define(vgc_call,calling);
-    vslot_define(vgc_array,consts);
-  vslot_define_end
-};
 
 typedef struct _vgc_string{
   VGCHEADER;
@@ -299,26 +240,6 @@ void vgc_string_log(vgc_heap* heap);
 
 #define vgc_str_bound_check(obj,index) \
   (index >= 0 && index < obj->len)
-
-typedef int(*vcfun_ft)(vcontext*);
-
-typedef struct _vgc_cfun{
-  VGCHEADER;
-  vcfun_ft entry;
-  int params_count;
-  int has_retval;
-  vslot_define_begin
-  /*
-   *void member
-   */
-  vslot_define_end
-} vgc_cfun;
-
-vgc_cfun* vgc_cfun_new(vgc_heap* heap,
-		       vcfun_ft entry,
-		       int params_count,
-		       int has_retval,
-		       int area_type);
 
 typedef struct _vgc_subr{
   VGCHEADER;

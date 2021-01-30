@@ -53,12 +53,33 @@ vcontext* vcontext_new(vgc_heap* heap){
 
   ctx->heap = heap;
   ctx->mods = mods;
-  ctx->load = NULL;
+  ctx->loader = NULL;
   ctx->symtb = symtb;
   ctx->strtb = strtb;
   vgc_obj_null_set(ctx,calling);
   vgc_obj_ref_set(ctx,consts,consts);
   return ctx;
+}
+
+vgc_cfun* vgc_cfun_new(vgc_heap* heap,
+		       vcfun_ft entry,
+		       int params_count,
+		       int has_retval,
+		       int area_type){
+  vgc_cfun* cfun;
+  if(params_count < 0){
+    return NULL;
+  }
+  cfun = vgc_heap_obj_new(heap,
+			  vgc_cfun,
+			  vgc_obj_type_cfun,
+			  area_type);
+  if(cfun){
+    cfun->entry = entry;
+    cfun->params_count = params_count;
+    cfun->has_retval = has_retval;
+  }
+  return cfun;
 }
 
 vsymbol* vsymbol_new(ustring* name,vslot slot){
@@ -74,13 +95,93 @@ static int vobjtb_key_comp(vsymbol* sym1,vsymbol* sym2){
   return ustring_comp(sym1->name, sym2->name);
 }
 
+int vdfg_blk2inst(vgc_array* consts,
+		  vmod* mod,
+		  vdfg_block* blk,
+		  ulist_vinstp* insts)
+{
+  ulist_vps_instp* insts_l1;
+  ucursor cursor;
+  insts_l1 = blk->insts;
+  insts->iterate(&cursor);
+
+  while(1){
+    vps_instp* instp = insts->next((uset*)insts_l1,&cursor);
+    vps_inst* inst_l1;
+    vinst* inst;
+
+    if(!instp){
+      break;
+    }
+    inst_l1 = *instp;
+    switch(inst_l1->instk){
+    case vinstk_imm:
+      inst = &inst_l1->inst;
+      if(inst_l1->u.data){
+	inst->operand = inst_l1->u.data->idx;
+      }
+      ulist_vinstp_append(insts,inst);
+      ulog("inst imm");
+      break;
+    case vinstk_locdt:{
+      vps_t* dfg = blk->parent;
+      vdfg_graph* grp;
+      vps_data* data;
+
+      if(!dfg || dfg->t != vdfgk_grp){
+	uabort("vdfg_block have no parent!");
+      }
+      grp = (vdfg_graph*)dfg;
+      data = vdfg_grp_dtget(grp,inst_l1->label);
+      if(!data){
+	uabort1("local variable: %s not find",inst_l1->label->value);
+      }
+      inst = &inst_l1->inst;
+      inst->operand = data->idx;
+      ulist_vinstp_append(insts,inst);
+      ulog("inst local data");
+    }
+      break;
+    case vinstk_glodt:{
+      vps_data* data = inst_l1->u.data;
+      vreloc reloc;
+      reloc.ref_name = data->name;
+      reloc.rel_idx = data->idx;
+      reloc.rel_obj = consts;
+      vmod_add_reloc(mod,reloc);
+      inst = &inst_l1->inst;
+      inst->operand = data->idx;
+      ulist_vinstp_append(insts,inst);
+      ulog("inst global data");      
+    }
+      break;
+    case vinstk_code:
+      ulog("inst code");
+      break;
+    case vinstk_non:
+      inst = &inst_l1->inst;
+      ulist_vinstp_append(insts,inst);
+      ulog("inst non");
+      break;
+    default:
+      break;
+    }
+  }
+  return 0;
+}
+
 vsymbol* vcontext_graph_load(vcontext* ctx,vmod* mod,vdfg_graph* grp){
   vsymbol* symbol;
-  ulist_vps_dfgp* dfgs = grp->dfgs;
-  ulist_vinstp* insts = ulist_vinstp_newmp(&ctx->pool);
+  vgc_array* consts;
+  ulist_vps_dfgp* dfgs;
+  ulist_vinstp* insts;
   vgc_subr* subr;
   ucursor cursor;
 
+  consts = vgc_obj_ref_get(ctx,consts,vgc_array);
+  dfgs = grp->dfgs;
+  insts = ulist_vinstp_newmp(&ctx->pool);
+  
   dfgs->iterate(&cursor);
   while(1){
     vps_dfgp* dfgp = dfgs->next((uset*)dfgs,&cursor);
@@ -92,12 +193,12 @@ vsymbol* vcontext_graph_load(vcontext* ctx,vmod* mod,vdfg_graph* grp){
       uabort("vps_dfg not a block!");
     }
     blk = (vdfg_block*)(*dfgp);
-    if(vdfg_blk2inst(ctx,mod,blk,insts)){
+    if(vdfg_blk2inst(consts,mod,blk,insts)){
       uabort("vdfg_blk2inst error!");
     }
   }
 
-  vinst_to_str(ctx,insts);
+  vinst_to_str(ctx->heap,insts);
   vgc_obj_slot_get(ctx->heap,ctx,consts);
   subr = vgc_subr_new(ctx->heap,
 		      grp->params_count,
@@ -126,9 +227,48 @@ void vcontext_mod_log(vcontext* ctx){
   }
 }
 
+int vcontext_mod2mod(vcontext* ctx,vmod* dest_mod,vps_mod* src_mod)
+{
+  ucursor cursor;
+  uhstb_vps_datap* data = src_mod->data;
+  uhstb_vdfg_graphp* code = src_mod->code;
+    
+  if (vps_mod_isload(src_mod)) {
+    vmod_loaded(dest_mod);
+  }
+
+  (data->iterate)(&cursor);
+  while(1){
+    vps_datap* dp = (data->next)((uset*)data,&cursor);
+    if(!dp){
+      break;
+    }
+    vcontext_data_load(ctx,*dp);
+  }
+
+  (data->iterate)(&cursor);
+  while(1){
+    vdfg_graphp* gp = (code->next)((uset*)code,&cursor);
+    vdfg_graph* g;
+    if(!gp){
+      break;
+    }
+    g = *gp;
+    vcontext_graph_load(ctx,dest_mod,g);
+  }
+  if (src_mod->entry) {
+    dest_mod->init = vcontext_graph_load(ctx,dest_mod,src_mod->entry);
+  }
+  return 0;
+}
+
 int vcontext_mod_load(vcontext* ctx,vps_mod* mod)
 {
-  vmod* ctx_mod;
+  vmod* dest_mod;
+
+  dest_mod = vcontext_mod_add(ctx,mod->name);
+  vcontext_mod2mod(ctx,dest_mod,mod);
+  /*vmod* ctx_mod;
   ucursor cursor;
   uhstb_vps_datap* data = mod->data;
   uhstb_vdfg_graphp* code = mod->code;
@@ -159,7 +299,7 @@ int vcontext_mod_load(vcontext* ctx,vps_mod* mod)
   }
   if (mod->entry) {
     ctx_mod->init = vcontext_graph_load(ctx,ctx_mod,mod->entry);
-  }
+  }*/
   return 0;
 }
 
@@ -257,8 +397,8 @@ vsymbol* vmod_symbol_get(vcontext* ctx,vmod* mod,ustring* name){
     if (!next) {
       break;
     }
-    if (!vmod_isload(next)) {
-      ctx->load(ctx,mod);
+    if (!vmod_isload(next) && !ctx->loader) {
+      ctx->loader->load(ctx->loader,next);
     }
     uhstb_vsymbol_get(next->gobjtb,
 		      name->hash_code,
@@ -303,8 +443,8 @@ void vcontext_relocate(vcontext* ctx){
     }
     if (vmod_isload(mod)) {
       vmod_relocate(ctx,mod);
-    } else if (!ctx->load) {
-      ctx->load(ctx,mod);
+    } else if (!ctx->loader) {
+      ctx->loader->load(ctx->loader,mod);
       vmod_relocate(ctx,mod);
     }
   }

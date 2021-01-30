@@ -35,6 +35,7 @@ void ulog(char* msg)
     log_fd = stdout;
   }
   fprintf(log_fd,"%s\n",msg);
+  fflush(log_fd);
 }
 
 void ulog1(char* msg,...)
@@ -49,5 +50,6 @@ void ulog1(char* msg,...)
   vfprintf(log_fd,msg,ap);
   va_end(ap);
   fprintf(log_fd,"\n");
+  fflush(log_fd);
 }
 

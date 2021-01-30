@@ -46,7 +46,7 @@ int main(){
   vgc_heap_stack_push(heap,slot);
   vslot_num_set(slot,1);
   vgc_heap_stack_push(heap,slot);
-  if(vinst_to_str(ctx,insts)){
+  if(vinst_to_str(ctx->heap,insts)){
     uabort("new vinst_to_str error!");
   }
   vgc_heap_obj_push(heap,consts);

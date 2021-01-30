@@ -265,13 +265,13 @@ vinst_byte_length(ulist_vinstp* insts,usize_t offset){
   return length;
 }
 
-int vinst_to_str(vcontext* ctx,ulist_vinstp* insts){
+int vinst_to_str(vgc_heap* heap,ulist_vinstp* insts){
   ucursor cursor;
   usize_t inst_count = 0;
   usize_t byte_count = 0;
   usize_t length     = vinst_full_length(insts);
   vgc_string* str;
-  str = vgc_string_new(ctx->heap,
+  str = vgc_string_new(heap,
 		       length,
 		       vgc_heap_area_active);
   if(!str){
@@ -308,7 +308,7 @@ int vinst_to_str(vcontext* ctx,ulist_vinstp* insts){
 #undef DF
 	}
   };
-  vgc_heap_obj_push(ctx->heap,str);
+  vgc_heap_obj_push(heap,str);
   return 0;
 }
 
@@ -353,80 +353,6 @@ vdfg_block* vdfg_block_new(vps_cntr* vps){
     b->insts = ulist_vps_instp_newmp(&vps->pool);
   }
   return b;
-}
-
-int vdfg_blk2inst(vcontext* ctx,vmod* mod,vdfg_block* blk,ulist_vinstp* insts)
-{
-  ulist_vps_instp* insts_l1;
-  ucursor cursor;
-  insts_l1 = blk->insts;
-  insts->iterate(&cursor);
-
-  while(1){
-    vps_instp* instp = insts->next((uset*)insts_l1,&cursor);
-    vps_inst* inst_l1;
-    vinst* inst;
-
-    if(!instp){
-      break;
-    }
-    inst_l1 = *instp;
-    switch(inst_l1->instk){
-    case vinstk_imm:
-      inst = &inst_l1->inst;
-      if(inst_l1->u.data){
-	inst->operand = inst_l1->u.data->idx;
-      }
-      ulist_vinstp_append(insts,inst);
-      ulog("inst imm");
-      break;
-    case vinstk_locdt:{
-      vps_t* dfg = blk->parent;
-      vdfg_graph* grp;
-      vps_data* data;
-
-      if(!dfg || dfg->t != vdfgk_grp){
-	uabort("vdfg_block have no parent!");
-      }
-      grp = (vdfg_graph*)dfg;
-      data = vdfg_grp_dtget(grp,inst_l1->label);
-      if(!data){
-	uabort1("local variable: %s not find",inst_l1->label->value);
-      }
-      inst = &inst_l1->inst;
-      inst->operand = data->idx;
-      ulist_vinstp_append(insts,inst);
-      ulog("inst local data");
-    }
-      break;
-    case vinstk_glodt:{
-      vps_data* data = inst_l1->u.data;
-      vgc_array* consts;
-      vreloc reloc;
-      consts = vgc_obj_ref_get(ctx,consts,vgc_array);
-      reloc.ref_name = data->name;
-      reloc.rel_idx = data->idx;
-      reloc.rel_obj = consts;
-      vmod_add_reloc(mod,reloc);
-      inst = &inst_l1->inst;
-      inst->operand = data->idx;
-      ulist_vinstp_append(insts,inst);
-      ulog("inst global data");      
-    }
-      break;
-    case vinstk_code:
-      ulog("inst code");
-      break;
-    case vinstk_non:
-      inst = &inst_l1->inst;
-      ulist_vinstp_append(insts,inst);
-      ulog("inst non");
-      break;
-    default:
-      break;
-    }
-  }
-  return 0;
 }
 
 vdfg_graph* vdfg_graph_new(vps_cntr* vps){

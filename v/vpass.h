@@ -132,7 +132,7 @@ typedef struct _vps_cntr{
 
 ulist_decl_tpl(vinstp);
 
-int vinst_to_str(vcontext* ctx,
+int vinst_to_str(vgc_heap* heap,
 		 ulist_vinstp* insts);
 
 vps_inst*
@@ -180,11 +180,6 @@ vps_data* vps_any_new(vps_cntr* vps,
 		      int stk);
 
 vdfg_block* vdfg_block_new(vps_cntr* vps);
-
-int vdfg_blk2inst(vcontext* ctx,
-		  vmod* mod,
-		  vdfg_block* blk,
-		  ulist_vinstp* insts);
 
 #define vdfg_blk_apd(blk,inst)			\
   ulist_vps_instp_append((blk)->insts,inst)
