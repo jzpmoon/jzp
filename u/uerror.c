@@ -10,11 +10,12 @@ URI_ERR_DEFINE(UERR_DST, "U005", "unknow data source type");
 typedef struct _ulog_infor{
   FILE* log_fd;
   char* log_fn;
+  int power;
 } ulog_infor;
 
 static ulog_infor _uli = {NULL,NULL};
 
-int ulog_init(char* log_fn)
+int ulog_init(char* log_fn,int power)
 {
   int retval = 0;
   FILE* log_fd = fopen(log_fn,"w");
@@ -24,25 +25,42 @@ int ulog_init(char* log_fn)
   }
   _uli.log_fd = log_fd;
   _uli.log_fn = log_fn;
+  _uli.power = power;
   return retval;
 }
 
-void ulog(char* msg)
+void ulog_enable(int power)
 {
-  FILE* log_fd = _uli.log_fd;
-
-  if (!log_fd) {
-    log_fd = stdout;
-  }
-  fprintf(log_fd,"%s\n",msg);
-  fflush(log_fd);
+  _uli.power = power;
 }
 
-void ulog1(char* msg,...)
+void uabort(char* msg,...)
 {
   FILE* log_fd = _uli.log_fd;
   va_list ap;
 
+  if (!_uli.power) {
+    return;
+  }
+  if (!log_fd) {
+    log_fd = stdout;
+  }
+  va_start(ap,msg);
+  vfprintf(log_fd,msg,ap);
+  va_end(ap);
+  fprintf(log_fd,"\n");
+  fflush(log_fd);
+  abort();
+}
+
+void ulog(char* msg,...)
+{
+  FILE* log_fd = _uli.log_fd;
+  va_list ap;
+
+  if (!_uli.power) {
+    return;
+  }
   if (!log_fd) {
     log_fd = stdout;
   }
@@ -52,4 +70,3 @@ void ulog1(char* msg,...)
   fprintf(log_fd,"\n");
   fflush(log_fd);
 }
-

@@ -284,6 +284,7 @@ last_obj* lparser_atom_parse(ltoken_state* ts){
     ltoken_log(ts);
     uabort("lparser_atom_parse error!");
   }
+  return NULL;
 }
 
 last_obj* lparser_exp_parse(ltoken_state* ts){

@@ -146,6 +146,7 @@ LDEFATTR(var,"var",{
     last_obj* obj;
     last_obj* next;
 
+    inst = NULL;
     vps = top->vps;
     if(parent){
       vdfg_graph* grp;
@@ -174,7 +175,7 @@ LDEFATTR(var,"var",{
 	last_symbol* sym = (last_symbol*)obj;
 	vps_data* data;
 	if(vdfg_grp_dtget(grp,sym->name)){
-	  uabort1("var name:%s already exists!",sym->name->value);
+	  uabort("var name:%s already exists!",sym->name->value);
 	}
 	data = vps_any_new(vps,sym->name,vstk_stack);
 	data->idx = grp->locals->count;
@@ -182,7 +183,7 @@ LDEFATTR(var,"var",{
 	vdfg_grp_locals_apd(grp,data);
 	inst = vps_inop(vps);
       }else{
-	uabort("var inst error!");      
+	uabort("var inst error!");
       }
       ulog("local var");
       return (vps_t*)inst;
@@ -192,6 +193,7 @@ LDEFATTR(var,"var",{
     }else{
       uabort("var inst can not use here!");
     }
+    return NULL;
   })
 
 /*
@@ -202,6 +204,7 @@ LDEFATTR(load,"load",{
     last_obj* obj;
     last_obj* next;
 
+    inst = NULL;
     if(!parent || parent->t != vdfgk_blk){
       uabort("load inst can not use here!");
     }
@@ -234,6 +237,7 @@ LDEFATTR(store,"store",{
     last_obj* obj;
     last_obj* next;
 
+    inst = NULL;
     if(!parent || parent->t != vdfgk_blk){
       uabort("store inst can not use here!");
     }
@@ -266,6 +270,7 @@ LDEFATTR(push,"push",{
     last_obj* obj;
     last_obj* next;
 
+    inst = NULL;
     if(!parent || parent->t != vdfgk_blk){
       uabort("push inst can not use here!");
     }
@@ -297,6 +302,7 @@ LDEFATTR(top,"top",{
     last_obj* obj;
     last_obj* next;
 
+    inst = NULL;
     if(!parent || parent->t != vdfgk_blk){
       uabort("top inst can not use here!");
     }
@@ -396,6 +402,7 @@ LDEFATTR(jmpi,"jmpi",{
     last_obj* obj;
     last_obj* next;
 
+    inst = NULL;
     if(!parent || parent->t != vdfgk_blk){
       uabort("jmpi inst can not use here!");
     }
@@ -427,6 +434,7 @@ LDEFATTR(jmp,"jmp",{
     last_obj* obj;
     last_obj* next;
 
+    inst = NULL;
     if(!parent || parent->t != vdfgk_blk){
       uabort("jmp inst can not use here!");
     }
@@ -584,6 +592,7 @@ LDEFATTR(ref,"ref",{
     last_obj* obj;
     last_obj* next;
 
+    inst = NULL;
     if(!parent || parent->t != vdfgk_blk){
       uabort("ref inst can not use here!");
     }
@@ -615,6 +624,7 @@ LDEFATTR(set,"set",{
     last_obj* obj;
     last_obj* next;
 
+    inst = NULL;
     if(!parent || parent->t != vdfgk_blk){
       uabort("set inst can not use here!");
     }

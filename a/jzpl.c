@@ -5,7 +5,7 @@ int main (int argc,char** args)
 {
   leval* eval;
   
-  ulog_init("log.txt");
+  ulog_init("log.txt",UTRUE);
   if(argc == 1){
     ulog("no input file");
     return 0;

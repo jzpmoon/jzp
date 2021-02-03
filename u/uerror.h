@@ -4,21 +4,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define uabort(msg)		\
-  do{				\
-    fprintf(stdout,"%s\n",msg); \
-    abort();			\
-  }while(0)
+int ulog_init(char* log_fn,int power);
 
-#define uabort1(msg,a1)		\
-  do{				\
-    fprintf(stdout,(msg),(a1));	\
-    abort();			\
-  }while(0)
+void ulog_enable(int power);
 
-int ulog_init();
-void ulog(char* msg);
-void ulog1(char* msg,...);
+void uabort(char* msg,...);
+
+void ulog(char* msg,...);
+
+#define ulog1 ulog
 
 typedef struct _ureturn_infor{
   char* code;

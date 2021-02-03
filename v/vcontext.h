@@ -17,9 +17,9 @@ typedef struct _vsymbol{
 } vsymbol;
 
 #define vreloc_log(reloc)				\
-  ulog1("ref_name:%s",reloc->ref_name->value);		\
-  ulog1("rel_obj:%lld",(long long)reloc->rel_obj);	\
-  ulog1("rel_idx:%d",reloc->rel_idx);
+  ulog("ref_name:%s",reloc->ref_name->value);		\
+  ulog("rel_obj:%lld",(long long)reloc->rel_obj);	\
+  ulog("rel_idx:%d",reloc->rel_idx);
 
 ulist_decl_tpl(vreloc);
 uhstb_decl_tpl(vsymbol);
@@ -81,9 +81,7 @@ typedef struct _vgc_cfun{
   int params_count;
   int has_retval;
   vslot_define_begin
-  /*
-   *void member
-   */
+  /*void member*/
   vslot_define_end
 } vgc_cfun;
 
@@ -102,11 +100,6 @@ int vcontext_vps_load(vcontext* ctx,vps_cntr* vps);
 int vcontext_mod_load(vcontext* ctx,vps_mod* mod);
 
 int vcontext_data_load(vcontext* ctx,vps_data* data);
-
-int vdfg_blk2inst(vgc_array* consts,
-		  vmod* mod,
-		  vdfg_block* blk,
-		  ulist_vinstp* insts);
 
 vsymbol* vcontext_graph_load(vcontext* ctx,vmod* mod,vdfg_graph* grp);
 

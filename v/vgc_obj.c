@@ -69,7 +69,7 @@ void vgc_string_log(vgc_heap* heap){
   vgc_string* string;
   vgc_heap_obj_pop(heap,string,vgc_string);
   while(i < string->len){
-    ulog1("string:%d",string->u.b[i]);
+    ulog("string:%d",string->u.b[i]);
     i++;
   }
   vgc_heap_obj_push(heap,string);

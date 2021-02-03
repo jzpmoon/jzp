@@ -90,7 +90,7 @@ vps_inst* vps_ipushdt(vps_cntr* vps,vps_mod* mod,ustring* name){
 vps_inst* vps_itop(vps_cntr* vps,int imm){
   vps_inst* inst;
   inst = vps_inst_new(vps,vinstk_imm,Btop,NULL,NULL,NULL);
-  ulog1("vps_itop:%d",imm);
+  ulog("vps_itop:%d",imm);
   if(inst){
     inst->inst.operand = imm;
   }

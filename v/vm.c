@@ -465,27 +465,27 @@ void vcontext_execute(vcontext* ctx){
     NEXT;
     switch(op){
     case Bnop:
-      ulog1("Bnop %d",op);
+      ulog("Bnop %d",op);
       break;
     case Bload:
       NEXT;
-      ulog1("Bload %d",op);
+      ulog("Bload %d",op);
       bc_push(ctx,bc_locals(ctx,op));
       break;
     case Bstore:
       NEXT;
-      ulog1("Bstore %d",op);
+      ulog("Bstore %d",op);
       bc_store(ctx,op);
       break;
     case Bpush:
       NEXT;
-      ulog1("Bpush %d",op);
+      ulog("Bpush %d",op);
       bc_push(ctx,bc_constant(ctx,op));
       break;
     case Btop:
       NEXT;
       op = (signed char)op;
-      ulog1("Btop %d",op);
+      ulog("Btop %d",op);
       bc_top(ctx,op);
       break;
     case Bpop:
@@ -494,12 +494,12 @@ void vcontext_execute(vcontext* ctx){
       break;
     case Bjmp:
       NEXT2;
-      ulog1("Bjmp %d",op);
+      ulog("Bjmp %d",op);
       bc_jmp(ctx,op);
       break;
     case Bjmpi:
       NEXT2;
-      ulog1("Bjmpi %d",op);
+      ulog("Bjmpi %d",op);
       bc_jmpi(ctx,op);
       break;
     case Beq:
@@ -556,12 +556,12 @@ void vcontext_execute(vcontext* ctx){
       break;
     case Bref:
       NEXT2;
-      ulog1("Bref %d",op);
+      ulog("Bref %d",op);
       bc_ref(ctx,op);
       break;
     case Bset:
       NEXT2;
-      ulog1("Bset %d",op);
+      ulog("Bset %d",op);
       bc_set(ctx,op);
       break;
     default:

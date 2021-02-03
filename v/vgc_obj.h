@@ -291,9 +291,7 @@ typedef struct _vgc_obj_ex_t{
 typedef struct _vgc_extend{
   VGCHEADEREX;
   vslot_define_begin
-  /*
-   * void member
-   */
+  /*void member*/
   vslot_define_end
 } vgc_extend;
 

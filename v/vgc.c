@@ -66,7 +66,7 @@ void vgc_collect_mark(vgc_heap* heap,vgc_obj* begin_obj){
   while(1){
     vgc_obj* obj;
     if(ustack_vgc_objp_pop(stack,&obj)){
-      ulog1("vgc_collect: mark_count %d",mark_count);
+      ulog("vgc_collect: mark_count %d",mark_count);
       return;
     }
     if(!obj || vgc_obj_is_mark(obj)){
@@ -106,7 +106,7 @@ void vgc_collect_cal_addr(vgc_heap* heap){
       vgc_obj_mark_addr(next_obj);
       next_obj->_addr = move_addr;
       move_addr = vgc_obj_next(move_addr,next_obj);
-      ulog1("vgc_collect:cal addr move len %ld",
+      ulog("vgc_collect:cal addr move len %ld",
 	    vgc_obj_move_len(next_obj));
     }
     next_obj = vgc_obj_next(next_obj,next_obj);
@@ -154,7 +154,7 @@ vgc_obj* vgc_collect_move(vgc_heap* heap){
   int free_count = 0;
   while(next_obj < last_obj){
     if(vgc_obj_is_mark(next_obj)){
-      ulog1("vgc_collect:move obj len %ld",
+      ulog("vgc_collect:move obj len %ld",
 	    vgc_obj_move_len(next_obj));
       vgc_obj_log(next_obj);
       vgc_obj_unmark(next_obj);
@@ -171,7 +171,7 @@ vgc_obj* vgc_collect_move(vgc_heap* heap){
       free_count++;
     }
   }
-  ulog1("vgc_collect:free count %d",free_count);
+  ulog("vgc_collect:free count %d",free_count);
   return move_addr;
 }
 
@@ -245,8 +245,8 @@ vgc_obj* vgc_heap_data_try_new(vgc_heap* heap,
 			  align_obj_size);
   last_obj = vgc_obj_jump(heap_area->area_begin,
 			  heap_area->area_size);
-  ulog1("require memory:%d",align_obj_size);
-  ulog1("remain memory :%ld",vgc_area_remain(heap_area));
+  ulog("require memory:%d",align_obj_size);
+  ulog("remain memory :%ld",vgc_area_remain(heap_area));
   if(next_obj <= last_obj){
     new_obj = heap_area->area_index;
     vgc_obj_init(new_obj,align_obj_size,ref_count,obj_type);
