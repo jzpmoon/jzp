@@ -317,6 +317,7 @@ void bc_call(vcontext* ctx){
     vgc_subr* subr;
     vgc_call* call;
     usize_t base;
+
     subr = (vgc_subr*)obj;
     base = vgc_heap_stack_top_get(heap) + subr->locals_count;
     vgc_heap_stack_top_set(heap,base);
@@ -336,7 +337,9 @@ void bc_call(vcontext* ctx){
     vgc_cfun* cfun;
     int has_retval;
     usize_t after_base;
-    usize_t before_base = vgc_heap_stack_top_get(heap);
+    usize_t before_base;
+    
+    before_base = vgc_heap_stack_top_get(heap);
     vgc_heap_obj_push(heap,calling);
     vgc_heap_obj_push(heap,obj);
     call = vgc_call_new(heap,
@@ -379,9 +382,10 @@ void bc_return(vcontext* ctx){
   calling = vgc_obj_ref_get(ctx,calling,vgc_call);
   if(calling->call_type == vgc_call_type_subr){
     subr = vgc_obj_ref_get(calling,subr,vgc_subr);
-    base = calling->base + subr->locals_count;
+    base = calling->base - subr->params_count - subr->locals_count;
   }else{
-    base = calling->base;
+    uabort("bc_return:calling not a subr!");
+    return;
   }
   vgc_heap_stack_pop(heap,&slot_val);
   vgc_heap_stack_top_set(heap,base);
@@ -400,9 +404,10 @@ void bc_return_void(vcontext* ctx){
   calling = vgc_obj_ref_get(ctx,calling,vgc_call);
   if(calling->call_type == vgc_call_type_subr){
     subr = vgc_obj_ref_get(calling,subr,vgc_subr);
-    base = calling->base + subr->locals_count;
+    base = calling->base - subr->params_count - subr->locals_count;
   }else{
-    base = calling->base;
+    uabort("bc_return_void:calling not a subr!");
+    return;
   }
   vgc_heap_stack_top_set(heap,base);
   called = vgc_obj_ref_get(calling,caller,vgc_call);

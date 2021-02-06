@@ -69,7 +69,7 @@ static vdfg_graph* subr(vps_mod* top,vps_dfg* parent,last_obj* ast_obj){
     uabort("subr new blk error!");
   }
   blk->parent = (vps_t*)grp;
-  vdfg_grp_cdapd(grp,(vps_dfg*)blk);
+  vdfg_grp_cdapd(vps,grp,(vps_dfg*)blk);
 
   next = last_cdr(next);
   while(next){
@@ -415,7 +415,8 @@ LDEFATTR(jmpi,"jmpi",{
     }
     obj = last_car(next);
     if(obj->t == lastk_symbol){
-      uabort("jmpi inst error!");
+      last_symbol* symbol = (last_symbol*)obj;
+      inst = vps_ijmpilb(top->vps,symbol->name);
     }else if(obj->t == lastk_number){
       last_number* num = (last_number*)obj;
       inst = vps_ijmpiimm(top->vps,(usize_t)num->dnum);
@@ -447,7 +448,8 @@ LDEFATTR(jmp,"jmp",{
     }
     obj = last_car(next);
     if(obj->t == lastk_symbol){
-      uabort("jmp inst error!");
+      last_symbol* symbol = (last_symbol*)obj;
+      inst = vps_ijmplb(top->vps,symbol->name);
     }else if(obj->t == lastk_number){
       last_number* num = (last_number*)obj;
       inst = vps_ijmpimm(top->vps,(usize_t)num->dnum);
@@ -649,6 +651,14 @@ LDEFATTR(set,"set",{
   })
 
 /*
+ * define attribute label
+ */
+LDEFATTR(label,"label",{
+    ulog("label");
+    return NULL;
+  })
+
+/*
  * define attribute nop
  */
 LDEFATTR(nop,"nop",{
@@ -693,4 +703,5 @@ LATTRONLOAD(base,{
     LDECLATTR(retvoid);
     LDECLATTR(ref);
     LDECLATTR(set);
+    LDECLATTR(label);
   })

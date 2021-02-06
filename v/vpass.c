@@ -136,12 +136,24 @@ vps_inst* vps_ijmpiimm(vps_cntr* vps,int imm){
   return inst;  
 }
 
+vps_inst* vps_ijmpilb(vps_cntr* vps,ustring* label){
+  vps_inst* inst;
+  inst = vps_inst_new(vps,vinstk_code,Bjmpi,label,NULL,NULL);
+  return inst;  
+}
+
 vps_inst* vps_ijmpimm(vps_cntr* vps,int imm){
   vps_inst* inst;
   inst = vps_inst_new(vps,vinstk_imm,Bjmp,NULL,NULL,NULL);
   if(inst){
     inst->inst.operand = imm;
   }
+  return inst;  
+}
+
+vps_inst* vps_ijmplb(vps_cntr* vps,ustring* label){
+  vps_inst* inst;
+  inst = vps_inst_new(vps,vinstk_code,Bjmp,label,NULL,NULL);
   return inst;  
 }
 
@@ -338,7 +350,26 @@ vps_data* vps_any_new(vps_cntr* vps,
   if(data){
     data->t = vpsk_dt;
     data->dtk = vdtk_any;
+    data->stk = stk;
     data->name = name;
+  }
+  return data;
+}
+
+vps_data* vps_dtcd_new(vps_cntr* vps,
+		       ustring* name,
+		       vps_dfg* code,
+		       int stk)
+{
+  vps_data* data;
+  
+  data = umem_pool_alloc(&vps->pool,sizeof(vps_data));
+  if(data){
+    data->t = vpsk_dt;
+    data->dtk = vdtk_code;
+    data->stk = stk;
+    data->name = name;
+    data->u.code = code;
   }
   return data;
 }
@@ -350,9 +381,15 @@ vdfg_block* vdfg_block_new(vps_cntr* vps){
   if(b){
     b->t = vdfgk_blk;
     b->parent = NULL;
+    b->name = NULL;
     b->insts = ulist_vps_instp_newmp(&vps->pool);
   }
   return b;
+}
+
+void vdfg_blk_apd(vdfg_block* blk,vps_inst* inst)
+{
+  ulist_vps_instp_append(blk->insts,inst);
 }
 
 vdfg_graph* vdfg_graph_new(vps_cntr* vps){
@@ -376,6 +413,7 @@ static int vdfg_grp_dt_put_comp(vps_datap* data1,vps_datap* data2){
   vps_data* d2;
   ustring* n1;
   ustring* n2;
+
   d1 = *data1;
   d2 = *data2;
   n1 = d1->name;
@@ -383,36 +421,73 @@ static int vdfg_grp_dt_put_comp(vps_datap* data1,vps_datap* data2){
   return ustring_comp(n1,n2);
 }
 
-void vdfg_grp_params_apd(vdfg_graph* grp,vps_data* dt){
-  ustring* name = dt->name;
-  unsigned int hscd = 0;
-  if(name){
-    hscd = name->hash_code;
+void vdfg_grp_cdapd(vps_cntr* vps,vdfg_graph* grp,vps_dfg* dfg)
+{
+  vps_data* data;
+  ustring* name;
+  int retval;
+
+  name = dfg->name;
+  if (name) {
+    data = vps_dtcd_new(vps,name,dfg,vstk_stack);
+    if (!data) {
+      uabort("vdfg_grp_cdapd: vps_dtcd_new error!");
+    }
+    retval = uhstb_vps_datap_put(grp->locals,
+				 name->hash_code,
+				 &data,
+				 NULL,
+				 NULL,
+				 vdfg_grp_dt_put_comp);
+    if (retval == 1) {
+      uabort("vdfg_grp_cdapd: name:%s already exists!",name->value);
+    } else if (retval == -1) {
+      uabort("vdfg_grp_cdapd: locals put error!");      
+    }
   }
-  if(uhstb_vps_datap_put(grp->locals,
-			 hscd,
-			 &dt,
-			 NULL,
-			 NULL,
-			 vdfg_grp_dt_put_comp)){
-    uabort("vdfg_grp_params_apd error!");
+  ulist_vps_dfgp_append(grp->dfgs,dfg);
+}
+
+void vdfg_grp_params_apd(vdfg_graph* grp,vps_data* dt){
+  ustring* name;
+  int retval;
+
+  name = dt->name;
+  if(!name){
+    uabort("data name is null!");
+  }
+  retval = uhstb_vps_datap_put(grp->locals,
+			       name->hash_code,
+			       &dt,
+			       NULL,
+			       NULL,
+			       vdfg_grp_dt_put_comp);
+  if (retval == 1) {
+    uabort("vdfg_grp_params_apd: name:%s already exists!",name->value);
+  } else if (retval == -1) {
+    uabort("vdfg_grp_params_apd: locals put error!");
   }
   grp->params_count++;
 }
 
 void vdfg_grp_locals_apd(vdfg_graph* grp,vps_data* dt){
-  ustring* name = dt->name;
-  unsigned int hscd = 0;
-  if(name){
-    hscd = name->hash_code;
+  ustring* name;
+  int retval;
+
+  name = dt->name;
+  if(!name){
+    uabort("data name is null!");
   }
-  if(uhstb_vps_datap_put(grp->locals,
-			 hscd,
-			 &dt,
-			 NULL,
-			 NULL,
-			 vdfg_grp_dt_put_comp)){
-    uabort("vdfg_grp_locals_apd error!");
+  retval = uhstb_vps_datap_put(grp->locals,
+			       name->hash_code,
+			       &dt,
+			       NULL,
+			       NULL,
+			       vdfg_grp_dt_put_comp);
+  if(retval == 1){
+    uabort("vdfg_grp_locals_apd: name:%s already exists!",name->value);
+  } else if(retval == -1){
+    uabort("vdfg_grp_locals_apd: locals put error!");
   }
   grp->locals_count++;
 }
@@ -422,6 +497,7 @@ static int vdfg_grp_dt_get_comp(vps_datap* data1,vps_datap* data2){
   vps_data* d2;
   ustring* n1;
   ustring* n2;
+  
   d1 = *data1;
   d2 = *data2;
   n1 = d1->name;

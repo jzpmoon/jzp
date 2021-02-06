@@ -7,10 +7,6 @@
 #define VPSHEADER				\
   int t
 
-#define VDFGHEADER				\
-  VPSHEADER;					\
-  struct _vps_t* parent
-
 enum{
   vpsk_dt,
   vpsk_mod,
@@ -32,6 +28,7 @@ enum{
   vdtk_num,
   vdtk_int,
   vdtk_any,
+  vdtk_code,
   vstk_heap,
   vstk_stack,
 };
@@ -53,9 +50,9 @@ typedef struct _vps_data{
   int scope;
   ustring* name;
   union {
-    ulist_vpsp* array;
     double number;
     int integer;
+    struct _vps_dfg* code;
   } u;
 } vps_data,*vps_datap;
 
@@ -77,12 +74,17 @@ typedef struct _vps_inst{
   } u;
 } vps_inst,*vps_instp;
 
+#define VDFGHEADER				\
+  VPSHEADER;					\
+  struct _vps_t* parent;			\
+  ustring* name
+
 typedef struct _vps_dfg{
   VDFGHEADER;
 } vps_dfg,*vps_dfgp;
 
-ulist_decl_tpl(vps_instp);
 uhstb_decl_tpl(vps_datap);
+ulist_decl_tpl(vps_instp);
 ulist_decl_tpl(vps_dfgp);
 
 typedef struct _vdfg_block{
@@ -92,7 +94,6 @@ typedef struct _vdfg_block{
 
 typedef struct _vdfg_graph{
   VDFGHEADER;
-  ustring* name;
   uhstb_vps_datap* locals;
   ulist_vps_dfgp* dfgs;
   vps_dfg* entry;
@@ -157,7 +158,9 @@ vps_inst* vps_isub(vps_cntr* vps);
 vps_inst* vps_imul(vps_cntr* vps);
 vps_inst* vps_idiv(vps_cntr* vps);
 vps_inst* vps_ijmpiimm(vps_cntr* vps,int imm);
+vps_inst* vps_ijmpilb(vps_cntr* vps,ustring* label);
 vps_inst* vps_ijmpimm(vps_cntr* vps,int imm);
+vps_inst* vps_ijmplb(vps_cntr* vps,ustring* label);
 vps_inst* vps_ieq(vps_cntr* vps);
 vps_inst* vps_igt(vps_cntr* vps);
 vps_inst* vps_ilt(vps_cntr* vps);
@@ -179,15 +182,18 @@ vps_data* vps_any_new(vps_cntr* vps,
 		      ustring* name,
 		      int stk);
 
+vps_data* vps_dtcd_new(vps_cntr* vps,
+		       ustring* name,
+		       vps_dfg* code,
+		       int stk);
+
 vdfg_block* vdfg_block_new(vps_cntr* vps);
 
-#define vdfg_blk_apd(blk,inst)			\
-  ulist_vps_instp_append((blk)->insts,inst)
+void vdfg_blk_apd(vdfg_block* blk,vps_inst* inst);
 
 vdfg_graph* vdfg_graph_new(vps_cntr* vps);
 
-#define vdfg_grp_cdapd(grp,dfg)			\
-  ulist_vps_dfgp_append((grp)->dfgs,dfg)
+void vdfg_grp_cdapd(vps_cntr* vps,vdfg_graph* grp,vps_dfg* dfg);
 
 void vdfg_grp_params_apd(vdfg_graph* grp,vps_data* dt);
 
@@ -199,6 +205,7 @@ vps_mod* vps_mod_new(vps_cntr* vps,ustring* name);
 
 #define vps_mod_loaded(mod)			\
   ((mod)->status = VPS_MOD_STATUS_LOADED)
+
 #define vps_mod_isload(mod)			\
   ((mod)->status == VPS_MOD_STATUS_LOADED)
 

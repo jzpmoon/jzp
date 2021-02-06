@@ -45,6 +45,7 @@ void uabort(char* msg,...)
   if (!log_fd) {
     log_fd = stdout;
   }
+  fprintf(log_fd,"<"__DATE__" "__TIME__">");
   va_start(ap,msg);
   vfprintf(log_fd,msg,ap);
   va_end(ap);
@@ -64,6 +65,7 @@ void ulog(char* msg,...)
   if (!log_fd) {
     log_fd = stdout;
   }
+  fprintf(log_fd,"["__DATE__" "__TIME__"]");
   va_start(ap,msg);
   vfprintf(log_fd,msg,ap);
   va_end(ap);

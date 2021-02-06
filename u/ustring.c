@@ -65,9 +65,8 @@ int ustring_comp(ustring* s1,ustring* s2){
     if(s1->value == s2->value){
       return 0;
     }
-    return memcmp(
-		  s1->value,s2->value,s1->len);
-  }else if(s1->len<s2->len){
+    return memcmp(s1->value,s2->value,s1->len);
+  }else if(s1->len < s2->len){
     return -1;
   }else{
     return 1;
