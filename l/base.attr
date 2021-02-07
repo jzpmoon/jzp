@@ -88,14 +88,34 @@ static vdfg_graph* subr(vps_mod* top,vps_dfg* parent,last_obj* ast_obj){
     }
     inst_name = (last_symbol*)car;
     if(inst_name->attr){
-      last_attr* attr = inst_name->attr;
-      vps_t* inst = (attr->action)(top,(vps_dfg*)blk,obj);
-      if(inst){
-	if(inst->t != vpsk_inst){
-	  uabort("not a inst!");
+      last_attr* attr;
+      last_attr_res res;
+      int retval;
+
+      attr = inst_name->attr;
+      retval = (attr->action)(top,(vps_dfg*)blk,obj,&res);
+      if (retval != 0) {
+	if (res.res_type == lar_vps_apd) {
+	  /* append instruction */
+	  vps_t* res_vps = res.res_vps;
+	  if(res_vps->t != vpsk_inst){
+	    uabort("not a inst!");
+	  }
+	  vdfg_blk_apd(blk,(vps_inst*)res_vps);
+	} else if (res.res_type == lar_blk_new) {
+	  /* append a new block */
+	  vps_t* res_vps = res.res_vps;
+	  if (res_vps->t != vdfgk_blk) {
+	    uabort("not a block");
+	  }
+	  blk = (vdfg_block*)res_vps;
+	  blk->parent = (vps_t*)grp;
+	  vdfg_grp_cdapd(vps,grp,(vps_dfg*)blk);
+	} else {
+	  /* others */
+	  uabort("unknow res_type!");
 	}
-	vdfg_blk_apd(blk,(vps_inst*)inst);
-      }      
+      }
     }
     next = last_cdr(next);
   }
@@ -114,7 +134,7 @@ LDEFATTR(entry,"entry",{
     grp = subr(top,parent,ast_obj);
     grp->scope = VPS_SCOPE_LOCAL;
     top->entry = grp;
-    return NULL;
+    LATTR_RETURN_VOID;
   })
 
 /*
@@ -124,7 +144,7 @@ LDEFATTR(g_subr,"g-subr",{
     vdfg_graph* grp = subr(top,parent,ast_obj);
     grp->scope = VPS_SCOPE_GLOBAL;
     vps_mod_code_put(top,grp);
-    return NULL;
+    LATTR_RETURN_VOID;
   })
   
 /*
@@ -134,7 +154,7 @@ LDEFATTR(subr,"subr",{
     vdfg_graph* grp = subr(top,parent,ast_obj);
     grp->scope = VPS_SCOPE_LOCAL;
     vps_mod_code_put(top,grp);
-    return NULL;
+    LATTR_RETURN_VOID;
   })
 
 /*
@@ -186,14 +206,14 @@ LDEFATTR(var,"var",{
 	uabort("var inst error!");
       }
       ulog("local var");
-      return (vps_t*)inst;
+      LATTR_RETURN(lar_vps_apd,inst);
     }else if(!parent){
       ulog("global var");
-      return NULL;
+      LATTR_RETURN_VOID;
     }else{
       uabort("var inst can not use here!");
     }
-    return NULL;
+    LATTR_RETURN_VOID;
   })
 
 /*
@@ -226,7 +246,7 @@ LDEFATTR(load,"load",{
       uabort("load inst error!");      
     }
     ulog("load");
-    return (vps_t*)inst;
+    LATTR_RETURN(lar_vps_apd,inst);
   })
 
 /*
@@ -259,7 +279,7 @@ LDEFATTR(store,"store",{
       uabort("store inst error!");      
     }
     ulog("store");
-    return (vps_t*)inst;
+    LATTR_RETURN(lar_vps_apd,inst);
   })
 
 /*
@@ -292,7 +312,7 @@ LDEFATTR(push,"push",{
       uabort("push inst error!");
     }
     ulog("push");
-    return (vps_t*)inst;
+    LATTR_RETURN(lar_vps_apd,inst);
   })
 /*
  * define attribute top
@@ -321,7 +341,7 @@ LDEFATTR(top,"top",{
       uabort("top inst error!");
     }
     ulog("top");
-    return (vps_t*)inst;
+    LATTR_RETURN(lar_vps_apd,inst);
   })
 
 /*
@@ -335,7 +355,7 @@ LDEFATTR(pop,"pop",{
     }
     inst = vps_ipop(top->vps);
     ulog("pop");
-    return (vps_t*)inst;
+    LATTR_RETURN(lar_vps_apd,inst);
   })
 
 /*
@@ -349,7 +369,7 @@ LDEFATTR(add,"add",{
     }
     inst = vps_iadd(top->vps);
     ulog("add");
-    return (vps_t*)inst;
+    LATTR_RETURN(lar_vps_apd,inst);
   })
 
 /*
@@ -363,7 +383,7 @@ LDEFATTR(sub,"sub",{
     }    
     inst = vps_isub(top->vps);
     ulog("sub");
-    return (vps_t*)inst;
+    LATTR_RETURN(lar_vps_apd,inst);
   })
 
 /*
@@ -377,7 +397,7 @@ LDEFATTR(mul,"mul",{
     }
     inst = vps_imul(top->vps);
     ulog("mul");
-    return (vps_t*)inst;
+    LATTR_RETURN(lar_vps_apd,inst);
   })
 
 /*
@@ -391,7 +411,7 @@ LDEFATTR(div,"div",{
     }
     inst = vps_idiv(top->vps);
     ulog("div");
-    return (vps_t*)inst;
+    LATTR_RETURN(lar_vps_apd,inst);
   })
 
 /*
@@ -424,7 +444,7 @@ LDEFATTR(jmpi,"jmpi",{
       uabort("jmpi inst error!");
     }
     ulog("jmpi");
-    return (vps_t*)inst;
+    LATTR_RETURN(lar_vps_apd,inst);
   })
 
 /*
@@ -457,7 +477,7 @@ LDEFATTR(jmp,"jmp",{
       uabort("jmp inst error!");
     }
     ulog("jmp");
-    return (vps_t*)inst;
+    LATTR_RETURN(lar_vps_apd,inst);
   })
 
 /*
@@ -471,7 +491,7 @@ LDEFATTR(eq,"eq",{
     }
     inst = vps_ieq(top->vps);
     ulog("eq");
-    return (vps_t*)inst;
+    LATTR_RETURN(lar_vps_apd,inst);
   })
 
 /*
@@ -485,7 +505,7 @@ LDEFATTR(gt,"gt",{
     }
     inst = vps_igt(top->vps);
     ulog("gt");
-    return (vps_t*)inst;
+    LATTR_RETURN(lar_vps_apd,inst);
   })
 
 /*
@@ -499,7 +519,7 @@ LDEFATTR(lt,"lt",{
     }
     inst = vps_ilt(top->vps);
     ulog("lt");
-    return (vps_t*)inst;
+    LATTR_RETURN(lar_vps_apd,inst);
   })
 
 /*
@@ -513,7 +533,7 @@ LDEFATTR(and,"and",{
     }
     inst = vps_iand(top->vps);
     ulog("and");
-    return (vps_t*)inst;
+    LATTR_RETURN(lar_vps_apd,inst);
   })
 
 /*
@@ -527,7 +547,7 @@ LDEFATTR(or,"or",{
     }
     inst = vps_ior(top->vps);
     ulog("or");
-    return (vps_t*)inst;
+    LATTR_RETURN(lar_vps_apd,inst);
   })
 
 /*
@@ -541,7 +561,7 @@ LDEFATTR(not,"not",{
     }
     inst = vps_inot(top->vps);
     ulog("not");
-    return (vps_t*)inst;
+    LATTR_RETURN(lar_vps_apd,inst);
   })
 
 /*
@@ -555,7 +575,7 @@ LDEFATTR(call,"call",{
     }
     inst = vps_icall(top->vps);
     ulog("call");
-    return (vps_t*)inst;
+    LATTR_RETURN(lar_vps_apd,inst);
   })
 
 /*
@@ -569,7 +589,7 @@ LDEFATTR(return,"return",{
     }
     inst = vps_ireturn(top->vps);
     ulog("return");
-    return (vps_t*)inst;
+    LATTR_RETURN(lar_vps_apd,inst);
   })
 
 /*
@@ -583,7 +603,7 @@ LDEFATTR(retvoid,"retvoid",{
     }
     inst = vps_iretvoid(top->vps);
     ulog("retvoid");
-    return (vps_t*)inst;
+    LATTR_RETURN(lar_vps_apd,inst);
   })
 
 /*
@@ -615,7 +635,7 @@ LDEFATTR(ref,"ref",{
       uabort("ref inst error!");
     }
     ulog("ref");
-    return (vps_t*)inst;
+    LATTR_RETURN(lar_vps_apd,inst);
   })
 
 /*
@@ -647,15 +667,41 @@ LDEFATTR(set,"set",{
       uabort("set inst error!");
     }
     ulog("set");
-    return (vps_t*)inst;
+    LATTR_RETURN(lar_vps_apd,inst);
   })
 
 /*
  * define attribute label
  */
 LDEFATTR(label,"label",{
+    vdfg_block* blk;
+    last_obj* obj;
+    last_obj* next;
+
+    if(!parent || parent->t != vdfgk_blk){
+      uabort("label inst can not use here!");
+    }
+    next = last_cdr(ast_obj);
+    if(!next){
+      uabort("label inst have no operand!");
+    }
+    if(next->t != lastk_cons){
+      uabort("label inst error!");
+    }
+    blk = NULL;
+    obj = last_car(next);
+    if (obj->t == lastk_symbol) {
+      last_symbol* symbol = (last_symbol*)obj;
+      blk = vdfg_block_new(top->vps);
+      if (!blk) {
+	uabort("label new blk error!");
+      }
+      blk->name = symbol->name;
+    } else {
+      uabort("label inst error!");
+    }
     ulog("label");
-    return NULL;
+    LATTR_RETURN(lar_blk_new,blk);
   })
 
 /*
@@ -669,7 +715,7 @@ LDEFATTR(nop,"nop",{
     }
     inst = vps_inop(top->vps);
     ulog("nop");
-    return (vps_t*)inst;
+    LATTR_RETURN(lar_vps_apd,inst);
   })
 
 /*

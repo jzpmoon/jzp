@@ -4,7 +4,7 @@
   (push 1)
   (eq)
   (not)
-  (jmpi 3)
+  (jmpi continue)
   (push 1)
   (return)
   (label continue)

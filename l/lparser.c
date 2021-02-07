@@ -522,7 +522,8 @@ int last2vps(ltoken_state* ts,last_obj* ast_obj,vps_mod* mod){
       last_symbol* sym = (last_symbol*)obj;
       if(sym->attr){
 	last_attr* attr = sym->attr;
-	(attr->action)(mod,NULL,ast_obj);
+	last_attr_res res;
+	(attr->action)(mod,NULL,ast_obj,&res);
       }
     }
   }

@@ -279,7 +279,6 @@ vinst_byte_length(ulist_vinstp* insts,usize_t offset){
 
 int vinst_to_str(vgc_heap* heap,ulist_vinstp* insts){
   ucursor cursor;
-  usize_t inst_count = 0;
   usize_t byte_count = 0;
   usize_t length     = vinst_full_length(insts);
   vgc_string* str;
@@ -304,7 +303,7 @@ int vinst_to_str(vgc_heap* heap,ulist_vinstp* insts){
 	usize_t operand;						\
 	if(ocode == Bjmp || ocode == Bjmpi){				\
 	  operand = vinst_byte_length(insts,				\
-				      inst_count + inst->operand);	\
+				      inst->operand);			\
 	}else{								\
 	  operand = inst->operand;					\
 	}								\
@@ -313,7 +312,6 @@ int vinst_to_str(vgc_heap* heap,ulist_vinstp* insts){
 	  str->u.b[byte_count++] = operand>>(8*i);			\
 	  i++;								\
 	}								\
-	inst_count++;							\
 	break;								\
       }						
       VBYTECODE				

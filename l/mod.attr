@@ -20,15 +20,15 @@ LDEFATTR(mod_load,"mod-load",{
       uabort("mod name invalid!");
     }
     mod_name = (last_symbol*)obj;
-
+    
     mod = vps_mod_new(vps,mod_name->name);
     if (!mod) {
       uabort("vps mod new error");
     }
-
+    
     vps_cntr_load(vps,mod);
     ulog("mod-load");
-    return NULL;
+    LATTR_RETURN_VOID;
   })
 
 /*

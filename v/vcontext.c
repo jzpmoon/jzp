@@ -82,26 +82,50 @@ vgc_cfun* vgc_cfun_new(vgc_heap* heap,
   return cfun;
 }
 
-vsymbol* vsymbol_new(ustring* name,vslot slot){
-  vsymbol* symbol = ualloc(sizeof(vsymbol));
-  if(symbol){
-    symbol->name = name;
-    symbol->slot = slot;
-  }
-  return symbol;
-}
-
 static int vobjtb_key_comp(vsymbol* sym1,vsymbol* sym2){
   return ustring_comp(sym1->name, sym2->name);
 }
 
+static int get_insts_count(ulist_vps_dfgp* dfgs,ustring* name)
+{
+  ucursor cursor;
+  int find_flag = 0;
+  int insts_count = 0;
+  
+  dfgs->iterate(&cursor);
+  while(1){
+    vps_dfgp* dfgp = dfgs->next((uset*)dfgs,&cursor);
+    vps_dfg* dfg; 
+    vdfg_block* blk;
+    if(!dfgp){
+      break;
+    }
+    dfg = *dfgp;
+    if(dfg->t != vdfgk_blk){
+      uabort("vps_dfg not a block!");
+    }
+    blk = (vdfg_block*)dfg;
+    if (blk->name == name) {
+      find_flag = 1;
+      break;
+    }
+    insts_count += blk->insts->len;
+  }
+  if (!find_flag) {
+    uabort("can not find label:%s!",name->value);
+  }
+  return insts_count;
+}
+
 static int vcontext_inst2inst(vgc_array* consts,
-			      vmod* mod,
+			      ulist_vps_dfgp* dfgs,
 			      vdfg_block* blk,
+			      vmod* mod,
 			      ulist_vinstp* insts)
 {
   ulist_vps_instp* src_insts;
   ucursor cursor;
+
   src_insts = blk->insts;
   insts->iterate(&cursor);
 
@@ -123,45 +147,58 @@ static int vcontext_inst2inst(vgc_array* consts,
       ulist_vinstp_append(insts,inst);
       ulog("inst imm");
       break;
-    case vinstk_locdt:{
-      vps_t* dfg = blk->parent;
-      vdfg_graph* grp;
-      vps_data* data;
-
-      if(!dfg || dfg->t != vdfgk_grp){
-	uabort("vdfg_block have no parent!");
+    case vinstk_locdt:
+      {
+	vps_t* dfg = blk->parent;
+	vdfg_graph* grp;
+	vps_data* data;
+	
+	if(!dfg || dfg->t != vdfgk_grp){
+	  uabort("vdfg_block have no parent!");
+	}
+	grp = (vdfg_graph*)dfg;
+	data = vdfg_grp_dtget(grp,src_inst->label);
+	if(!data){
+	  uabort("local variable: %s not find",src_inst->label->value);
+	}
+	inst = &src_inst->inst;
+	inst->operand = data->idx;
+	ulist_vinstp_append(insts,inst);
+	ulog("inst local data");
       }
-      grp = (vdfg_graph*)dfg;
-      data = vdfg_grp_dtget(grp,src_inst->label);
-      if(!data){
-	uabort("local variable: %s not find",src_inst->label->value);
-      }
-      inst = &src_inst->inst;
-      inst->operand = data->idx;
-      ulist_vinstp_append(insts,inst);
-      ulog("inst local data");
-    }
       break;
-    case vinstk_glodt:{
-      vps_data* data = src_inst->u.data;
-      vreloc reloc;
-      reloc.ref_name = data->name;
-      reloc.rel_idx = data->idx;
-      reloc.rel_obj = consts;
-      vmod_add_reloc(mod,reloc);
-      inst = &src_inst->inst;
-      inst->operand = data->idx;
-      ulist_vinstp_append(insts,inst);
-      ulog("inst global data");      
-    }
+    case vinstk_glodt:
+      {
+	vps_data* data = src_inst->u.data;
+	vreloc reloc;
+
+	reloc.ref_name = data->name;
+	reloc.rel_idx = data->idx;
+	reloc.rel_obj = consts;
+	vmod_add_reloc(mod,reloc);
+	inst = &src_inst->inst;
+	inst->operand = data->idx;
+	ulist_vinstp_append(insts,inst);
+	ulog("inst global data");      
+      }
       break;
     case vinstk_code:
-      ulog("inst code");
+      {
+	int insts_count;
+
+	inst = &src_inst->inst;
+	insts_count = get_insts_count(dfgs,src_inst->label);
+	inst->operand = insts_count;
+	ulist_vinstp_append(insts,inst);
+	ulog("inst code");
+      }
       break;
     case vinstk_non:
-      inst = &src_inst->inst;
-      ulist_vinstp_append(insts,inst);
-      ulog("inst non");
+      {
+	inst = &src_inst->inst;
+	ulist_vinstp_append(insts,inst);
+	ulog("inst non");
+      }
       break;
     default:
       break;
@@ -193,7 +230,7 @@ vsymbol* vcontext_graph_load(vcontext* ctx,vmod* mod,vdfg_graph* grp){
       uabort("vps_dfg not a block!");
     }
     blk = (vdfg_block*)(*dfgp);
-    if(vcontext_inst2inst(consts,mod,blk,insts)){
+    if(vcontext_inst2inst(consts,dfgs,blk,mod,insts)){
       uabort("vcontext_inst2inst error!");
     }
   }

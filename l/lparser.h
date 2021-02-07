@@ -13,9 +13,26 @@ typedef struct _last_obj{
 
 last_obj* lparser_parse(ltoken_state* ts);
 
-typedef vps_t*(*last_attr_ft)(vps_mod* top,
-			      vps_dfg* parent,
-			      last_obj* ast_obj);
+enum{
+  lar_vps_apd,
+  lar_blk_new,
+};
+
+/*
+ * field member "res_type" from above enum.
+ */
+typedef struct _last_attr_res{
+  vps_t* res_vps;
+  int res_type;
+} last_attr_res;
+
+/*
+ * return value: 0 nothing res, 1 have res.
+ */
+typedef int(*last_attr_ft)(vps_mod* top,
+			   vps_dfg* parent,
+			   last_obj* ast_obj,
+			   last_attr_res* res);
 
 typedef struct _last_attr{
   char* sname;
@@ -75,9 +92,11 @@ void last_obj_log(last_obj* ast_obj);
   last_car(last_cdr(cons))
 
 #define LDEFATTR(aname,sname,body)			\
-  vps_t*  _last_attr_action_##aname(vps_mod* top,	\
-				    vps_dfg* parent,	\
-				    last_obj* ast_obj){	\
+  int							\
+  _last_attr_action_##aname(vps_mod* top,		\
+			    vps_dfg* parent,		\
+			    last_obj* ast_obj,		\
+			    last_attr_res* res){	\
     body						\
       }							\
   static last_attr _last_attr_infor_##aname =		\
@@ -86,23 +105,36 @@ void last_obj_log(last_obj* ast_obj);
 #define LATTRONLOAD(afname,body)			\
   void _lattr_file_init_##afname(ltoken_state* ts){	\
     body						\
-  }
+      }
+
+#define LATTR_RETURN(type,vps)			\
+  do {						\
+    res->res_type = type;			\
+    res->res_vps = (vps_t*)(vps);		\
+    return 1;					\
+  } while(0)
+
+#define LATTR_RETURN_VOID return (0)
 
 #define LDECLATTR(aname) LATTR_INIT(ts,aname)
 
-#define LATTR_INIT(ts,aname)						\
-  do{									\
-    ustring* str = ustring_table_put(ts->symtb,				\
-				     _last_attr_infor_##aname.sname,	\
-				     -1);				\
-    if(!str){uabort("init attr error!");}				\
-    _last_attr_infor_##aname.name = str;				\
-    uhstb_last_attr_put(ts->attrtb,					\
-			str->hash_code,					\
-			&_last_attr_infor_##aname,			\
-			NULL,						\
-			NULL,						\
-			last_attr_put_comp);				\
+#define LATTR_INIT(ts,aname)				\
+  do{							\
+    _last_attr_infor_##aname.name =			\
+      ustring_table_put(ts->symtb,			\
+			_last_attr_infor_##aname.sname,	\
+			-1);				\
+    if(!_last_attr_infor_##aname.name){			\
+      uabort("init attr error!");			\
+    }							\
+    uhstb_last_attr_put(ts->attrtb,			\
+			_last_attr_infor_##aname.	\
+			name->				\
+			hash_code,			\
+			&_last_attr_infor_##aname,	\
+			NULL,				\
+			NULL,				\
+			last_attr_put_comp);		\
   }while(0)
 
 int last_attr_put_comp(last_attr* k1,last_attr* k2);
