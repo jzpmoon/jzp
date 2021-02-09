@@ -10,15 +10,18 @@ uhstb_def_tpl(vsymbol);
 #define VCONTEXT_OBJTB_SIZE 17
 #define VCONTEXT_SYMTB_SIZE 17
 #define VCONTEXT_STRTB_SIZE 17
-#define VCONTEXT_CONSTS_SIZE 20
+#define VCONTEXT_CONSTS_SIZE 30
 
-vcontext* vcontext_new(vgc_heap* heap){
+UDEFUN(UFNAME vcontext_new,UARGS (vgc_heap* heap),URET vcontext*,
+UDECLARE
   vcontext* ctx;
   uhstb_vmod* mods;
   ustring_table* symtb;
   ustring_table* strtb;
   vgc_array* consts;
-
+)
+UBEGIN
+({
   ctx = vgc_heap_obj_new(heap,
 			 vcontext,
 			 vgc_obj_type_ctx,
@@ -59,7 +62,7 @@ vcontext* vcontext_new(vgc_heap* heap){
   vgc_obj_null_set(ctx,calling);
   vgc_obj_ref_set(ctx,consts,consts);
   return ctx;
-}
+})
 
 vgc_cfun* vgc_cfun_new(vgc_heap* heap,
 		       vcfun_ft entry,

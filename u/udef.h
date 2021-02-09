@@ -1,9 +1,6 @@
 #ifndef _UDEF_H_
 #define _UDEF_H_
 
-#define UFUNC
-#define UVAR
-
 #define UTRUE 1
 #define UFALSE 0
 

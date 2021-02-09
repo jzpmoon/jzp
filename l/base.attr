@@ -389,7 +389,7 @@ LDEFATTR(sub,"sub",{
 
     if(!parent || parent->t != vdfgk_blk){
       uabort("sub inst can not use here!");
-    }    
+    }
     inst = vps_isub(top->vps);
     ulog("sub");
     LATTR_RETURN(lar_vps_apd,inst);

@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "udef.h"
 
 int ulog_init(char* log_fn,int power);
 
@@ -13,6 +14,34 @@ void uabort(char* msg,...);
 void ulog(char* msg,...);
 
 #define ulog1 ulog
+
+#if NDEBUG
+# define ulog_stack_trace(fname)
+#else
+# define ulog_stack_trace(fname)		\
+  ulog("@"__FILE__"*"#fname"@");
+#endif
+
+#define UDEFUN(fname,args,retval,declare)	\
+  retval fname args				\
+  {						\
+    declare;					\
+    ulog_stack_trace(fname);
+
+#define UFNAME
+
+#define UARGS
+
+#define URET
+
+#define UDECLARE
+
+#define UBEGIN(body)				\
+    body;					\
+  }
+
+#define UDECLFUN(fname,args,retval)		\
+  retval fname args;
 
 typedef struct _ureturn_infor{
   char* code;

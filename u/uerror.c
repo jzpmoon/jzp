@@ -14,12 +14,13 @@ typedef struct _ulog_infor{
   int power;
 } ulog_infor;
 
-static ulog_infor _uli = {NULL,NULL};
+static ulog_infor _uli = {NULL,NULL,UTRUE};
 
 int ulog_init(char* log_fn,int power)
 {
   int retval = 0;
   FILE* log_fd = fopen(log_fn,"w");
+  
   if (!log_fd) {
     log_fd = stdout;
     retval = -1;

@@ -91,7 +91,7 @@ vgc_cfun* vgc_cfun_new(vgc_heap* heap,
 		       int has_retval,
 		       int area_type);
 
-vcontext* vcontext_new(vgc_heap* heap);
+UDECLFUN(UFNAME vcontext_new,UARGS (vgc_heap* heap),URET vcontext*);
 
 vslot vcontext_params_get(vcontext* ctx,int index);
 
