@@ -43,6 +43,7 @@ LDEFUN(stream_output,"stream-output",LSCOPE_GLOBAL,2,LRETVAL_NO,{
 	}
       }
     } else {
+      vslot_log(slot);
       uabort("stream-output:not support data type");
     }
     return 0;

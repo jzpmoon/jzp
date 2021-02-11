@@ -10,7 +10,7 @@ uhstb_def_tpl(vsymbol);
 #define VCONTEXT_OBJTB_SIZE 17
 #define VCONTEXT_SYMTB_SIZE 17
 #define VCONTEXT_STRTB_SIZE 17
-#define VCONTEXT_CONSTS_SIZE 30
+#define VCONTEXT_CONSTS_SIZE 10
 
 UDEFUN(UFNAME vcontext_new,UARGS (vgc_heap* heap),URET vcontext*,
 UDECLARE
@@ -210,15 +210,62 @@ static int vcontext_inst2inst(vgc_array* consts,
   return 0;
 }
 
+static int vps_data_load(vgc_heap* heap,vgc_array* consts,vps_data* data)
+{
+  vslot slot;
+  int top;
+
+  if(data->dtk == vdtk_num){
+    vslot_num_set(slot,data->u.number);      
+  }else if(data->dtk == vdtk_int){
+    vslot_int_set(slot,data->u.integer);
+  }else if(data->dtk == vdtk_str){
+    vgc_string* vstr;
+    ustring* ustr;
+    
+    ustr = data->u.string;
+    vstr = vgc_string_new(heap,
+			  ustr->len,
+			  vgc_heap_area_static);
+    if (!vstr) {
+      uabort("new vgc_string error!");
+    }
+    vgc_ustr2vstr(vstr,ustr);
+    vslot_ref_set(slot,vstr);
+  }else if(data->dtk == vdtk_arr){
+    /* todo */
+    return 0;
+  }else if(data->dtk == vdtk_any){
+    vslot_null_set(slot);
+  }else{
+    uabort("vcontext_load unknow data type");
+    return 0;
+  }
+  top = vgc_array_push(consts,slot);
+  if(top == -1){
+    uabort("vcontext_load consts overflow!");
+  }
+  data->idx = top;
+  ulog("vcontext_load data:%s,idx:%d",data->name->value,top);
+  return 0;
+}
+
 vsymbol* vcontext_graph_load(vcontext* ctx,vmod* mod,vdfg_graph* grp){
   vsymbol* symbol;
   vgc_array* consts;
+  ulist_vps_datap* imms;
   ulist_vps_dfgp* dfgs;
   ulist_vinstp* insts;
   vgc_subr* subr;
   ucursor cursor;
 
-  consts = vgc_obj_ref_get(ctx,consts,vgc_array);
+  consts = vgc_array_new(ctx->heap,
+			 grp->imms->len,
+			 vgc_heap_area_static);
+  if(!consts){
+    uabort("subr consts new error!");
+  }
+  /* load code */
   dfgs = grp->dfgs;
   insts = ulist_vinstp_newmp(&ctx->pool);
   
@@ -239,7 +286,7 @@ vsymbol* vcontext_graph_load(vcontext* ctx,vmod* mod,vdfg_graph* grp){
   }
 
   vinst_to_str(ctx->heap,insts);
-  vgc_obj_slot_get(ctx->heap,ctx,consts);
+  vgc_heap_obj_push(ctx->heap,consts);
   subr = vgc_subr_new(ctx->heap,
 		      grp->params_count,
 		      grp->locals_count,
@@ -258,6 +305,19 @@ vsymbol* vcontext_graph_load(vcontext* ctx,vmod* mod,vdfg_graph* grp){
     vmod_gobj_put(mod,grp->name,(vgc_obj*)subr);
   }
   umem_pool_clean(&ctx->pool);
+  /* load imm data */
+  imms = grp->imms;
+  imms->iterate(&cursor);
+  while(1){
+    vps_datap* datap = imms->next((uset*)imms,&cursor);
+    vps_data* data;
+    if (!datap) {
+      break;
+    }
+    data = *datap;
+    vps_data_load(ctx->heap,consts,data);
+  }
+  
   return symbol;
 }
 
@@ -366,42 +426,7 @@ int vcontext_vps_load(vcontext* ctx,vps_cntr* vps)
 int vcontext_data_load(vcontext* ctx,vps_data* data)
 {
   vgc_array* consts = vgc_obj_ref_get(ctx,consts,vgc_array);
-  vslot slot;
-  int top;
-
-  if(data->dtk == vdtk_num){
-    vslot_num_set(slot,data->u.number);      
-  }else if(data->dtk == vdtk_int){
-    vslot_int_set(slot,data->u.integer);
-  }else if(data->dtk == vdtk_str){
-    vgc_string* vstr;
-    ustring* ustr;
-    
-    ustr = data->u.string;
-    vstr = vgc_string_new(ctx->heap,
-			  ustr->len,
-			  vgc_heap_area_static);
-    if (!vstr) {
-      uabort("new vgc_string error!");
-    }
-    vgc_ustr2vstr(vstr,ustr);
-    vslot_ref_set(slot,vstr);
-  }else if(data->dtk == vdtk_arr){
-    /* todo */
-    return 0;
-  }else if(data->dtk == vdtk_any){
-    vslot_null_set(slot);
-  }else{
-    uabort("vcontext_load unknow data type");
-    return 0;
-  }
-  top = vgc_array_push(consts,slot);
-  if(top == -1){
-    uabort("vcontext_load consts overflow!");
-  }
-  data->idx = top;
-  ulog("vcontext_load data:%s,idx:%d",data->name->value,top);
-  return 0;
+  return vps_data_load(ctx->heap,consts,data);
 }
 
 vsymbol* vmod_symbol_get(vcontext* ctx,vmod* mod,ustring* name){

@@ -86,6 +86,7 @@ typedef struct _vps_dfg{
 } vps_dfg,*vps_dfgp;
 
 uhstb_decl_tpl(vps_datap);
+ulist_decl_tpl(vps_datap);
 ulist_decl_tpl(vps_instp);
 ulist_decl_tpl(vps_dfgp);
 
@@ -97,6 +98,7 @@ typedef struct _vdfg_block{
 typedef struct _vdfg_graph{
   VDFGHEADER;
   uhstb_vps_datap* locals;
+  ulist_vps_datap* imms;
   ulist_vps_dfgp* dfgs;
   vps_dfg* entry;
   int params_count;
@@ -151,9 +153,12 @@ vps_inst* vps_iloadimm(vps_cntr* vps,int imm);
 vps_inst* vps_iloaddt(vps_cntr* vps,ustring* name);
 vps_inst* vps_istoreimm(vps_cntr* vps,int imm);
 vps_inst* vps_istoredt(vps_cntr* vps,ustring* name);
-vps_inst* vps_ipushimm(vps_cntr* vps,vps_mod* mod,ustring* name,double dnum);
-vps_inst* vps_ipushdt(vps_cntr* vps,vps_mod* mod,ustring* name);
-vps_inst* vps_ipushstr(vps_cntr* vps,vps_mod* mod,ustring* string);
+vps_inst* vps_ipushimm(vps_cntr* vps,
+		       vdfg_graph* grp,
+		       ustring* name,
+		       double dnum);
+vps_inst* vps_ipushdt(vps_cntr* vps,vdfg_graph* graph,ustring* name);
+vps_inst* vps_ipushstr(vps_cntr* vps,vdfg_graph* graph,ustring* string);
 vps_inst* vps_itop(vps_cntr* vps,int imm);
 vps_inst* vps_ipop(vps_cntr* vps);
 vps_inst* vps_iadd(vps_cntr* vps);
@@ -215,6 +220,8 @@ vps_mod* vps_mod_new(vps_cntr* vps,ustring* name);
   ((mod)->status == VPS_MOD_STATUS_LOADED)
 
 void vps_mod_data_put(vps_mod* mod,vps_data* data);
+
+int vps_graph_const_put(vdfg_graph* grp,vps_data* data);
 
 void vps_mod_code_put(vps_mod* mod,vdfg_graph* code);
 

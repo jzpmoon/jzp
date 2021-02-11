@@ -134,6 +134,10 @@ static vdfg_graph* subr(vps_mod* top,vps_dfg* parent,last_obj* ast_obj){
  */
 LDEFATTR(entry,"entry",{
     vdfg_graph* grp;
+
+    if (parent) {
+      uabort("subr inst can not use here!");
+    }
     if (top->entry) {
       uabort("mod entry already exists!");
     }
@@ -147,7 +151,12 @@ LDEFATTR(entry,"entry",{
  * define attribute subr
  */
 LDEFATTR(g_subr,"g-subr",{
-    vdfg_graph* grp = subr(top,parent,ast_obj);
+    vdfg_graph* grp;
+
+    if (parent) {
+      uabort("subr inst can not use here!");
+    }
+    grp = subr(top,parent,ast_obj);
     grp->scope = VPS_SCOPE_GLOBAL;
     vps_mod_code_put(top,grp);
     LATTR_RETURN_VOID;
@@ -157,7 +166,12 @@ LDEFATTR(g_subr,"g-subr",{
  * define attribute subr
  */
 LDEFATTR(subr,"subr",{
-    vdfg_graph* grp = subr(top,parent,ast_obj);
+    vdfg_graph* grp;
+
+    if (parent) {
+      uabort("subr inst can not use here!");
+    }
+    grp = subr(top,parent,ast_obj);
     grp->scope = VPS_SCOPE_LOCAL;
     vps_mod_code_put(top,grp);
     LATTR_RETURN_VOID;
@@ -292,6 +306,8 @@ LDEFATTR(store,"store",{
  * define attribute push
  */
 LDEFATTR(push,"push",{
+    vps_dfg* dfg;
+    vdfg_graph* grp;
     vps_inst* inst;
     last_obj* obj;
     last_obj* next;
@@ -300,6 +316,11 @@ LDEFATTR(push,"push",{
     if(!parent || parent->t != vdfgk_blk){
       uabort("push inst can not use here!");
     }
+    dfg = (vps_dfg*)parent;
+    if (dfg->parent->t != vdfgk_grp) {
+      uabort("push inst must be use at subr!");
+    }
+    grp = (vdfg_graph*)dfg->parent;
     next = last_cdr(ast_obj);
     if(!next){
       uabort("push inst have no operand!");
@@ -310,13 +331,13 @@ LDEFATTR(push,"push",{
     obj = last_car(next);
     if(obj->t == lastk_symbol){
       last_symbol* sym = (last_symbol*)obj;
-      inst = vps_ipushdt(top->vps,top,sym->name);
+      inst = vps_ipushdt(top->vps,grp,sym->name);
     }else if(obj->t == lastk_number){
       last_number* num = (last_number*)obj;
-      inst = vps_ipushimm(top->vps,top,num->name,num->dnum);
+      inst = vps_ipushimm(top->vps,grp,num->name,num->dnum);
     }else if(obj->t == lastk_string){
       last_string* str = (last_string*)obj;
-      inst = vps_ipushstr(top->vps,top,str->string);
+      inst = vps_ipushstr(top->vps,grp,str->string);
     }else{
       uabort("push inst error!");
     }

@@ -298,6 +298,7 @@ vslot bc_constant(vcontext* ctx,
   vgc_call* calling = vgc_obj_ref_get(ctx,calling,vgc_call);
   vgc_subr* subr = vgc_obj_ref_get(calling,subr,vgc_subr);
   vgc_array* consts = vgc_obj_ref_get(subr,consts,vgc_array);
+
   if(vgc_obj_ref_check(consts,index))
     uabort("vm:constant error!");
   return consts->objs[index];

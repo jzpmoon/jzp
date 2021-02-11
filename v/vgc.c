@@ -245,8 +245,10 @@ vgc_obj* vgc_heap_data_try_new(vgc_heap* heap,
 			  align_obj_size);
   last_obj = vgc_obj_jump(heap_area->area_begin,
 			  heap_area->area_size);
-  ulog("require memory:%d",align_obj_size);
-  ulog("remain memory :%ld",vgc_area_remain(heap_area));
+  ulog("area_type:%d,require memory:%d,remain memory :%ld",
+       area_type,
+       align_obj_size,
+       vgc_area_remain(heap_area));
   if(next_obj <= last_obj){
     new_obj = heap_area->area_index;
     vgc_obj_init(new_obj,align_obj_size,ref_count,obj_type);

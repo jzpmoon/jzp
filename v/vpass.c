@@ -8,6 +8,7 @@ uhstb_def_tpl(vps_datap);
 uhstb_def_tpl(vdfg_graphp);
 uhstb_def_tpl(vps_modp);
 ulist_def_tpl(vpsp);
+ulist_def_tpl(vps_datap);
 ulist_def_tpl(vps_instp);
 ulist_def_tpl(vps_dfgp);
 ulist_def_tpl(vinstp);
@@ -66,36 +67,50 @@ vps_inst* vps_istoredt(vps_cntr* vps,ustring* name){
   return inst;
 }
 
-vps_inst* vps_ipushimm(vps_cntr* vps,vps_mod* mod,ustring* name,double dnum){
+vps_inst* vps_ipushimm(vps_cntr* vps,
+		       vdfg_graph* grp,
+		       ustring* name,
+		       double dnum)
+{
   vps_inst* inst;
   vps_data* data;
 
   data = vps_num_new(vps,name,dnum);
+  if (!data) {
+    uabort("vps num new error!");
+  }
   data->scope = VPS_SCOPE_LOCAL;
-  vps_mod_data_put(mod,data);
+  data->idx = vps_graph_const_put(grp,data);
   inst = vps_inst_new(vps,vinstk_imm,Bpush,NULL,data,NULL);
   return inst;
 }
 
-vps_inst* vps_ipushdt(vps_cntr* vps,vps_mod* mod,ustring* name){
+vps_inst* vps_ipushdt(vps_cntr* vps,vdfg_graph* grp,ustring* name)
+{
   vps_inst* inst;
   vps_data* data;
   
   data = vps_any_new(vps,name,vstk_heap);
+  if (!data) {
+    uabort("vps num new error!");
+  }
   data->scope = VPS_SCOPE_LOCAL;
-  vps_mod_data_put(mod,data);
+  data->idx = vps_graph_const_put(grp,data);
   inst = vps_inst_new(vps,vinstk_glodt,Bpush,NULL,data,NULL);
   return inst;
 }
 
-vps_inst* vps_ipushstr(vps_cntr* vps,vps_mod* mod,ustring* string)
+vps_inst* vps_ipushstr(vps_cntr* vps,vdfg_graph* grp,ustring* string)
 {
   vps_inst* inst;
   vps_data* data;
   
   data = vps_str_new(vps,string,string);
+  if (!data) {
+    uabort("vps num new error!");
+  }
   data->scope = VPS_SCOPE_LOCAL;
-  vps_mod_data_put(mod,data);
+  data->idx = vps_graph_const_put(grp,data);
   inst = vps_inst_new(vps,vinstk_imm,Bpush,NULL,data,NULL);
   return inst;
 }
@@ -425,6 +440,7 @@ vdfg_graph* vdfg_graph_new(vps_cntr* vps){
     g->parent = NULL;
     g->name = NULL;
     g->locals = uhstb_vps_datap_newmp(&vps->pool,VDFG_GRP_DATA_TABLE_SIZE);
+    g->imms = ulist_vps_datap_newmp(&vps->pool);
     g->dfgs = ulist_vps_dfgp_newmp(&vps->pool);
     g->entry = NULL;
     g->params_count = 0;
@@ -608,6 +624,17 @@ void vps_mod_data_put(vps_mod* mod,vps_data* data){
 			 vps_mod_data_comp)){
     uabort("vps_mod_data_put error!");
   }
+}
+
+int vps_graph_const_put(vdfg_graph* grp,vps_data* data)
+{
+  int retval;
+  
+  retval = ulist_vps_datap_append(grp->imms,data);
+  if (retval) {
+    uabort("vps mod const put error!");
+  }
+  return grp->imms->len - 1;
 }
 
 void vps_mod_code_put(vps_mod* mod,vdfg_graph* code){
