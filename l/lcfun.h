@@ -64,11 +64,13 @@ struct _lvar_infor{
     if(!cfun){							\
       uabort("LFUN_INIT:cfun new error!");			\
     }								\
-    vmod_lobj_put(MOD,						\
+    vmod_lobj_put((CTX)->heap,					\
+		  MOD,						\
 		  _lcfun_infor_##FNAME.name,			\
 		  (vgc_obj*)cfun);				\
     if (_lcfun_infor_##FNAME.scope == VPS_SCOPE_GLOBAL) {	\
-      vmod_gobj_put(MOD,					\
+      vmod_gobj_put((CTX)->heap,				\
+		    MOD,					\
 		    _lcfun_infor_##FNAME.name,			\
 		    (vgc_obj*)cfun);				\
     }								\
@@ -86,9 +88,9 @@ struct _lvar_infor{
     if(!str){uabort("init var error!");}			\
     var = _lvar_infor_##VNAME.var_gen(CTX);			\
     if(var){							\
-      vmod_lobj_put(MOD,str,var);				\
+      vmod_lobj_put((CTX)->heap,MOD,str,var);			\
       if (_lvar_infor_##VNAME.scope == VPS_SCOPE_GLOBAL) {	\
-	vmod_gobj_put(MOD,str,var);				\
+	vmod_gobj_put((CTX)->heap,MOD,str,var);			\
       }								\
     }								\
   } while(0)

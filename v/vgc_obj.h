@@ -16,6 +16,7 @@ enum {
   vgc_obj_type_call,
   vgc_obj_type_ctx,
   vgc_obj_type_extend,
+  vgc_obj_type_ref,
 };
 
 #define vgc_obj_typeof(O,T) \
@@ -188,6 +189,9 @@ void vgc_heap_stack_top_set(vgc_heap* heap,usize_t index);
     obj = vslot_ref_get(__slot,obj_type);	\
   } while(0)
 
+#define vgc_slot_get(obj,slot)			\
+  (obj)->_u.slot
+
 #define vgc_obj_slot_get(heap,obj,slot)		\
   vgc_heap_stack_push(heap,(obj)->_u.slot);
   
@@ -281,6 +285,15 @@ vgc_call* vgc_call_new(vgc_heap* heap,
 
 #define vgc_call_is_cfun(call)				\
   ((call)->call_type == vgc_call_type_cfun)
+
+typedef struct _vgc_ref{
+  VGCHEADER;
+  vslot_define_begin
+  vslot_define(vgc_obj,ref);
+  vslot_define_end
+} vgc_ref;
+
+vgc_ref* vgc_ref_new(vgc_heap* heap,vgc_obj* obj);
 
 typedef struct _vgc_obj_ex_t{
   char* type_name;

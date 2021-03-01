@@ -34,7 +34,7 @@ typedef struct _vmod{
   ulist_vreloc* rells;
   uhstb_vsymbol* gobjtb;
   uhstb_vsymbol* lobjtb;
-  vsymbol* init;
+  vgc_subr* init;
   ustring* name;
   int status;
 } vmod;
@@ -101,7 +101,7 @@ int vcontext_mod_load(vcontext* ctx,vps_mod* mod);
 
 int vcontext_data_load(vcontext* ctx,vps_data* data);
 
-vsymbol* vcontext_graph_load(vcontext* ctx,vmod* mod,vdfg_graph* grp);
+vgc_subr* vcontext_graph_load(vcontext* ctx,vmod* mod,vdfg_graph* grp);
 
 void vcontext_execute(vcontext* ctx);
 
@@ -113,8 +113,8 @@ int vcontext_mod2mod(vcontext* ctx,vmod* dest_mod,vps_mod* src_mod);
 
 void vmod_add_reloc(vmod* mod,vreloc reloc);
 
-vsymbol* vmod_gobj_put(vmod* mod,ustring* name,vgc_obj* obj);
+vsymbol* vmod_gobj_put(vgc_heap* heap,vmod* mod,ustring* name,vgc_obj* obj);
 
-vsymbol* vmod_lobj_put(vmod* mod,ustring* name,vgc_obj* obj);
+vsymbol* vmod_lobj_put(vgc_heap* heap,vmod* mod,ustring* name,vgc_obj* obj);
 
 #endif

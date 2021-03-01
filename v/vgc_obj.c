@@ -126,6 +126,16 @@ vgc_call* vgc_call_new(vgc_heap* heap,
   return call;
 }
 
+vgc_ref* vgc_ref_new(vgc_heap* heap,vgc_obj* obj)
+{
+  vgc_ref* ref;
+  ref = vgc_heap_obj_new(heap,vgc_ref,vgc_obj_type_ref,vgc_heap_area_static);
+  if (ref) {
+    vgc_obj_ref_set(ref,ref,obj);
+  }
+  return ref;
+}
+
 vslot vslot_num_add(vslot slot1,vslot slot2){
   double num1 = vslot_num_get(slot1);
   double num2 = vslot_num_get(slot2);

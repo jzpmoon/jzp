@@ -295,13 +295,27 @@ void bc_not(vcontext* ctx){
 
 vslot bc_constant(vcontext* ctx,
 		  usize_t index){
-  vgc_call* calling = vgc_obj_ref_get(ctx,calling,vgc_call);
-  vgc_subr* subr = vgc_obj_ref_get(calling,subr,vgc_subr);
-  vgc_array* consts = vgc_obj_ref_get(subr,consts,vgc_array);
+  vgc_call* calling;
+  vgc_subr* subr;
+  vgc_array* consts;
+  vslot slot;
+  vgc_obj* obj;
+  vgc_ref* ref;
+  calling = vgc_obj_ref_get(ctx,calling,vgc_call);
+  subr = vgc_obj_ref_get(calling,subr,vgc_subr);
+  consts = vgc_obj_ref_get(subr,consts,vgc_array);
 
   if(vgc_obj_ref_check(consts,index))
     uabort("vm:constant error!");
-  return consts->objs[index];
+  slot = consts->objs[index];
+  if (vslot_is_ref(slot)) {
+    obj = vslot_ref_get(slot,vgc_obj);
+    if (vgc_obj_typeof(obj,vgc_obj_type_ref)) {
+      ref = (vgc_ref*)obj;
+      slot = vgc_slot_get(ref,ref);
+    }
+  }
+  return slot;
 }
 
 void bc_call(vcontext* ctx){
@@ -368,6 +382,7 @@ void bc_call(vcontext* ctx){
     calling = vgc_obj_ref_get(call,caller,vgc_call);
     vgc_obj_ref_set(ctx,calling,calling);
   }else{
+    vgc_obj_log(obj);
     uabort("bc_call:can not execute!");
   }
 }

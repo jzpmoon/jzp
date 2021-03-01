@@ -176,14 +176,19 @@ vgc_obj* vgc_collect_move(vgc_heap* heap){
 }
 
 int vgc_collect(vgc_heap* heap){
-  ustack_vslot* root_set = &heap->root_set;
-  ublock_vslot* block = root_set->curr_block;
+  ustack_vslot* root_set;
+  ublock_vslot* block;
+  vgc_heap_area* heap_area;
+  vgc_obj* next_obj;
+  vgc_obj* last_obj;
   int i;
-  if(!block){
-    return 0;
-  }
   
-  ulog("vgc_collect: mark");
+  root_set = &heap->root_set;
+  block = root_set->curr_block;
+  heap_area = &heap->area_static;
+  last_obj = heap_area->area_index;
+
+  ulog("vgc_collect: mark stack");
   for(i = 0;i < root_set->block_pos;i++){
     vslot slot = block->ptr[i];
     if(vslot_is_ref(slot)){
@@ -191,11 +196,17 @@ int vgc_collect(vgc_heap* heap){
       vgc_collect_mark(heap,obj);
     }
   }
+  ulog("vgc_collect: mark static area");
+  next_obj = heap_area->area_begin;
+  while(next_obj < last_obj){
+    vgc_collect_mark(heap,next_obj);
+    next_obj = vgc_obj_next(next_obj,next_obj);
+  }
 
   ulog("vgc_collect: cal addr");
   vgc_collect_cal_addr(heap);
 
-  ulog("vgc_collect: update addr");
+  ulog("vgc_collect: update addr stack");
   for(i = 0;i < root_set->block_pos;i++){
     vslot slot = block->ptr[i];
     if(vslot_is_ref(slot)){
@@ -203,6 +214,12 @@ int vgc_collect(vgc_heap* heap){
       vslot_ref_set(block->ptr[i],obj->_addr);
       vgc_collect_update_addr(heap,obj);
     }
+  }
+  ulog("vgc_collect: update addr static area");
+  next_obj = heap_area->area_begin;
+  while(next_obj < last_obj){
+    vgc_collect_update_addr(heap,next_obj);
+    next_obj = vgc_obj_next(next_obj,next_obj);
   }
 
   ulog("vgc_collect: move");
@@ -270,7 +287,7 @@ vgc_obj* vgc_heap_data_new(vgc_heap* heap,
 				  ref_count,
 				  obj_type,
 				  area_type);
-  if(!new_obj){
+  if(!new_obj && area_type == vgc_heap_area_active){
     vgc_collect(heap);
     new_obj = vgc_heap_data_try_new(heap,
 				    obj_size,

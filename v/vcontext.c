@@ -250,8 +250,8 @@ static int vps_data_load(vgc_heap* heap,vgc_array* consts,vps_data* data)
   return 0;
 }
 
-vsymbol* vcontext_graph_load(vcontext* ctx,vmod* mod,vdfg_graph* grp){
-  vsymbol* symbol;
+vgc_subr* vcontext_graph_load(vcontext* ctx,vmod* mod,vdfg_graph* grp){
+  vgc_heap* heap;
   vgc_array* consts;
   ulist_vps_datap* imms;
   ulist_vps_dfgp* dfgs;
@@ -259,7 +259,8 @@ vsymbol* vcontext_graph_load(vcontext* ctx,vmod* mod,vdfg_graph* grp){
   vgc_subr* subr;
   ucursor cursor;
 
-  consts = vgc_array_new(ctx->heap,
+  heap = ctx->heap;
+  consts = vgc_array_new(heap,
 			 grp->imms->len,
 			 vgc_heap_area_static);
   if(!consts){
@@ -285,24 +286,24 @@ vsymbol* vcontext_graph_load(vcontext* ctx,vmod* mod,vdfg_graph* grp){
     }
   }
 
-  vinst_to_str(ctx->heap,insts);
-  vgc_heap_obj_push(ctx->heap,consts);
-  subr = vgc_subr_new(ctx->heap,
+  vinst_to_str(heap,insts);
+  vgc_heap_obj_push(heap,consts);
+  subr = vgc_subr_new(heap,
 		      grp->params_count,
 		      grp->locals_count,
-		      vgc_heap_area_active);
+		      vgc_heap_area_static);
   if (!subr) {
     uabort("new subr error!");
   }
   /*
    * add to local symbol table
    */
-  symbol = vmod_lobj_put(mod,grp->name,(vgc_obj*)subr);
+  vmod_lobj_put(heap,mod,grp->name,(vgc_obj*)subr);
   /*
    * if scope is global then also add to global symbol table
    */
   if (grp->scope == VPS_SCOPE_GLOBAL) {
-    vmod_gobj_put(mod,grp->name,(vgc_obj*)subr);
+    vmod_gobj_put(heap,mod,grp->name,(vgc_obj*)subr);
   }
   umem_pool_clean(&ctx->pool);
   /* load imm data */
@@ -315,10 +316,10 @@ vsymbol* vcontext_graph_load(vcontext* ctx,vmod* mod,vdfg_graph* grp){
       break;
     }
     data = *datap;
-    vps_data_load(ctx->heap,consts,data);
+    vps_data_load(heap,consts,data);
   }
   
-  return symbol;
+  return subr;
 }
 
 void vcontext_mod_log(vcontext* ctx){
@@ -389,13 +390,13 @@ static void vcontext_mod_init(vcontext* ctx)
   mods->iterate(&cursor);
   while (1) {
     vmod* next = mods->next((uset*)mods,&cursor);
-    vsymbol* symbol;
+    vslot slot;
     if (!next) {
       break;
     }
-    symbol = next->init;
-    if (symbol) {
-      vgc_heap_stack_push(ctx->heap,symbol->slot);
+    if (next->init) {
+      vslot_ref_set(slot,next->init);
+      vgc_heap_stack_push(ctx->heap,slot);
       vcontext_execute(ctx);
     }
   }
@@ -589,14 +590,19 @@ void vmod_add_reloc(vmod* mod,vreloc reloc)
   }
 }
 
-vsymbol* vmod_gobj_put(vmod* mod,ustring* name,vgc_obj* obj)
+vsymbol* vmod_gobj_put(vgc_heap* heap,vmod* mod,ustring* name,vgc_obj* obj)
 {
+  vgc_ref* ref;
   vslot slot;
   vsymbol symbol;
   vsymbol* new_symbol;
   int retval;
 
-  vslot_ref_set(slot,obj);
+  ref = vgc_ref_new(heap,obj);
+  if (!ref) {
+    uabort("ref new error!");
+  }
+  vslot_ref_set(slot,ref);
   symbol = (vsymbol){name,slot};
   retval = uhstb_vsymbol_put(mod->gobjtb,
 				 name->hash_code,
@@ -610,14 +616,19 @@ vsymbol* vmod_gobj_put(vmod* mod,ustring* name,vgc_obj* obj)
   return new_symbol;
 }
 
-vsymbol* vmod_lobj_put(vmod* mod,ustring* name,vgc_obj* obj)
+vsymbol* vmod_lobj_put(vgc_heap* heap,vmod* mod,ustring* name,vgc_obj* obj)
 {
+  vgc_ref* ref;
   vslot slot;
   vsymbol symbol;
   vsymbol* new_symbol;
   int retval;
 
-  vslot_ref_set(slot,obj);
+  ref = vgc_ref_new(heap,obj);
+  if (!ref) {
+    uabort("ref new error!");
+  }
+  vslot_ref_set(slot,ref);
   symbol = (vsymbol){name,slot};
   retval = uhstb_vsymbol_put(mod->lobjtb,
 				 name->hash_code,

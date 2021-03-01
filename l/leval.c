@@ -84,7 +84,7 @@ leval* lstartup(){
     uabort("new eval error!");
   }
   
-  heap = vgc_heap_new(1024,
+  heap = vgc_heap_new(1024*10,
 		      1024*10,
 		      1024);
   if(!heap){
