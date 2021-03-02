@@ -126,12 +126,12 @@ vgc_call* vgc_call_new(vgc_heap* heap,
   return call;
 }
 
-vgc_ref* vgc_ref_new(vgc_heap* heap,vgc_obj* obj)
+vgc_ref* vgc_ref_new(vgc_heap* heap,vslot slot)
 {
   vgc_ref* ref;
   ref = vgc_heap_obj_new(heap,vgc_ref,vgc_obj_type_ref,vgc_heap_area_static);
   if (ref) {
-    vgc_obj_ref_set(ref,ref,obj);
+    vgc_slot_set(ref,ref,slot);
   }
   return ref;
 }

@@ -6,6 +6,10 @@ ulist_def_tpl(vreloc);
 uhstb_def_tpl(vmod);
 uhstb_def_tpl(vsymbol);
 
+static void gdata_load(vcontext* ctx,vmod* mod,vps_data* data);
+static void ldata_load(vgc_heap* heap,vgc_array* consts,vps_data* data);
+static vslot data2data(vgc_heap* heap,vps_data* data);
+
 #define VCONTEXT_MODTB_SIZE 17
 #define VCONTEXT_OBJTB_SIZE 17
 #define VCONTEXT_SYMTB_SIZE 17
@@ -210,10 +214,23 @@ static int vcontext_inst2inst(vgc_array* consts,
   return 0;
 }
 
-static int vps_data_load(vgc_heap* heap,vgc_array* consts,vps_data* data)
+static void ldata_load(vgc_heap* heap,vgc_array* consts,vps_data* data)
 {
   vslot slot;
   int top;
+
+  slot = data2data(heap,data);
+  top = vgc_array_push(consts,slot);
+  if(top == -1){
+    uabort("vcontext_load consts overflow!");
+  }
+  data->idx = top;
+  ulog("vcontext_load data:%s,idx:%d",data->name->value,top);
+}
+
+static vslot data2data(vgc_heap* heap,vps_data* data)
+{
+  vslot slot;
 
   if(data->dtk == vdtk_num){
     vslot_num_set(slot,data->u.number);      
@@ -234,20 +251,14 @@ static int vps_data_load(vgc_heap* heap,vgc_array* consts,vps_data* data)
     vslot_ref_set(slot,vstr);
   }else if(data->dtk == vdtk_arr){
     /* todo */
-    return 0;
+    vslot_null_set(slot);
   }else if(data->dtk == vdtk_any){
     vslot_null_set(slot);
   }else{
     uabort("vcontext_load unknow data type");
-    return 0;
+    vslot_null_set(slot);
   }
-  top = vgc_array_push(consts,slot);
-  if(top == -1){
-    uabort("vcontext_load consts overflow!");
-  }
-  data->idx = top;
-  ulog("vcontext_load data:%s,idx:%d",data->name->value,top);
-  return 0;
+  return slot;
 }
 
 vgc_subr* vcontext_graph_load(vcontext* ctx,vmod* mod,vdfg_graph* grp){
@@ -316,7 +327,7 @@ vgc_subr* vcontext_graph_load(vcontext* ctx,vmod* mod,vdfg_graph* grp){
       break;
     }
     data = *datap;
-    vps_data_load(heap,consts,data);
+    ldata_load(heap,consts,data);
   }
   
   return subr;
@@ -350,10 +361,12 @@ int vcontext_mod2mod(vcontext* ctx,vmod* dest_mod,vps_mod* src_mod)
   (data->iterate)(&cursor);
   while(1){
     vps_datap* dp = (data->next)((uset*)data,&cursor);
+    vps_data* d;
     if(!dp){
       break;
     }
-    vcontext_data_load(ctx,*dp);
+    d = *dp;
+    gdata_load(ctx,dest_mod,d);
   }
 
   (code->iterate)(&cursor);
@@ -424,10 +437,15 @@ int vcontext_vps_load(vcontext* ctx,vps_cntr* vps)
   return 0;
 }
 
-int vcontext_data_load(vcontext* ctx,vps_data* data)
+static void gdata_load(vcontext* ctx,vmod* mod,vps_data* data)
 {
-  vgc_array* consts = vgc_obj_ref_get(ctx,consts,vgc_array);
-  return vps_data_load(ctx->heap,consts,data);
+  vslot slot;
+
+  slot = data2data(ctx->heap,data);
+  vmod_lslot_put(ctx->heap,mod,data->name,slot);
+  if (data->scope == VPS_SCOPE_GLOBAL) {
+    vmod_gslot_put(ctx->heap,mod,data->name,slot);
+  }
 }
 
 vsymbol* vmod_symbol_get(vcontext* ctx,vmod* mod,ustring* name){
@@ -592,18 +610,41 @@ void vmod_add_reloc(vmod* mod,vreloc reloc)
 
 vsymbol* vmod_gobj_put(vgc_heap* heap,vmod* mod,ustring* name,vgc_obj* obj)
 {
-  vgc_ref* ref;
   vslot slot;
+  vsymbol* symbol;
+
+  vslot_ref_set(slot,obj);
+  symbol = vmod_gslot_put(heap,mod,name,slot);
+  
+  return symbol;
+}
+
+vsymbol* vmod_lobj_put(vgc_heap* heap,vmod* mod,ustring* name,vgc_obj* obj)
+{
+  vslot slot;
+  vsymbol* symbol;
+
+  vslot_ref_set(slot,obj);
+  symbol = vmod_lslot_put(heap,mod,name,slot);
+  
+  return symbol;
+}
+
+vsymbol* vmod_gslot_put(vgc_heap* heap,vmod* mod,ustring* name,vslot slot)
+{
+  vgc_ref* ref;
+  vslot sym_slot;
   vsymbol symbol;
   vsymbol* new_symbol;
   int retval;
 
-  ref = vgc_ref_new(heap,obj);
+  ref = vgc_ref_new(heap,slot);
   if (!ref) {
     uabort("ref new error!");
   }
-  vslot_ref_set(slot,ref);
-  symbol = (vsymbol){name,slot};
+  vslot_ref_set(sym_slot,ref);
+  symbol.name = name;
+  symbol.slot = sym_slot;
   retval = uhstb_vsymbol_put(mod->gobjtb,
 				 name->hash_code,
 				 &symbol,
@@ -613,23 +654,24 @@ vsymbol* vmod_gobj_put(vgc_heap* heap,vmod* mod,ustring* name,vgc_obj* obj)
   if(retval == -1){
     uabort("vmod_gobj_put error!");
   }
-  return new_symbol;
+  return new_symbol; 
 }
 
-vsymbol* vmod_lobj_put(vgc_heap* heap,vmod* mod,ustring* name,vgc_obj* obj)
+vsymbol* vmod_lslot_put(vgc_heap* heap,vmod* mod,ustring* name,vslot slot)
 {
   vgc_ref* ref;
-  vslot slot;
+  vslot sym_slot;
   vsymbol symbol;
   vsymbol* new_symbol;
   int retval;
 
-  ref = vgc_ref_new(heap,obj);
+  ref = vgc_ref_new(heap,slot);
   if (!ref) {
     uabort("ref new error!");
   }
-  vslot_ref_set(slot,ref);
-  symbol = (vsymbol){name,slot};
+  vslot_ref_set(sym_slot,ref);
+  symbol.name = name;
+  symbol.slot = sym_slot;
   retval = uhstb_vsymbol_put(mod->lobjtb,
 				 name->hash_code,
 				 &symbol,
@@ -639,5 +681,5 @@ vsymbol* vmod_lobj_put(vgc_heap* heap,vmod* mod,ustring* name,vgc_obj* obj)
   if(retval == -1){
     uabort("vmod_lobj_put error!");
   }
-  return new_symbol;  
+  return new_symbol;
 }

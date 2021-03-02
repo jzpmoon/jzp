@@ -228,6 +228,23 @@ LDEFATTR(var,"var",{
       ulog("local var");
       LATTR_RETURN(lar_vps_apd,inst);
     }else if(!parent){
+      next = last_cdr(ast_obj);
+      if(!next){
+	uabort("var inst have no operand!");
+      }
+      if(next->t != lastk_cons){
+	uabort("var inst error!");
+      }
+      obj = last_car(next);
+      if(obj->t == lastk_symbol){
+	last_symbol* sym = (last_symbol*)obj;
+	vps_data* data;
+	data = vps_any_new(vps,sym->name,vstk_heap);
+	data->scope = VPS_SCOPE_LOCAL;
+	vps_mod_data_put(top,data);
+      }else{
+	uabort("var inst error!");
+      }
       ulog("global var");
       LATTR_RETURN_VOID;
     }else{

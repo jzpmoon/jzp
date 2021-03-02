@@ -99,8 +99,6 @@ int vcontext_vps_load(vcontext* ctx,vps_cntr* vps);
 
 int vcontext_mod_load(vcontext* ctx,vps_mod* mod);
 
-int vcontext_data_load(vcontext* ctx,vps_data* data);
-
 vgc_subr* vcontext_graph_load(vcontext* ctx,vmod* mod,vdfg_graph* grp);
 
 void vcontext_execute(vcontext* ctx);
@@ -116,5 +114,9 @@ void vmod_add_reloc(vmod* mod,vreloc reloc);
 vsymbol* vmod_gobj_put(vgc_heap* heap,vmod* mod,ustring* name,vgc_obj* obj);
 
 vsymbol* vmod_lobj_put(vgc_heap* heap,vmod* mod,ustring* name,vgc_obj* obj);
+
+vsymbol* vmod_gslot_put(vgc_heap* heap,vmod* mod,ustring* name,vslot slot);
+
+vsymbol* vmod_lslot_put(vgc_heap* heap,vmod* mod,ustring* name,vslot slot);
 
 #endif

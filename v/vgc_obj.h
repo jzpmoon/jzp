@@ -190,7 +190,10 @@ void vgc_heap_stack_top_set(vgc_heap* heap,usize_t index);
   } while(0)
 
 #define vgc_slot_get(obj,slot)			\
-  (obj)->_u.slot
+  ((obj)->_u.slot)
+
+#define vgc_slot_set(obj,slot,slot_val)		\
+  ((obj)->_u.slot = slot_val)
 
 #define vgc_obj_slot_get(heap,obj,slot)		\
   vgc_heap_stack_push(heap,(obj)->_u.slot);
@@ -293,7 +296,7 @@ typedef struct _vgc_ref{
   vslot_define_end
 } vgc_ref;
 
-vgc_ref* vgc_ref_new(vgc_heap* heap,vgc_obj* obj);
+vgc_ref* vgc_ref_new(vgc_heap* heap,vslot slot);
 
 typedef struct _vgc_obj_ex_t{
   char* type_name;
