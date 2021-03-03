@@ -17,7 +17,7 @@
     USETHEADER;					\
     int len;					\
     int count;					\
-    umem_pool* pool;				\
+    umem_pool* mp;				\
     uhsnd_##t* ndar[1];				\
   } uhstb_##t
 
@@ -31,7 +31,7 @@
   uhstb_##t* uhstb_##t##_new(int len)
 
 #define uhstb_newmp_decl_tpl(t)				\
-  uhstb_##t* uhstb_##t##_newmp(umem_pool*pool,int len)
+  uhstb_##t* uhstb_##t##_newmp(umem_pool* mp,int len)
 
 #define uhstb_put_decl_tpl(t)				\
   int uhstb_##t##_put(uhstb_##t*          hstb,		\

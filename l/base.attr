@@ -178,6 +178,41 @@ LDEFATTR(subr,"subr",{
   })
 
 /*
+ * define attribute g-var
+ */
+LDEFATTR(g_var,"g-var",{
+    vps_cntr* vps;
+    vps_inst* inst;
+    last_obj* obj;
+    last_obj* next;
+
+    inst = NULL;
+    vps = top->vps;
+    if(parent){
+      uabort("g-var inst can not use here!");
+    }
+    next = last_cdr(ast_obj);
+    if(!next){
+      uabort("g-var inst have no operand!");
+    }
+    if(next->t != lastk_cons){
+      uabort("g-var inst error!");
+    }
+    obj = last_car(next);
+    if(obj->t == lastk_symbol){
+      last_symbol* sym = (last_symbol*)obj;
+      vps_data* data;
+      data = vps_any_new(vps,sym->name,vstk_heap);
+      data->scope = VPS_SCOPE_GLOBAL;
+      vps_mod_data_put(top,data);
+    }else{
+      uabort("g-var inst error!");
+    }
+    ulog("global var");
+    LATTR_RETURN_VOID;
+  })
+
+/*
  * define attribute var
  */
 LDEFATTR(var,"var",{
@@ -225,7 +260,7 @@ LDEFATTR(var,"var",{
       }else{
 	uabort("var inst error!");
       }
-      ulog("local var");
+      ulog("subr var");
       LATTR_RETURN(lar_vps_apd,inst);
     }else if(!parent){
       next = last_cdr(ast_obj);
@@ -245,7 +280,7 @@ LDEFATTR(var,"var",{
       }else{
 	uabort("var inst error!");
       }
-      ulog("global var");
+      ulog("local var");
       LATTR_RETURN_VOID;
     }else{
       uabort("var inst can not use here!");
@@ -395,12 +430,37 @@ LDEFATTR(top,"top",{
  * define attribute pop
  */
 LDEFATTR(pop,"pop",{
+    vps_dfg* dfg;
+    vdfg_graph* grp;
     vps_inst* inst;
+    last_obj* obj;
+    last_obj* next;
 
     if(!parent || parent->t != vdfgk_blk){
       uabort("pop inst can not use here!");
     }
-    inst = vps_ipop(top->vps);
+    dfg = (vps_dfg*)parent;
+    if (dfg->parent->t != vdfgk_grp) {
+      uabort("push inst must be use at subr!");
+    }
+    grp = (vdfg_graph*)dfg->parent;
+    next = last_cdr(ast_obj);
+    if (next) {
+      if (next->t != lastk_cons) {
+	uabort("top inst error!");
+      }
+      obj = last_car(next);
+      if (obj->t == lastk_symbol) {
+	last_symbol* sym = (last_symbol*)obj;
+	inst = vps_ipopdt(top->vps,grp,sym->name);
+      } else {
+	uabort("pop inst error!");
+	inst = NULL;
+      }
+    } else {
+      inst = vps_ipopv(top->vps);
+    }
+    
     ulog("pop");
     LATTR_RETURN(lar_vps_apd,inst);
   })
@@ -772,6 +832,7 @@ LATTRONLOAD(base,{
     LDECLATTR(entry);
     LDECLATTR(g_subr);
     LDECLATTR(subr);
+    LDECLATTR(g_var);
     LDECLATTR(var);
     LDECLATTR(nop);
     LDECLATTR(load);

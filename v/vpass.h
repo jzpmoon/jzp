@@ -129,7 +129,7 @@ typedef struct _vps_mod{
 uhstb_decl_tpl(vps_modp);
 
 typedef struct _vps_cntr{
-  umem_pool pool;
+  umem_pool mp;
   uhstb_vps_modp* mods;
 } vps_cntr;
 
@@ -160,7 +160,8 @@ vps_inst* vps_ipushimm(vps_cntr* vps,
 vps_inst* vps_ipushdt(vps_cntr* vps,vdfg_graph* graph,ustring* name);
 vps_inst* vps_ipushstr(vps_cntr* vps,vdfg_graph* graph,ustring* string);
 vps_inst* vps_itop(vps_cntr* vps,int imm);
-vps_inst* vps_ipop(vps_cntr* vps);
+vps_inst* vps_ipopdt(vps_cntr* vps,vdfg_graph* graph,ustring* name);
+vps_inst* vps_ipopv(vps_cntr* vps);
 vps_inst* vps_iadd(vps_cntr* vps);
 vps_inst* vps_isub(vps_cntr* vps);
 vps_inst* vps_imul(vps_cntr* vps);

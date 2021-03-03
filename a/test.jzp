@@ -1,9 +1,11 @@
 (mod-load code.jzp)
 
-(var a)
-
 (entry main ()
-  (push test-fibonacci)
+  (push 1)
+  (pop flag)
+  (push flag)
+  (push system-ostream)
+  (push stream-output)
   (call)
   (return)
 )

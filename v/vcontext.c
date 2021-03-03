@@ -14,7 +14,6 @@ static vslot data2data(vgc_heap* heap,vps_data* data);
 #define VCONTEXT_OBJTB_SIZE 17
 #define VCONTEXT_SYMTB_SIZE 17
 #define VCONTEXT_STRTB_SIZE 17
-#define VCONTEXT_CONSTS_SIZE 10
 
 UDEFUN(UFNAME vcontext_new,UARGS (vgc_heap* heap),URET vcontext*,
 UDECLARE
@@ -22,7 +21,6 @@ UDECLARE
   uhstb_vmod* mods;
   ustring_table* symtb;
   ustring_table* strtb;
-  vgc_array* consts;
 )
 UBEGIN
 ({
@@ -35,7 +33,7 @@ UBEGIN
     uabort("vcontext_new: ctx new error!");
   }
 
-  umem_pool_init(&ctx->pool,-1);
+  umem_pool_init(&ctx->mp,-1);
   
   mods = uhstb_vmod_new(VCONTEXT_MODTB_SIZE);
   if (!mods) {
@@ -51,12 +49,6 @@ UBEGIN
   if(!strtb){
     uabort("vcontext_new:strtb new error!");
   }
-  consts = vgc_array_new(heap,
-			 VCONTEXT_CONSTS_SIZE,
-			 vgc_heap_area_static);
-  if(!consts){
-    uabort("vcontext_new:consts new error!");
-  }
 
   ctx->heap = heap;
   ctx->mods = mods;
@@ -64,7 +56,7 @@ UBEGIN
   ctx->symtb = symtb;
   ctx->strtb = strtb;
   vgc_obj_null_set(ctx,calling);
-  vgc_obj_ref_set(ctx,consts,consts);
+
   return ctx;
 })
 
@@ -279,7 +271,7 @@ vgc_subr* vcontext_graph_load(vcontext* ctx,vmod* mod,vdfg_graph* grp){
   }
   /* load code */
   dfgs = grp->dfgs;
-  insts = ulist_vinstp_newmp(&ctx->pool);
+  insts = ulist_vinstp_newmp(&ctx->mp);
   
   dfgs->iterate(&cursor);
   while(1){
@@ -316,7 +308,7 @@ vgc_subr* vcontext_graph_load(vcontext* ctx,vmod* mod,vdfg_graph* grp){
   if (grp->scope == VPS_SCOPE_GLOBAL) {
     vmod_gobj_put(heap,mod,grp->name,(vgc_obj*)subr);
   }
-  umem_pool_clean(&ctx->pool);
+  umem_pool_clean(&ctx->mp);
   /* load imm data */
   imms = grp->imms;
   imms->iterate(&cursor);

@@ -3,6 +3,59 @@
 #include "uerror.h"
 #include "vm.h"
 
+vslot bc_constant_get(vcontext* ctx,
+		      usize_t index){
+  vgc_call* calling;
+  vgc_subr* subr;
+  vgc_array* consts;
+  vslot slot;
+  vgc_obj* obj;
+  vgc_ref* ref;
+  calling = vgc_obj_ref_get(ctx,calling,vgc_call);
+  subr = vgc_obj_ref_get(calling,subr,vgc_subr);
+  consts = vgc_obj_ref_get(subr,consts,vgc_array);
+
+  if(vgc_obj_ref_check(consts,index))
+    uabort("vm:constant error!");
+  slot = consts->objs[index];
+  if (vslot_is_ref(slot)) {
+    obj = vslot_ref_get(slot,vgc_obj);
+    if (vgc_obj_typeof(obj,vgc_obj_type_ref)) {
+      ref = (vgc_ref*)obj;
+      slot = vgc_slot_get(ref,ref);
+    }
+  }
+  return slot;
+}
+
+void bc_constant_set(vcontext* ctx,
+		     usize_t index,
+		     vslot value){
+  vgc_call* calling;
+  vgc_subr* subr;
+  vgc_array* consts;
+  vslot slot;
+  vgc_obj* obj;
+  vgc_ref* ref;
+
+  calling = vgc_obj_ref_get(ctx,calling,vgc_call);
+  subr = vgc_obj_ref_get(calling,subr,vgc_subr);
+  consts = vgc_obj_ref_get(subr,consts,vgc_array);
+
+  if(vgc_obj_ref_check(consts,index))
+    uabort("vm:constant error!");
+  slot = consts->objs[index];
+  if (vslot_is_ref(slot)) {
+    obj = vslot_ref_get(slot,vgc_obj);
+    if (vgc_obj_typeof(obj,vgc_obj_type_ref)) {
+      ref = (vgc_ref*)obj;      
+      vgc_slot_set(ref,ref,value);
+      return;
+    }
+  }
+  consts->objs[index] = value;
+}
+
 void bc_top(vcontext* ctx,usize_t index){
   vgc_heap_stack_top_set(ctx->heap,index);
 }
@@ -13,7 +66,14 @@ void bc_push(vcontext* ctx,
   vgc_heap_stack_push(heap,slot);
 }
 
-void bc_pop(vcontext* ctx){
+void bc_pop(vcontext* ctx,usize_t index){
+  vslot slot;
+  vgc_heap* heap = ctx->heap;
+  vgc_heap_stack_pop(heap,&slot);
+  bc_constant_set(ctx,index,slot);
+}
+
+void bc_popv(vcontext* ctx){
   vslot slot;
   vgc_heap* heap = ctx->heap;
   vgc_heap_stack_pop(heap,&slot);
@@ -293,31 +353,6 @@ void bc_not(vcontext* ctx){
   vgc_heap_stack_push(ctx->heap,bool);  
 }
 
-vslot bc_constant(vcontext* ctx,
-		  usize_t index){
-  vgc_call* calling;
-  vgc_subr* subr;
-  vgc_array* consts;
-  vslot slot;
-  vgc_obj* obj;
-  vgc_ref* ref;
-  calling = vgc_obj_ref_get(ctx,calling,vgc_call);
-  subr = vgc_obj_ref_get(calling,subr,vgc_subr);
-  consts = vgc_obj_ref_get(subr,consts,vgc_array);
-
-  if(vgc_obj_ref_check(consts,index))
-    uabort("vm:constant error!");
-  slot = consts->objs[index];
-  if (vslot_is_ref(slot)) {
-    obj = vslot_ref_get(slot,vgc_obj);
-    if (vgc_obj_typeof(obj,vgc_obj_type_ref)) {
-      ref = (vgc_ref*)obj;
-      slot = vgc_slot_get(ref,ref);
-    }
-  }
-  return slot;
-}
-
 void bc_call(vcontext* ctx){
   vgc_heap* heap = ctx->heap;
   vgc_call* calling = vgc_obj_ref_get(ctx,calling,vgc_call);
@@ -501,7 +536,7 @@ void vcontext_execute(vcontext* ctx){
     case Bpush:
       NEXT;
       ulog("Bpush %d",op);
-      bc_push(ctx,bc_constant(ctx,op));
+      bc_push(ctx,bc_constant_get(ctx,op));
       break;
     case Btop:
       NEXT;
@@ -510,8 +545,13 @@ void vcontext_execute(vcontext* ctx){
       bc_top(ctx,op);
       break;
     case Bpop:
-      ulog("Bpop");
-      bc_pop(ctx);
+      NEXT;
+      ulog("Bpop %d",op);
+      bc_pop(ctx,op);
+      break;
+    case Bpopv:
+      ulog("Bpopv");
+      bc_popv(ctx);
       break;
     case Bjmp:
       NEXT2;

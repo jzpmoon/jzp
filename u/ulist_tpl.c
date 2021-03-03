@@ -39,14 +39,14 @@
   }
 
 #define ulist_newmp_tpl(t)				\
-  ulist_##t* ulist_##t##_newmp(umem_pool* pool){	\
+  ulist_##t* ulist_##t##_newmp(umem_pool* mp){		\
     ulist_##t* list;					\
 							\
-    list = umem_pool_alloc(pool,sizeof(ulist_##t));	\
+    list = umem_pool_alloc(mp,sizeof(ulist_##t));	\
     if(list){						\
       list->iterate = ulist_##t##_cursor_init;		\
       list->next = ulist_##t##_cursor_next;		\
-      list->pool = pool;				\
+      list->mp = mp;					\
       list->len = 0;					\
       list->header = NULL;				\
     }							\
@@ -59,8 +59,8 @@
     ulsnd_##t* footer=NULL;					\
     ulsnd_##t* node=NULL;					\
 								\
-    if (list->pool){						\
-      node = umem_pool_alloc(list->pool,sizeof(ulsnd_##t));	\
+    if (list->mp){						\
+      node = umem_pool_alloc(list->mp,sizeof(ulsnd_##t));	\
     }else{							\
       node = ualloc(sizeof(ulsnd_##t));				\
     }								\

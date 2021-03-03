@@ -39,7 +39,7 @@
     hstb->next = uhstb_##t##_cursor_next;		\
     hstb->len = len;					\
     hstb->count = 0;					\
-    hstb->pool = NULL;					\
+    hstb->mp = NULL;					\
     for(i = 0;i < len;i++){				\
       hstb->ndar[i] = NULL;				\
     }							\
@@ -47,17 +47,17 @@
   }
 
 #define uhstb_newmp_tpl(t)				\
-  uhstb_##t* uhstb_##t##_newmp(umem_pool*pool,int len){	\
+  uhstb_##t* uhstb_##t##_newmp(umem_pool* mp,int len){	\
     uhstb_##t* hstb;					\
     int size = TYPE_SIZE_OF(uhstb_##t,uhsnd_##t,len);	\
     int i;						\
-    hstb = umem_pool_alloc(pool,size);			\
+    hstb = umem_pool_alloc(mp,size);			\
     if (hstb) {						\
       hstb->iterate = uhstb_##t##_cursor_init;		\
       hstb->next = uhstb_##t##_cursor_next;		\
       hstb->len = len;					\
       hstb->count = 0;					\
-      hstb->pool = pool;				\
+      hstb->mp = mp;					\
       for(i = 0;i < len;i++){				\
 	hstb->ndar[i] = NULL;				\
       }							\
@@ -90,8 +90,8 @@
 	break;							\
       }								\
     }								\
-    if (hstb->pool) {						\
-      nd = umem_pool_alloc(hstb->pool,sizeof(uhsnd_##t));	\
+    if (hstb->mp) {						\
+      nd = umem_pool_alloc(hstb->mp,sizeof(uhsnd_##t));		\
     } else {							\
       nd = ualloc(sizeof(uhsnd_##t));				\
     }								\

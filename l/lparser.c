@@ -402,7 +402,7 @@ last_cons* last_cons_new(ltoken_state* ts,last_obj* car,last_obj* cdr){
   umem_pool* pool;
   last_cons* cons;
 
-  pool = &ts->pool;
+  pool = &ts->mp;
   cons = umem_pool_alloc(pool,sizeof(last_cons));
   if(cons){
     cons->t = lastk_cons;
@@ -416,7 +416,7 @@ last_symbol* last_symbol_new(ltoken_state* ts,ustring* name,last_attr* attr){
   umem_pool* pool;
   last_symbol* symbol;
 
-  pool = &ts->pool;
+  pool = &ts->mp;
   symbol = umem_pool_alloc(pool,sizeof(last_symbol));
   if(symbol){
     symbol->t = lastk_symbol;
@@ -430,7 +430,7 @@ last_number* last_number_new(ltoken_state* ts,ustring* name,double dnum){
   umem_pool* pool;
   last_number* number;
   
-  pool = &ts->pool;
+  pool = &ts->mp;
   number = umem_pool_alloc(pool,sizeof(last_number));
   if(number){
     number->t = lastk_number;
@@ -444,7 +444,7 @@ last_string* last_string_new(ltoken_state* ts,ustring* string){
   umem_pool* pool;
   last_string* str;
   
-  pool = &ts->pool;
+  pool = &ts->mp;
   str = umem_pool_alloc(pool,sizeof(last_string));
   if(str){
     str->t = lastk_string;
@@ -492,7 +492,7 @@ ltoken_state* ltoken_state_new(ustream* stream,
   ts->strtb = strtb;
   ts->attrtb = attrtb;
 
-  umem_pool_init(&ts->pool,-1);
+  umem_pool_init(&ts->mp,-1);
   
   ltoken_state_init(ts,stream);
   ltoken_state_attr_init(ts);

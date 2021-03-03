@@ -19,12 +19,13 @@ enum ltoken{
 };
 
 typedef struct _ltoken_state{
-  umem_pool pool;
+  umem_pool mp;
   ustream* stream;
   ubuffer* buff;
   int token;
   ustring* str;
   ustring* id;
+  int inte;
   double num;
   int bool;
   ustring_table* symtb;

@@ -34,7 +34,7 @@ vps_mod* leval_vps_load(leval* eval,char* file_path)
   }
 
   vps_mod_loaded(mod);
-  umem_pool_clean(&eval->ts->pool);
+  umem_pool_clean(&eval->ts->mp);
   
   return mod;
 }

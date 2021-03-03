@@ -4,13 +4,14 @@
   DF(Bload,"load",0004,2)						\
   DF(Bstore,"store",0014,2)						\
   DF(Bpush,"push",0024,2)						\
-  DF(Bjmp,"jmp",0034,3)					                \
-  DF(Bjmpi,"jmpi",0044,3)				      		\
-  DF(Bref,"ref",0054,3)						        \
-  DF(Bset,"set",0064,3)							\
-  DF(Btop,"top",0074,2)							\
+  DF(Bpop,"pop",0034,2)							\
+  DF(Bjmp,"jmp",0044,3)					                \
+  DF(Bjmpi,"jmpi",0054,3)				      		\
+  DF(Bref,"ref",0064,3)						        \
+  DF(Bset,"set",0074,3)							\
+  DF(Btop,"top",0104,2)							\
     									\
-  DF(Bpop,"pop",0361,1)							\
+  DF(Bpopv,"popv",0361,1)						\
   DF(Beq,"eq",0362,1)							\
   DF(Bgt,"gt",0363,1)							\
   DF(Blt,"lt",0364,1)							\

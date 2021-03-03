@@ -62,14 +62,13 @@ typedef struct _vcontext vcontext;
 struct _vcontext{
   VGCHEADER;
   vgc_heap* heap;
-  umem_pool pool;
+  umem_pool mp;
   uhstb_vmod* mods;
   vmod_loader* loader;
   ustring_table* symtb;
   ustring_table* strtb;
   vslot_define_begin
     vslot_define(vgc_call,calling);
-    vslot_define(vgc_array,consts);
   vslot_define_end
 };
 

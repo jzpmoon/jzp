@@ -1,3 +1,6 @@
+;; global data
+(g-var flag)
+
 ;; factorial n!
 (g-subr factorial (n)
   (load n)
