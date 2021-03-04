@@ -16,6 +16,7 @@ ustring* ustring_new_by_charp(
 unsigned int udata_hscd(void* v,int len);
 unsigned int ucharp_hscd(char* v);
 void ustring_dest(ustring* str);
+int ustring_to_integer(ustring* str);
 double ustring_to_number(ustring* str);
 void ustring_log(ustring* str);
 

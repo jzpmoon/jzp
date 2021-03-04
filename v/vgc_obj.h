@@ -19,7 +19,7 @@ enum {
   vgc_obj_type_ref,
 };
 
-#define vgc_obj_typeof(O,T) \
+#define vgc_obj_typeof(O,T)			\
   (((O)->_mark.t==(T)))
 
 struct mark_t{
@@ -148,6 +148,11 @@ vgc_obj* vgc_heap_data_new(vgc_heap* heap,
 			   int obj_type,
 			   int area_type);
 
+vslot vgc_heap_stack_get(vgc_heap* heap,usize_t index);
+void vgc_heap_stack_set(vgc_heap* heap,usize_t index,vslot slot);
+usize_t vgc_heap_stack_top_get(vgc_heap* heap);
+void vgc_heap_stack_top_set(vgc_heap* heap,usize_t index);
+
 #define vgc_obj_slot_count(type)		\
   (sizeof(((type*)0)->_u)/sizeof(vslot))
 
@@ -164,11 +169,6 @@ vgc_obj* vgc_heap_data_new(vgc_heap* heap,
   if(ustack_vslot_pop(&(heap)->root_set,slotp)){	\
     uabort("vgc_heap_stack: empty!");			\
   }
-
-vslot vgc_heap_stack_get(vgc_heap* heap,usize_t index);
-void vgc_heap_stack_set(vgc_heap* heap,usize_t index,vslot slot);
-usize_t vgc_heap_stack_top_get(vgc_heap* heap);
-void vgc_heap_stack_top_set(vgc_heap* heap,usize_t index);
 
 #define vgc_heap_stack_pushv(heap)		\
   if(ustack_vslot_pushv(&(heap)->root_set)){	\

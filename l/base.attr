@@ -311,9 +311,9 @@ LDEFATTR(load,"load",{
     if(obj->t == lastk_symbol){
       last_symbol* sym = (last_symbol*)obj;
       inst = vps_iloaddt(top->vps,sym->name);
-    }else if(obj->t == lastk_number){
-      last_number* num = (last_number*)obj;
-      inst = vps_iloadimm(top->vps,(usize_t)num->dnum);
+    }else if(obj->t == lastk_integer){
+      last_integer* inte = (last_integer*)obj;
+      inst = vps_iloadimm(top->vps,inte->value);
     }else{
       uabort("load inst error!");      
     }
@@ -344,9 +344,9 @@ LDEFATTR(store,"store",{
     if(obj->t == lastk_symbol){
       last_symbol* sym = (last_symbol*)obj;
       inst = vps_istoredt(top->vps,sym->name);
-    }else if(obj->t == lastk_number){
-      last_number* num = (last_number*)obj;
-      inst = vps_istoreimm(top->vps,(usize_t)num->dnum);
+    }else if(obj->t == lastk_integer){
+      last_integer* inte = (last_integer*)obj;
+      inst = vps_istoreimm(top->vps,inte->value);
     }else{
       uabort("store inst error!");      
     }
@@ -384,12 +384,15 @@ LDEFATTR(push,"push",{
     if(obj->t == lastk_symbol){
       last_symbol* sym = (last_symbol*)obj;
       inst = vps_ipushdt(top->vps,grp,sym->name);
+    }else if(obj->t == lastk_integer){
+      last_integer* inte = (last_integer*)obj;
+      inst = vps_ipushimm(top->vps,grp,inte->name,inte->value);
     }else if(obj->t == lastk_number){
       last_number* num = (last_number*)obj;
-      inst = vps_ipushimm(top->vps,grp,num->name,num->dnum);
+      inst = vps_ipushimm(top->vps,grp,num->name,num->value);
     }else if(obj->t == lastk_string){
       last_string* str = (last_string*)obj;
-      inst = vps_ipushstr(top->vps,grp,str->string);
+      inst = vps_ipushstr(top->vps,grp,str->value);
     }else{
       uabort("push inst error!");
     }
@@ -416,9 +419,9 @@ LDEFATTR(top,"top",{
       uabort("top inst error!");
     }
     obj = last_car(next);
-    if(obj->t == lastk_number){
-      last_number* num = (last_number*)obj;
-      inst = vps_itop(top->vps,num->dnum);
+    if(obj->t == lastk_integer){
+      last_integer* inte = (last_integer*)obj;
+      inst = vps_itop(top->vps,inte->value);
     }else{
       uabort("top inst error!");
     }
@@ -544,9 +547,9 @@ LDEFATTR(jmpi,"jmpi",{
     if(obj->t == lastk_symbol){
       last_symbol* symbol = (last_symbol*)obj;
       inst = vps_ijmpilb(top->vps,symbol->name);
-    }else if(obj->t == lastk_number){
-      last_number* num = (last_number*)obj;
-      inst = vps_ijmpiimm(top->vps,(usize_t)num->dnum);
+    }else if(obj->t == lastk_integer){
+      last_integer* inte = (last_integer*)obj;
+      inst = vps_ijmpiimm(top->vps,inte->value);
     }else{
       uabort("jmpi inst error!");
     }
@@ -577,9 +580,9 @@ LDEFATTR(jmp,"jmp",{
     if(obj->t == lastk_symbol){
       last_symbol* symbol = (last_symbol*)obj;
       inst = vps_ijmplb(top->vps,symbol->name);
-    }else if(obj->t == lastk_number){
-      last_number* num = (last_number*)obj;
-      inst = vps_ijmpimm(top->vps,(usize_t)num->dnum);
+    }else if(obj->t == lastk_integer){
+      last_integer* inte = (last_integer*)obj;
+      inst = vps_ijmpimm(top->vps,inte->value);
     }else{
       uabort("jmp inst error!");
     }
@@ -735,9 +738,9 @@ LDEFATTR(ref,"ref",{
     obj = last_car(next);
     if(obj->t == lastk_symbol){
       uabort("ref inst error!");
-    }else if(obj->t == lastk_number){
-      last_number* num = (last_number*)obj;
-      inst = vps_irefimm(top->vps,(usize_t)num->dnum);
+    }else if(obj->t == lastk_integer){
+      last_integer* inte = (last_integer*)obj;
+      inst = vps_irefimm(top->vps,inte->value);
     }else{
       uabort("ref inst error!");
     }
@@ -767,9 +770,9 @@ LDEFATTR(set,"set",{
     obj = last_car(next);
     if(obj->t == lastk_symbol){
       uabort("set inst error!");
-    }else if(obj->t == lastk_number){
-      last_number* num = (last_number*)obj;
-      inst = vps_isetimm(top->vps,(usize_t)num->dnum);
+    }else if(obj->t == lastk_integer){
+      last_integer* inte = (last_integer*)obj;
+      inst = vps_isetimm(top->vps,inte->value);
     }else{
       uabort("set inst error!");
     }

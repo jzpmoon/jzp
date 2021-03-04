@@ -43,6 +43,7 @@ typedef struct _last_attr{
 enum {
   lastk_cons,
   lastk_symbol,
+  lastk_integer,
   lastk_number,
   lastk_string,
 };
@@ -59,15 +60,21 @@ typedef struct _last_symbol{
   last_attr* attr;
 } last_symbol;
 
+typedef struct _last_integer{
+  LASTHEADER;
+  ustring* name;
+  int value;
+} last_integer;
+
 typedef struct _last_number{
   LASTHEADER;
   ustring* name;
-  double dnum;
+  double value;
 } last_number;
 
 typedef struct _last_string{
   LASTHEADER;
-  ustring* string;
+  ustring* value;
 } last_string;
 
 uhstb_decl_tpl(last_attr);
@@ -75,6 +82,8 @@ uhstb_decl_tpl(last_attr);
 last_cons* last_cons_new(ltoken_state* ts,last_obj* car,last_obj* cdr);
 
 last_symbol* last_symbol_new(ltoken_state* ts,ustring* name,last_attr* attr);
+
+last_integer* last_integer_new(ltoken_state* ts,ustring* name,int inte);
 
 last_number* last_number_new(ltoken_state* ts,ustring* name,double dnum);
 

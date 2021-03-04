@@ -13,6 +13,7 @@ enum ltoken{
   ltk_left,
   ltk_right,
   ltk_string,
+  ltk_integer,
   ltk_number,
   ltk_quote,
   ltk_eof,
@@ -26,7 +27,7 @@ typedef struct _ltoken_state{
   ustring* str;
   ustring* id;
   int inte;
-  double num;
+  double dnum;
   int bool;
   ustring_table* symtb;
   ustring_table* strtb;

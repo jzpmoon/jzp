@@ -9,6 +9,11 @@ uhstb_def_tpl(vsymbol);
 static void gdata_load(vcontext* ctx,vmod* mod,vps_data* data);
 static void ldata_load(vgc_heap* heap,vgc_array* consts,vps_data* data);
 static vslot data2data(vgc_heap* heap,vps_data* data);
+static int inst2inst(vgc_array* consts,
+		     ulist_vps_dfgp* dfgs,
+		     vdfg_block* blk,
+		     vmod* mod,
+		     ulist_vinstp* insts);
 
 #define VCONTEXT_MODTB_SIZE 17
 #define VCONTEXT_OBJTB_SIZE 17
@@ -116,11 +121,11 @@ static int get_insts_count(ulist_vps_dfgp* dfgs,ustring* name)
   return insts_count;
 }
 
-static int vcontext_inst2inst(vgc_array* consts,
-			      ulist_vps_dfgp* dfgs,
-			      vdfg_block* blk,
-			      vmod* mod,
-			      ulist_vinstp* insts)
+static int inst2inst(vgc_array* consts,
+		     ulist_vps_dfgp* dfgs,
+		     vdfg_block* blk,
+		     vmod* mod,
+		     ulist_vinstp* insts)
 {
   ulist_vps_instp* src_insts;
   ucursor cursor;
@@ -284,8 +289,8 @@ vgc_subr* vcontext_graph_load(vcontext* ctx,vmod* mod,vdfg_graph* grp){
       uabort("vps_dfg not a block!");
     }
     blk = (vdfg_block*)(*dfgp);
-    if(vcontext_inst2inst(consts,dfgs,blk,mod,insts)){
-      uabort("vcontext_inst2inst error!");
+    if(inst2inst(consts,dfgs,blk,mod,insts)){
+      uabort("inst2inst error!");
     }
   }
 

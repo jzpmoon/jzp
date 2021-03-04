@@ -1,7 +1,7 @@
 (mod-load code.jzp)
 
 (entry main ()
-  (push 1)
+  (push 1.0)
   (pop flag)
   (push flag)
   (push system-ostream)

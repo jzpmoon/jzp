@@ -73,6 +73,10 @@ int ustring_comp(ustring* s1,ustring* s2){
   }
 }
 
+int ustring_to_integer(ustring* str){
+  return atoi(str->value);
+}
+
 double ustring_to_number(ustring* str){
   return atof(str->value);
 }

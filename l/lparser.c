@@ -167,8 +167,13 @@ int ltoken_lex_number(ltoken_state* ts){
     uabort("lparse: symtb put error!");
   }
   ts->id = str;
-  ts->num = ustring_to_number(str);
-  return ts->token = ltk_number;
+  if (dot == 0) {
+    ts->inte = ustring_to_integer(str);
+    return ts->token = ltk_integer;
+  } else {
+    ts->dnum = ustring_to_number(str);
+    return ts->token = ltk_number;
+  }
 }
 
 int ltoken_lex_identify(ltoken_state* ts){
@@ -272,13 +277,21 @@ last_obj* lparser_atom_parse(ltoken_state* ts){
       }
       return (last_obj*)sym;
     }
-  case ltk_number:
+  case ltk_integer:
     {
-      last_number* num = last_number_new(ts,ts->id,ts->num);
-      if(!num){
+      last_integer* integer = last_integer_new(ts,ts->id,ts->inte);
+      if(!integer){
 	uabort("lparser_atom_parse error!");
       }
-      return  (last_obj*)num;
+      return (last_obj*)integer;
+    }
+  case ltk_number:
+    {
+      last_number* number = last_number_new(ts,ts->id,ts->dnum);
+      if(!number){
+	uabort("lparser_atom_parse error!");
+      }
+      return (last_obj*)number;
     }
   default:
     ltoken_log(ts);
@@ -348,7 +361,7 @@ void ltoken_log(ltoken_state* ts){
   ulog1("token  :%d",ts->token);
   ulog1("symbol :%s",sym);
   ulog1("string :%s",str);
-  ulog1("number :%f",ts->num);
+  ulog1("number :%f",ts->dnum);
   ulog ("********token state   end");
 }
 
@@ -357,9 +370,9 @@ void lparser_atom_log(last_obj* s_exp){
     if(s_exp->t == lastk_symbol){
       ulog1("  %s",((last_symbol*)s_exp)->name->value);
     }else if(s_exp->t == lastk_string){
-      ulog1("  \"%s\"",((last_string*)s_exp)->string->value);
+      ulog1("  \"%s\"",((last_string*)s_exp)->value->value);
     }else if(s_exp->t == lastk_number){
-      ulog1("  %f",((last_number*)s_exp)->dnum);
+      ulog1("  %f",((last_number*)s_exp)->value);
     }else{
       ulog(" [unkonw]");
     }
@@ -426,6 +439,20 @@ last_symbol* last_symbol_new(ltoken_state* ts,ustring* name,last_attr* attr){
   return symbol;
 }
 
+last_integer* last_integer_new(ltoken_state* ts,ustring* name,int inte){
+  umem_pool* pool;
+  last_integer* integer;
+  
+  pool = &ts->mp;
+  integer = umem_pool_alloc(pool,sizeof(last_integer));
+  if(integer){
+    integer->t = lastk_integer;
+    integer->name = name;
+    integer->value = inte;
+  }
+  return integer;
+}
+
 last_number* last_number_new(ltoken_state* ts,ustring* name,double dnum){
   umem_pool* pool;
   last_number* number;
@@ -435,7 +462,7 @@ last_number* last_number_new(ltoken_state* ts,ustring* name,double dnum){
   if(number){
     number->t = lastk_number;
     number->name = name;
-    number->dnum = dnum;
+    number->value = dnum;
   }
   return number;
 }
@@ -448,7 +475,7 @@ last_string* last_string_new(ltoken_state* ts,ustring* string){
   str = umem_pool_alloc(pool,sizeof(last_string));
   if(str){
     str->t = lastk_string;
-    str->string = string;
+    str->value = string;
   }
   return str;
 }
@@ -460,7 +487,7 @@ void ltoken_state_init(ltoken_state* ts,
   ts->token = ltk_bad;
   ts->str = NULL;
   ts->id = NULL;
-  ts->num = 0;
+  ts->dnum = 0;
   ts->bool = 0;
   ts->coord.x = 1;
   ts->coord.y = 1;
@@ -529,6 +556,8 @@ int last2vps(ltoken_state* ts,last_obj* ast_obj,vps_mod* mod){
   }
     break;
   case lastk_symbol:
+    break;
+  case lastk_integer:
     break;
   case lastk_number:
     break;
