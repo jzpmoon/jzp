@@ -437,7 +437,7 @@ vdfg_block* vdfg_block_new(vps_cntr* vps){
     b->t = vdfgk_blk;
     b->parent = NULL;
     b->name = NULL;
-    b->insts = ulist_vps_instp_newmp(&vps->mp);
+    b->insts = ulist_vps_instp_alloc(&vps->mp.allocator);
   }
   return b;
 }
@@ -449,14 +449,17 @@ void vdfg_blk_apd(vdfg_block* blk,vps_inst* inst)
 
 vdfg_graph* vdfg_graph_new(vps_cntr* vps){
   vdfg_graph* g;
+  uallocator* allocator;
+
+  allocator = &vps->mp.allocator;
   g = umem_pool_alloc(&vps->mp,sizeof(vdfg_graph));
   if(g){
     g->t = vdfgk_grp;
     g->parent = NULL;
     g->name = NULL;
-    g->locals = uhstb_vps_datap_newmp(&vps->mp,VDFG_GRP_DATA_TABLE_SIZE);
-    g->imms = ulist_vps_datap_newmp(&vps->mp);
-    g->dfgs = ulist_vps_dfgp_newmp(&vps->mp);
+    g->locals = uhstb_vps_datap_alloc(allocator,VDFG_GRP_DATA_TABLE_SIZE);
+    g->imms = ulist_vps_datap_alloc(allocator);
+    g->dfgs = ulist_vps_dfgp_alloc(allocator);
     g->entry = NULL;
     g->params_count = 0;
     g->locals_count = 0;
@@ -581,16 +584,20 @@ vps_data* vdfg_grp_dtget(vdfg_graph* grp,ustring* name){
 
 vps_mod* vps_mod_new(vps_cntr* vps,ustring* name){
   vps_mod* mod;
+  uallocator* allocator;
 
+  allocator = &vps->mp.allocator;
   mod = umem_pool_alloc(&vps->mp,sizeof(vps_mod));
   if(mod){
     mod->t = vpsk_mod;
     mod->vps = vps;
-    mod->data = uhstb_vps_datap_newmp(&vps->mp,VPS_MOD_DATA_TABLE_SIZE);
+    mod->data = uhstb_vps_datap_alloc(allocator,
+				      VPS_MOD_DATA_TABLE_SIZE);
     if(!mod->data){
       uabort("new hash table data error!");
     }
-    mod->code = uhstb_vdfg_graphp_newmp(&vps->mp,VPS_MOD_CODE_TABLE_SIZE);
+    mod->code = uhstb_vdfg_graphp_alloc(allocator,
+					VPS_MOD_CODE_TABLE_SIZE);
     if(!mod->code){
       uabort("new hash table code error!");
     }
@@ -670,7 +677,8 @@ void vps_mod_code_put(vps_mod* mod,vdfg_graph* code){
 
 void vps_cntr_init(vps_cntr* cntr) {
   umem_pool_init(&cntr->mp,-1);
-  cntr->mods = uhstb_vps_modp_newmp(&cntr->mp,VPS_CNTR_MOD_TABLE_SIZE);
+  cntr->mods = uhstb_vps_modp_alloc(&cntr->mp.allocator,
+				    VPS_CNTR_MOD_TABLE_SIZE);
 }
 
 static int vps_cntr_mod_comp(vps_modp* mod1,vps_modp* mod2){

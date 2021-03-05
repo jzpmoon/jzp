@@ -26,59 +26,57 @@
     return (void*)&next->value;						\
   }
 
-#define ulist_new_tpl(t)				\
-  ulist_##t* ulist_##t##_new(){				\
-    ulist_##t* list = ualloc(sizeof(ulist_##t));	\
-    if(list){						\
-      list->iterate = ulist_##t##_cursor_init;		\
-      list->next = ulist_##t##_cursor_next;		\
-      list->len = 0;					\
-      list->header = NULL;				\
-    }							\
-    return list;					\
+#define ulist_new_tpl(t)						\
+  ulist_##t* ulist_##t##_new(){						\
+    uallocator* allocator = &u_global_allocator;			\
+    ulist_##t* list = allocator->alloc(allocator,sizeof(ulist_##t));	\
+    if(list){								\
+      list->iterate = ulist_##t##_cursor_init;				\
+      list->next = ulist_##t##_cursor_next;				\
+      list->allocator = allocator;					\
+      list->len = 0;							\
+      list->header = NULL;						\
+    }									\
+    return list;							\
   }
 
-#define ulist_newmp_tpl(t)				\
-  ulist_##t* ulist_##t##_newmp(umem_pool* mp){		\
-    ulist_##t* list;					\
-							\
-    list = umem_pool_alloc(mp,sizeof(ulist_##t));	\
-    if(list){						\
-      list->iterate = ulist_##t##_cursor_init;		\
-      list->next = ulist_##t##_cursor_next;		\
-      list->mp = mp;					\
-      list->len = 0;					\
-      list->header = NULL;				\
-    }							\
-    return list;					\
-  }
-
-#define ulist_append_tpl(t)					\
-  int ulist_##t##_append(ulist_##t* list,t value){		\
-    ulsnd_##t* header=list->header;				\
-    ulsnd_##t* footer=NULL;					\
-    ulsnd_##t* node=NULL;					\
+#define ulist_alloc_tpl(t)					\
+  ulist_##t* ulist_##t##_alloc(uallocator* allocator){		\
+    ulist_##t* list;						\
 								\
-    if (list->mp){						\
-      node = umem_pool_alloc(list->mp,sizeof(ulsnd_##t));	\
-    }else{							\
-      node = ualloc(sizeof(ulsnd_##t));				\
+    list = allocator->alloc(allocator,sizeof(ulist_##t));	\
+    if(list){							\
+      list->iterate = ulist_##t##_cursor_init;			\
+      list->next = ulist_##t##_cursor_next;			\
+      list->allocator = allocator;				\
+      list->len = 0;						\
+      list->header = NULL;					\
     }								\
-    if (!node) {						\
-      return -1;						\
-    }								\
-    if(header==NULL){						\
-      list->header=header=footer=node;				\
-    }else{							\
-      footer=header->prev;					\
-    }								\
-    header->prev=node;						\
-    footer->next=node;						\
-    node->prev=footer;						\
-    node->next=header;						\
-    node->value=value;						\
-    list->len++;						\
-    return 0;							\
+    return list;						\
+  }
+
+#define ulist_append_tpl(t)						\
+  int ulist_##t##_append(ulist_##t* list,t value){			\
+    ulsnd_##t* header=list->header;					\
+    ulsnd_##t* footer=NULL;						\
+    ulsnd_##t* node=NULL;						\
+									\
+    node = list->allocator->alloc(list->allocator,sizeof(ulsnd_##t));	\
+    if (!node) {							\
+      return -1;							\
+    }									\
+    if(header==NULL){							\
+      list->header=header=footer=node;					\
+    }else{								\
+      footer=header->prev;						\
+    }									\
+    header->prev=node;							\
+    footer->next=node;							\
+    node->prev=footer;							\
+    node->next=header;							\
+    node->value=value;							\
+    list->len++;							\
+    return 0;								\
   }
 
 #define ulist_concat_tpl(t)					\
@@ -108,7 +106,7 @@
   ulist_cursor_tpl(t);				\
   ulist_cursor_next_tpl(t);			\
   ulist_new_tpl(t);				\
-  ulist_newmp_tpl(t);				\
+  ulist_alloc_tpl(t);				\
   ulist_append_tpl(t);				\
   ulist_concat_tpl(t);				\
   ulist_del_tpl(t)

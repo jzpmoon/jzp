@@ -24,4 +24,19 @@
 
 #define uoffsetof(stype,member) offsetof(stype,member)
 
+typedef size_t ualloc_size_t;
+typedef struct _uallocator uallocator;
+typedef void* (*ualloc_ft)(uallocator* allocator,ualloc_size_t size);
+typedef void (*ufree_ft)(uallocator* allocator,void* ptr);
+
+#define UALLOCATOR_HEADER \
+  ualloc_ft alloc;	  \
+  ufree_ft free
+
+struct _uallocator{
+  UALLOCATOR_HEADER;
+};
+
+extern uallocator u_global_allocator;
+
 #endif

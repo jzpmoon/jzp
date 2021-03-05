@@ -1,6 +1,12 @@
 (mod-load code.jzp)
 
 (entry main ()
+  (push test-fibonacci)
+  (call)
+  (return)
+)
+
+(subr test-g-var ()
   (push 1.0)
   (pop flag)
   (push flag)

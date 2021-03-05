@@ -2,6 +2,10 @@
 #include "ualloc.h"
 #include "umempool.h"
 
+static void* alloc_impl(uallocator* allocator,ualloc_size_t size);
+
+static void free_impl(uallocator* allocator,void* ptr){}
+
 umem_node* umem_node_new(int size){
   int align_size;
   int offset_size;
@@ -21,7 +25,9 @@ umem_node* umem_node_new(int size){
   return node;
 }
 
-void umem_pool_init(umem_pool* pool,int max_size) {
+void umem_pool_init(umem_pool* pool,ualloc_size_t max_size) {
+  pool->allocator.alloc = alloc_impl;
+  pool->allocator.free = free_impl;
   pool->now_count = 0;
   pool->now_size = 0;
   if (max_size > -1) {
@@ -32,7 +38,7 @@ void umem_pool_init(umem_pool* pool,int max_size) {
   pool->node = NULL;
 }
 
-void* umem_pool_alloc(umem_pool* pool,int size){
+void* umem_pool_alloc(umem_pool* pool,ualloc_size_t size){
   umem_node* curr_node;
   umem_node* prev_node;
   int align_size;
@@ -66,6 +72,12 @@ void* umem_pool_alloc(umem_pool* pool,int size){
   curr_node->index += align_size;
   curr_node->remain_size -= align_size;
   return data;
+}
+
+static void* alloc_impl(uallocator* allocator,ualloc_size_t size)
+{
+  umem_pool* mp = (umem_pool*)allocator;
+  return umem_pool_alloc(mp,size);
 }
 
 void umem_pool_clean(umem_pool* pool){

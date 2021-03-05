@@ -276,7 +276,7 @@ vgc_subr* vcontext_graph_load(vcontext* ctx,vmod* mod,vdfg_graph* grp){
   }
   /* load code */
   dfgs = grp->dfgs;
-  insts = ulist_vinstp_newmp(&ctx->mp);
+  insts = ulist_vinstp_alloc(&ctx->mp.allocator);
   
   dfgs->iterate(&cursor);
   while(1){

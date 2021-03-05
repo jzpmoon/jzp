@@ -32,32 +32,16 @@
 #define uhstb_new_tpl(t)				\
   uhstb_##t* uhstb_##t##_new(int len){			\
     uhstb_##t* hstb;					\
+    uallocator* allocator = &u_global_allocator;	\
     int size = TYPE_SIZE_OF(uhstb_##t,uhsnd_##t,len);	\
     int i;						\
-    unew(hstb,size,return NULL;);			\
-    hstb->iterate = uhstb_##t##_cursor_init;		\
-    hstb->next = uhstb_##t##_cursor_next;		\
-    hstb->len = len;					\
-    hstb->count = 0;					\
-    hstb->mp = NULL;					\
-    for(i = 0;i < len;i++){				\
-      hstb->ndar[i] = NULL;				\
-    }							\
-    return hstb;					\
-  }
-
-#define uhstb_newmp_tpl(t)				\
-  uhstb_##t* uhstb_##t##_newmp(umem_pool* mp,int len){	\
-    uhstb_##t* hstb;					\
-    int size = TYPE_SIZE_OF(uhstb_##t,uhsnd_##t,len);	\
-    int i;						\
-    hstb = umem_pool_alloc(mp,size);			\
+    hstb = allocator->alloc(allocator,size);		\
     if (hstb) {						\
       hstb->iterate = uhstb_##t##_cursor_init;		\
       hstb->next = uhstb_##t##_cursor_next;		\
       hstb->len = len;					\
       hstb->count = 0;					\
-      hstb->mp = mp;					\
+      hstb->allocator = allocator;			\
       for(i = 0;i < len;i++){				\
 	hstb->ndar[i] = NULL;				\
       }							\
@@ -65,55 +49,70 @@
     return hstb;					\
   }
 
-#define uhstb_put_tpl(t)					\
-  int uhstb_##t##_put(uhstb_##t*          hstb,			\
-		      unsigned int        hscd,			\
-		      t*                  ink,			\
-		      t**                 outk,			\
-		      uhstb_##t##_key_ft  putk,			\
-		      uhstb_##t##_comp_ft comp){		\
-    uhsnd_##t* prev_nd = NULL;					\
-    uhsnd_##t* nd = NULL;					\
-    int idx = hscd%hstb->len;					\
-    uhsnd_##t* ls = hstb->ndar[idx];				\
-    while(ls){							\
-      int c = comp(ink,&ls->k);					\
-      if(c == 0){						\
-	if(outk){						\
-	  *outk = &ls->k;					\
-	}							\
-	return 1;						\
-      }else if(c > 0){						\
-	prev_nd = ls;						\
-	ls = ls->next;						\
-      }else{							\
-	break;							\
+#define uhstb_alloc_tpl(t)					\
+  uhstb_##t* uhstb_##t##_alloc(uallocator* allocator,int len){	\
+    uhstb_##t* hstb;						\
+    int size = TYPE_SIZE_OF(uhstb_##t,uhsnd_##t,len);		\
+    int i;							\
+    hstb = allocator->alloc(allocator,size);			\
+    if (hstb) {							\
+      hstb->iterate = uhstb_##t##_cursor_init;			\
+      hstb->next = uhstb_##t##_cursor_next;			\
+      hstb->len = len;						\
+      hstb->count = 0;						\
+      hstb->allocator = allocator;				\
+      for(i = 0;i < len;i++){					\
+	hstb->ndar[i] = NULL;					\
       }								\
     }								\
-    if (hstb->mp) {						\
-      nd = umem_pool_alloc(hstb->mp,sizeof(uhsnd_##t));		\
-    } else {							\
-      nd = ualloc(sizeof(uhsnd_##t));				\
-    }								\
-    if (!nd) {							\
-      return -1;						\
-    }								\
-    if(!prev_nd){						\
-      hstb->ndar[idx] = nd;					\
-    }else{							\
-      prev_nd->next = nd;					\
-    }								\
-    if(putk){							\
-      nd->k = putk(ink);					\
-    }else{							\
-      nd->k = *ink;						\
-    }								\
-    nd->next = ls;						\
-    if(outk){							\
-      *outk = &nd->k;						\
-    }								\
-    hstb->count++;						\
-    return 0;							\
+    return hstb;						\
+  }
+
+#define uhstb_put_tpl(t)						\
+  int uhstb_##t##_put(uhstb_##t*          hstb,				\
+		      unsigned int        hscd,				\
+		      t*                  ink,				\
+		      t**                 outk,				\
+		      uhstb_##t##_key_ft  putk,				\
+		      uhstb_##t##_comp_ft comp){			\
+    uhsnd_##t* prev_nd = NULL;						\
+    uhsnd_##t* nd = NULL;						\
+    int idx = hscd%hstb->len;						\
+    uhsnd_##t* ls = hstb->ndar[idx];					\
+    while(ls){								\
+      int c = comp(ink,&ls->k);						\
+      if(c == 0){							\
+	if(outk){							\
+	  *outk = &ls->k;						\
+	}								\
+	return 1;							\
+      }else if(c > 0){							\
+	prev_nd = ls;							\
+	ls = ls->next;							\
+      }else{								\
+	break;								\
+      }									\
+    }									\
+    nd = hstb->allocator->alloc(hstb->allocator,sizeof(uhsnd_##t));	\
+    if (!nd) {								\
+      return -1;							\
+    }									\
+    if(!prev_nd){							\
+      hstb->ndar[idx] = nd;						\
+    }else{								\
+      prev_nd->next = nd;						\
+    }									\
+    if(putk){								\
+      nd->k = putk(ink);						\
+    }else{								\
+      nd->k = *ink;							\
+    }									\
+    nd->next = ls;							\
+    if(outk){								\
+      *outk = &nd->k;							\
+    }									\
+    hstb->count++;							\
+    return 0;								\
   }
 
 #define uhstb_get_tpl(t)				\
@@ -142,6 +141,6 @@
   uhstb_cursor_tpl(t);				\
   uhstb_cursor_next_tpl(t);			\
   uhstb_new_tpl(t);				\
-  uhstb_newmp_tpl(t);				\
+  uhstb_alloc_tpl(t);				\
   uhstb_put_tpl(t);				\
   uhstb_get_tpl(t)
