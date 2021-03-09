@@ -78,6 +78,8 @@ typedef struct _vslot{
   } _u;
 #define vslot_is_num(slot)			\
   ((slot).t == vslot_type_num)
+#define vslot_is_int(slot)			\
+  ((slot).t == vslot_type_int)
 #define vslot_is_bool(slot)			\
   ((slot).t == vslot_type_bool)
 #define vslot_is_ref(slot)			\
@@ -108,11 +110,12 @@ typedef struct _vslot{
 #define vslot_log(slot)				\
   ulog1("slot type:%d",slot.t);			\
   ulog1("slot num:%f",slot.u.num);		\
+  ulog1("slot int:%d",slot.u.inte);		\
   ulog1("slot bool:%d",slot.u.bool);		\
   ulog1("slot ref:%lld",(long long)slot.u.ref);
 
-vslot vslot_num_add(vslot slot1,vslot slot2);
 vslot vslot_num_eq(vslot slot1,vslot slot2);
+vslot vslot_int_eq(vslot slot1,vslot slot2);
 vslot vslot_ref_eq(vslot slot1,vslot slot2);
 
 enum{

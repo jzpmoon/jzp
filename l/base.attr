@@ -386,10 +386,10 @@ LDEFATTR(push,"push",{
       inst = vps_ipushdt(top->vps,grp,sym->name);
     }else if(obj->t == lastk_integer){
       last_integer* inte = (last_integer*)obj;
-      inst = vps_ipushimm(top->vps,grp,inte->name,inte->value);
+      inst = vps_ipushint(top->vps,grp,inte->name,inte->value);
     }else if(obj->t == lastk_number){
       last_number* num = (last_number*)obj;
-      inst = vps_ipushimm(top->vps,grp,num->name,num->value);
+      inst = vps_ipushnum(top->vps,grp,num->name,num->value);
     }else if(obj->t == lastk_string){
       last_string* str = (last_string*)obj;
       inst = vps_ipushstr(top->vps,grp,str->value);

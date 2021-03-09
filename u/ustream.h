@@ -39,6 +39,8 @@ int ustream_look_ahead(ustream* stream,URI_DECL);
 
 int ustream_write_dnum(ustream* stream,double dnum,URI_DECL);
 
+int ustream_write_int(ustream* stream, int inte,URI_DECL);
+
 int ustream_write_string(ustream* stream,char* charp,URI_DECL);
 
 #endif

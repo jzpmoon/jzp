@@ -1,4 +1,29 @@
 /*
+ *define cfun make-array
+ */
+LDEFUN(make_array,"make-array",LSCOPE_GLOBAL,1,LRETVAL_YES,{
+    vslot slot;
+    int array_length;
+    vgc_array* array;
+    
+    slot = vcontext_params_get(ctx,0);
+    if (vslot_is_num(slot)) {
+      array_length = (int)vslot_num_get(slot);
+    } else if (vslot_is_int(slot)) {
+      array_length = vslot_int_get(slot);
+    } else {
+      uabort("not a number");
+      return 0;
+    }
+    array = vgc_array_new(ctx->heap,array_length,vgc_heap_area_active);
+    if (!array) {
+      uabort("arrray new error!");
+    }
+    vgc_heap_obj_push(ctx->heap,array);
+    return 0;
+  });
+
+/*
  *define cfun make-stream
  */
 LDEFUN(make_stream,"make-stream",LSCOPE_GLOBAL,0,LRETVAL_NO,{
@@ -34,6 +59,11 @@ LDEFUN(stream_output,"stream-output",LSCOPE_GLOBAL,2,LRETVAL_NO,{
       if(ustream_write_dnum(lstream->stream,num,URI_REF)){
 	uabort("stream-output:stream write number error!");	
       }
+    } else if (vslot_is_int(slot)) {
+      int inte = vslot_int_get(slot);
+      if(ustream_write_int(lstream->stream,inte,URI_REF)){
+	uabort("stream-output:stream write number error!");	
+      }
     } else if (vslot_is_ref(slot)) {
       vgc_obj* obj = vslot_ref_get(slot,vgc_obj);
       if (vgc_obj_typeof(obj,vgc_obj_type_string)) {
@@ -60,6 +90,7 @@ LDEFVAR(system_ostream,"system-ostream",LSCOPE_GLOBAL,{
   });
 
 LFUNONLOAD(base,{
+    LDECLFUN(make_array);
     LDECLFUN(make_stream);
     LDECLFUN(stream_output);
     LDECLVAR(system_istream);

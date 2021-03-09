@@ -136,20 +136,23 @@ vgc_ref* vgc_ref_new(vgc_heap* heap,vslot slot)
   return ref;
 }
 
-vslot vslot_num_add(vslot slot1,vslot slot2){
-  double num1 = vslot_num_get(slot1);
-  double num2 = vslot_num_get(slot2);
-  double sum = num1 + num2;
-  vslot slot3;
-  vslot_num_set(slot3,sum);
-  return slot3;
-}
-
 vslot vslot_num_eq(vslot slot1,vslot slot2){
   double num1 = vslot_num_get(slot1);
   double num2 = vslot_num_get(slot2);
   vslot bool;
   if(num1 == num2){
+    vslot_bool_set(bool,vbool_true);
+  }else{
+    vslot_bool_set(bool,vbool_false);
+  }
+  return bool;
+}
+
+vslot vslot_int_eq(vslot slot1,vslot slot2){
+  int int1 = vslot_int_get(slot1);
+  int int2 = vslot_int_get(slot2);
+  vslot bool;
+  if(int1 == int2){
     vslot_bool_set(bool,vbool_true);
   }else{
     vslot_bool_set(bool,vbool_false);

@@ -132,52 +132,122 @@ void bc_add(vcontext* ctx){
   vslot slot1;
   vslot slot2;
   vslot num;
-  vgc_heap* heap = ctx->heap;
+  vgc_heap* heap;
+
+  heap = ctx->heap;
   vgc_heap_stack_pop(heap,&slot1);
   vgc_heap_stack_pop(heap,&slot2);
-  if(!vslot_is_num(slot1) ||
-     !vslot_is_num(slot2)){
-    uabort("vm:add not a number!");
+  
+  if (vslot_is_num(slot1)) {
+    double num1 = vslot_num_get(slot1);
+    if (vslot_is_num(slot2)) {
+      double num2 = vslot_num_get(slot2);
+      vslot_num_set(num,num1 + num2);
+    } else if (vslot_is_int(slot2)) {
+      int int2 = vslot_int_get(slot2);
+      vslot_num_set(num,num1 + int2);
+    } else {
+      uabort("first is not a numberical!");
+      return;
+    }
+  } if (vslot_is_int(slot1)) {
+    int int1 = vslot_int_get(slot1);
+    if (vslot_is_num(slot2)) {
+      double num2 = vslot_num_get(slot2);
+      vslot_num_set(num,int1 + num2);
+    } else if (vslot_is_int(slot2)) {
+      int int2 = vslot_int_get(slot2);
+      vslot_int_set(num,int1 + int2);
+    } else {
+      uabort("first is not a numberical!");
+      return;
+    }
+  } else {
+    uabort("second is not a numberical!");
+    return;
   }
-  num = vslot_num_add(slot1,slot2);
   vgc_heap_stack_push(heap,num);
 }
 
 void bc_sub(vcontext* ctx){
   vslot slot1;
   vslot slot2;
-  double num1;
-  double num2;
   vslot num;
-  vgc_heap* heap = ctx->heap;
+  vgc_heap* heap;
+
+  heap = ctx->heap;
   vgc_heap_stack_pop(heap,&slot1);
   vgc_heap_stack_pop(heap,&slot2);
-  if(!vslot_is_num(slot1) ||
-     !vslot_is_num(slot2)){
-    uabort("vm:sub not a number!");
+
+  if (vslot_is_num(slot1)) {
+    double num1 = vslot_num_get(slot1);
+    if (vslot_is_num(slot2)) {
+      double num2 = vslot_num_get(slot2);
+      vslot_num_set(num,num1 - num2);
+    } else if (vslot_is_int(slot2)) {
+      int int2 = vslot_int_get(slot2);
+      vslot_num_set(num,num1 - int2);
+    } else {
+      uabort("first is not a numberical!");
+      return;
+    }
+  } if (vslot_is_int(slot1)) {
+    int int1 = vslot_int_get(slot1);
+    if (vslot_is_num(slot2)) {
+      double num2 = vslot_num_get(slot2);
+      vslot_num_set(num,int1 - num2);
+    } else if (vslot_is_int(slot2)) {
+      int int2 = vslot_int_get(slot2);
+      vslot_int_set(num,int1 - int2);
+    } else {
+      uabort("first is not a numberical!");
+      return;
+    }
+  } else {
+    uabort("second is not a numberical!");
+    return;
   }
-  num1 = vslot_num_get(slot1);
-  num2 = vslot_num_get(slot2);
-  vslot_num_set(num,(num1-num2));
   vgc_heap_stack_push(heap,num);
 }
 
 void bc_mul(vcontext* ctx){
   vslot slot1;
   vslot slot2;
-  double num1;
-  double num2;
   vslot num;
-  vgc_heap* heap = ctx->heap;
+  vgc_heap* heap;
+
+  heap = ctx->heap;
   vgc_heap_stack_pop(heap,&slot1);
   vgc_heap_stack_pop(heap,&slot2);
-  if(!vslot_is_num(slot1) ||
-     !vslot_is_num(slot2)){
-    uabort("vm:mul not a number!");
+  
+  if (vslot_is_num(slot1)) {
+    double num1 = vslot_num_get(slot1);
+    if (vslot_is_num(slot2)) {
+      double num2 = vslot_num_get(slot2);
+      vslot_num_set(num,num1 * num2);
+    } else if (vslot_is_int(slot2)) {
+      int int2 = vslot_int_get(slot2);
+      vslot_num_set(num,num1 * int2);
+    } else {
+      uabort("first is not a numberical!");
+      return;
+    }
+  } if (vslot_is_int(slot1)) {
+    int int1 = vslot_int_get(slot1);
+    if (vslot_is_num(slot2)) {
+      double num2 = vslot_num_get(slot2);
+      vslot_num_set(num,int1 * num2);
+    } else if (vslot_is_int(slot2)) {
+      int int2 = vslot_int_get(slot2);
+      vslot_int_set(num,int1 * int2);
+    } else {
+      uabort("first is not a numberical!");
+      return;
+    }
+  } else {
+    uabort("second is not a numberical!");
+    return;
   }
-  num1 = vslot_num_get(slot1);
-  num2 = vslot_num_get(slot2);
-  vslot_num_set(num,(num1*num2));
   vgc_heap_stack_push(heap,num);
 }
 
@@ -187,38 +257,70 @@ void bc_div(vcontext* ctx){
   double num1;
   double num2;
   vslot num;
-  vgc_heap* heap = ctx->heap;
+  vgc_heap* heap;
+  
+  heap = ctx->heap;
   vgc_heap_stack_pop(heap,&slot1);
   vgc_heap_stack_pop(heap,&slot2);
-  if(!vslot_is_num(slot1) ||
-     !vslot_is_num(slot2)){
-    uabort("vm:div not a number!");
+  
+  if (vslot_is_num(slot1)) {
+    num1 = vslot_num_get(slot1);
+  } else if (vslot_is_int(slot1)) {
+    num1 = vslot_int_get(slot1);
+  } else {
+    uabort("first is not a numberical!");
+    return;
   }
-  num1 = vslot_num_get(slot1);
-  num2 = vslot_num_get(slot2);
-  if(num2 == 0){
-    uabort("denominator can't be zero");
+  if (vslot_is_num(slot2)) {
+    num2 = vslot_num_get(slot2);
+  } else if (vslot_is_int(slot2)) {
+    num2 = vslot_int_get(slot2);
+  } else {
+    uabort("second is not a numberical!");
+    return;
   }
-  vslot_num_set(num,(num1/num2));
+  vslot_num_set(num,(num1 / num2));
   vgc_heap_stack_push(heap,num);
 }
 
 void bc_eq(vcontext* ctx){
   vslot slot1;
   vslot slot2;
+  double num1;
+  double num2;
   vslot bool;
 
   vgc_heap_stack_pop(ctx->heap,&slot1);
   vgc_heap_stack_pop(ctx->heap,&slot2);
-
-  if(vslot_is_num(slot1) && vslot_is_num(slot2)){
-    bool = vslot_num_eq(slot1,slot2);
-  }else if(vslot_is_ref(slot1) && vslot_is_ref(slot2)){
+  
+  if(vslot_is_ref(slot1) && vslot_is_ref(slot2)){
     bool = vslot_ref_eq(slot1,slot2);
   }else if(vslot_is_true(slot1) && vslot_is_true(slot2)){
     vslot_bool_set(bool,vbool_true);
   }else{
-    vslot_bool_set(bool,vbool_false);
+    if(vslot_is_num(slot1)){
+      num1 = vslot_num_get(slot1);
+    } else if(vslot_is_int(slot1)){
+      num1 = vslot_int_get(slot1);
+    } else {
+      vslot_bool_set(bool,vbool_false);
+      vgc_heap_stack_push(ctx->heap,bool);
+      return;
+    }
+    if(vslot_is_num(slot2)){
+      num2 = vslot_num_get(slot2);
+    } else if(vslot_is_int(slot2)){
+      num2 = vslot_int_get(slot2);
+    } else {
+      vslot_bool_set(bool,vbool_false);
+      vgc_heap_stack_push(ctx->heap,bool);
+      return;
+    }
+    if(num1 == num2){
+      vslot_bool_set(bool,vbool_true);
+    }else{
+      vslot_bool_set(bool,vbool_false);
+    }
   }
   vgc_heap_stack_push(ctx->heap,bool);
 }
@@ -226,19 +328,33 @@ void bc_eq(vcontext* ctx){
 void bc_gt(vcontext* ctx){
   vslot slot1;
   vslot slot2;
+  double num1;
+  double num2;
   vslot bool;
 
   vgc_heap_stack_pop(ctx->heap,&slot1);
   vgc_heap_stack_pop(ctx->heap,&slot2);
 
-  if(vslot_is_num(slot1) && vslot_is_num(slot2)){
-    double num1 = vslot_num_get(slot1);
-    double num2 = vslot_num_get(slot2);
-    if(num1 > num2){
-      vslot_bool_set(bool,vbool_true);
-    }else{
-      vslot_bool_set(bool,vbool_false);
-    }
+  if(vslot_is_num(slot1)){
+    num1 = vslot_num_get(slot1);
+  } else if(vslot_is_int(slot1)){
+    num1 = vslot_int_get(slot1);
+  } else {
+    vslot_bool_set(bool,vbool_false);
+    vgc_heap_stack_push(ctx->heap,bool);
+    return;
+  }
+  if(vslot_is_num(slot2)){
+    num2 = vslot_num_get(slot2);
+  } else if(vslot_is_int(slot2)){
+    num2 = vslot_int_get(slot2);
+  } else {
+    vslot_bool_set(bool,vbool_false);
+    vgc_heap_stack_push(ctx->heap,bool);
+    return;
+  }
+  if(num1 > num2){
+    vslot_bool_set(bool,vbool_true);
   }else{
     vslot_bool_set(bool,vbool_false);
   }
@@ -248,23 +364,37 @@ void bc_gt(vcontext* ctx){
 void bc_lt(vcontext* ctx){
   vslot slot1;
   vslot slot2;
+  double num1;
+  double num2;
   vslot bool;
 
   vgc_heap_stack_pop(ctx->heap,&slot1);
   vgc_heap_stack_pop(ctx->heap,&slot2);
 
-  if(vslot_is_num(slot1) && vslot_is_num(slot2)){
-    double num1 = vslot_num_get(slot1);
-    double num2 = vslot_num_get(slot2);
-    if(num1 < num2){
-      vslot_bool_set(bool,vbool_true);
-    }else{
-      vslot_bool_set(bool,vbool_false);
-    }
+  if(vslot_is_num(slot1)){
+    num1 = vslot_num_get(slot1);
+  } else if(vslot_is_int(slot1)){
+    num1 = vslot_int_get(slot1);
+  } else {
+    vslot_bool_set(bool,vbool_false);
+    vgc_heap_stack_push(ctx->heap,bool);
+    return;
+  }
+  if(vslot_is_num(slot2)){
+    num2 = vslot_num_get(slot2);
+  } else if(vslot_is_int(slot2)){
+    num2 = vslot_int_get(slot2);
+  } else {
+    vslot_bool_set(bool,vbool_false);
+    vgc_heap_stack_push(ctx->heap,bool);
+    return;
+  }
+  if(num1 < num2){
+    vslot_bool_set(bool,vbool_true);
   }else{
     vslot_bool_set(bool,vbool_false);
   }
-  vgc_heap_stack_push(ctx->heap,bool);  
+  vgc_heap_stack_push(ctx->heap,bool);
 }
 
 void bc_and(vcontext* ctx){
@@ -275,15 +405,7 @@ void bc_and(vcontext* ctx){
   vgc_heap_stack_pop(ctx->heap,&slot1);
   vgc_heap_stack_pop(ctx->heap,&slot2);
 
-  if(vslot_is_num(slot1) && vslot_is_num(slot2)){
-    double num1 = vslot_num_get(slot1);
-    double num2 = vslot_num_get(slot2);
-    if(num1 && num2){
-      vslot_bool_set(bool,vbool_true);
-    }else{
-      vslot_bool_set(bool,vbool_false);
-    }
-  }else if(vslot_is_bool(slot1) && vslot_is_bool(slot2)){
+  if(vslot_is_bool(slot1) && vslot_is_bool(slot2)){
     int bool1 = vslot_bool_get(slot1);
     int bool2 = vslot_bool_get(slot2);
     if(bool1 && bool2){
@@ -305,15 +427,7 @@ void bc_or(vcontext* ctx){
   vgc_heap_stack_pop(ctx->heap,&slot1);
   vgc_heap_stack_pop(ctx->heap,&slot2);
 
-  if(vslot_is_num(slot1) && vslot_is_num(slot2)){
-    double num1 = vslot_num_get(slot1);
-    double num2 = vslot_num_get(slot2);
-    if(num1 || num2){
-      vslot_bool_set(bool,vbool_true);
-    }else{
-      vslot_bool_set(bool,vbool_false);
-    }
-  }else if(vslot_is_bool(slot1) && vslot_is_bool(slot2)){
+  if(vslot_is_bool(slot1) && vslot_is_bool(slot2)){
     int bool1 = vslot_bool_get(slot1);
     int bool2 = vslot_bool_get(slot2);
     if(bool1 || bool2){
@@ -333,14 +447,7 @@ void bc_not(vcontext* ctx){
   
   vgc_heap_stack_pop(ctx->heap,&slot);
 
-  if(vslot_is_num(slot)){
-    double num = vslot_num_get(slot);
-    if(!num){
-      vslot_bool_set(bool,vbool_true);
-    }else{
-      vslot_bool_set(bool,vbool_false);
-    }
-  }else if(vslot_is_bool(slot)){
+  if(vslot_is_bool(slot)){
     int b = vslot_bool_get(slot);
     if(!b){
       vslot_bool_set(bool,vbool_true);
@@ -521,7 +628,7 @@ void vcontext_execute(vcontext* ctx){
     NEXT;
     switch(op){
     case Bnop:
-      ulog("Bnop %d",op);
+      ulog("Bnop");
       break;
     case Bload:
       NEXT;

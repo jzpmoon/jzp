@@ -153,7 +153,11 @@ vps_inst* vps_iloadimm(vps_cntr* vps,int imm);
 vps_inst* vps_iloaddt(vps_cntr* vps,ustring* name);
 vps_inst* vps_istoreimm(vps_cntr* vps,int imm);
 vps_inst* vps_istoredt(vps_cntr* vps,ustring* name);
-vps_inst* vps_ipushimm(vps_cntr* vps,
+vps_inst* vps_ipushint(vps_cntr* vps,
+		       vdfg_graph* grp,
+		       ustring* name,
+		       int imm);
+vps_inst* vps_ipushnum(vps_cntr* vps,
 		       vdfg_graph* grp,
 		       ustring* name,
 		       double dnum);
@@ -185,6 +189,10 @@ vps_inst* vps_isetimm(vps_cntr* vps,int imm);
 vps_data* vps_num_new(vps_cntr* vps,
 		      ustring* name,
 		      double num);
+
+vps_data* vps_int_new(vps_cntr* vps,
+		      ustring* name,
+		      int inte);
 
 vps_data* vps_str_new(vps_cntr* vps,
 		      ustring* name,
