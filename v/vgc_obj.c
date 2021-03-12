@@ -55,7 +55,7 @@ vgc_string* vgc_string_new(vgc_heap* heap,
   vgc_string* string;
   string = (vgc_string*)vgc_heap_data_new(heap,
 					  string_size,
-					  string_length,
+					  0,
 					  vgc_obj_type_string,
 					  area_type);
   if(string){
@@ -113,6 +113,7 @@ vgc_call* vgc_call_new(vgc_heap* heap,
     call->base = base;
     if(call_type == vgc_call_type_cfun){
       vgc_obj_slot_set(heap,call,cfun);
+      vgc_obj_null_set(call,subr);
     }else{
       vgc_heap_obj_pop(heap,subr,vgc_subr);
       vgc_obj_slot_get(heap,subr,bytecode);
@@ -120,6 +121,7 @@ vgc_call* vgc_call_new(vgc_heap* heap,
       call->pc = bytecode->u.b;
       vgc_heap_obj_push(heap,subr);
       vgc_obj_slot_set(heap,call,subr);
+      vgc_obj_null_set(call,cfun);
     }
     vgc_obj_slot_set(heap,call,caller);
   }

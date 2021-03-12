@@ -29,6 +29,8 @@ ustack_def_tpl(vgc_objp)
    (obj) < (vgc_obj*)((char*)(area)->area_begin + (area)->area_size))
 #define vgc_obj_is_static(heap,obj)		\
   vgc_area_of_obj(&heap->area_static,obj)
+#define vgc_obj_is_active(heap,obj)		\
+  vgc_area_of_obj(&heap->area_active,obj)
 
 vgc_heap* vgc_heap_new(usize_t area_static_size,
 		       usize_t area_active_size,
@@ -72,11 +74,9 @@ void vgc_collect_mark(vgc_heap* heap,vgc_obj* begin_obj){
     if(!obj || vgc_obj_is_mark(obj)){
       continue;
     }
-    if(!vgc_obj_is_static(heap,obj)){
-      vgc_obj_mark(obj);
-      vgc_obj_log(obj);
-      mark_count++;
-    }
+    vgc_obj_mark(obj);
+    vgc_obj_log(obj);
+    mark_count++;
     {
       vslot* obj_slot_list = vgc_obj_slot_list(obj);
       int i = 0;
@@ -94,8 +94,6 @@ void vgc_collect_mark(vgc_heap* heap,vgc_obj* begin_obj){
   }
 }
 
-#define vgc_obj_move_len(obj) ((char*)(obj) - (char*)(obj)->_addr)
-
 void vgc_collect_cal_addr(vgc_heap* heap){
   vgc_heap_area* heap_area = &heap->area_active;
   vgc_obj* move_addr = heap_area->area_begin;
@@ -106,8 +104,6 @@ void vgc_collect_cal_addr(vgc_heap* heap){
       vgc_obj_mark_addr(next_obj);
       next_obj->_addr = move_addr;
       move_addr = vgc_obj_next(move_addr,next_obj);
-      ulog("vgc_collect:cal addr move len %ld",
-	    vgc_obj_move_len(next_obj));
     }
     next_obj = vgc_obj_next(next_obj,next_obj);
   }
@@ -123,7 +119,13 @@ void vgc_collect_update_addr(vgc_heap* heap,vgc_obj* begin_obj){
     if(ustack_vgc_objp_pop(stack,&obj)){
       return;
     }
-    if(!obj || !vgc_obj_is_mark_addr(obj)){
+    if(!obj){
+      continue;
+    }
+    if (vgc_obj_is_static(heap,obj)) {
+      vgc_obj_unmark(obj);
+    }
+    if(!vgc_obj_is_mark_addr(obj)){
       continue;
     }
     vgc_obj_unmark_addr(obj);
@@ -134,9 +136,13 @@ void vgc_collect_update_addr(vgc_heap* heap,vgc_obj* begin_obj){
 	vslot slot = obj_slot_list[i];
 	if(vslot_is_ref(slot)){
 	  vgc_obj* ref_obj = vslot_ref_get(slot,vgc_obj);
-	  vslot_ref_set(obj_slot_list[i],ref_obj->_addr);
-	  if(ustack_vgc_objp_push(stack,ref_obj)){
-	    uabort("vgc_collect_mark:stack overflow!");
+	  if (ref_obj) {
+	    if (vgc_obj_is_active(heap,ref_obj)) {
+	      vslot_ref_set(obj_slot_list[i],ref_obj->_addr);
+	    }
+	    if(ustack_vgc_objp_push(stack,ref_obj)){
+	      uabort("vgc_collect_mark:stack overflow!");
+	    }
 	  }
 	}
 	i++;
@@ -154,8 +160,6 @@ vgc_obj* vgc_collect_move(vgc_heap* heap){
   int free_count = 0;
   while(next_obj < last_obj){
     if(vgc_obj_is_mark(next_obj)){
-      ulog("vgc_collect:move obj len %ld",
-	    vgc_obj_move_len(next_obj));
       vgc_obj_log(next_obj);
       vgc_obj_unmark(next_obj);
       move_addr = vgc_obj_next(move_addr,next_obj);
@@ -165,9 +169,9 @@ vgc_obj* vgc_collect_move(vgc_heap* heap){
       }
       next_obj = temp_obj;
     }else{
-      next_obj = vgc_obj_next(next_obj,next_obj);
       ulog("vgc_collect:free obj");
       vgc_obj_log(next_obj);
+      next_obj = vgc_obj_next(next_obj,next_obj);
       free_count++;
     }
   }
@@ -211,7 +215,9 @@ int vgc_collect(vgc_heap* heap){
     vslot slot = block->ptr[i];
     if(vslot_is_ref(slot)){
       vgc_obj* obj = vslot_ref_get(slot,vgc_obj);
-      vslot_ref_set(block->ptr[i],obj->_addr);
+      if (vgc_obj_is_active(heap,obj)) {
+	vslot_ref_set(block->ptr[i],obj->_addr);
+      }
       vgc_collect_update_addr(heap,obj);
     }
   }

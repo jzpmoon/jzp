@@ -18,7 +18,7 @@ typedef struct _vsymbol{
 
 #define vreloc_log(reloc)				\
   ulog("ref_name:%s",reloc->ref_name->value);		\
-  ulog("rel_obj:%lld",(long long)reloc->rel_obj);	\
+  ulog("rel_obj:%p",reloc->rel_obj);			\
   ulog("rel_idx:%d",reloc->rel_idx);
 
 ulist_decl_tpl(vreloc);

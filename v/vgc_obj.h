@@ -44,6 +44,7 @@ typedef struct _vgc_obj{
 #define vgc_obj_log(obj)			\
   do{						\
     ulog("*******vgc_obj_log");			\
+    ulog("addr:%p",obj);			\
     ulog("type:%d",obj->_mark.t);		\
     ulog("size:%d",obj->_size);			\
     ulog("len: %d",obj->_len);			\
@@ -54,7 +55,6 @@ enum{
   vslot_type_num,
   vslot_type_int,
   vslot_type_bool,
-  vslot_type_null,
 };
 
 typedef struct _vslot{
@@ -102,7 +102,7 @@ typedef struct _vslot{
   (slot.t = vslot_type_ref,			\
    slot.u.ref = (vgc_obj*)obj)
 #define vslot_null_set(slot)			\
-  ((slot).t = vslot_type_null,			\
+  ((slot).t = vslot_type_ref,			\
    (slot).u.ref = NULL)
 #define vslot_is_true(SLOT)			\
   (vslot_is_bool(SLOT) && (SLOT).u.bool)
@@ -112,7 +112,7 @@ typedef struct _vslot{
   ulog1("slot num:%f",slot.u.num);		\
   ulog1("slot int:%d",slot.u.inte);		\
   ulog1("slot bool:%d",slot.u.bool);		\
-  ulog1("slot ref:%lld",(long long)slot.u.ref);
+  ulog1("slot ref:%p",(long long)slot.u.ref);
 
 vslot vslot_num_eq(vslot slot1,vslot slot2);
 vslot vslot_int_eq(vslot slot1,vslot slot2);

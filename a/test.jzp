@@ -1,7 +1,7 @@
 (mod-load code.jzp)
 
 (entry main ()
-  (push test-g-var)
+  (push test-fibonacci)
   (call)
   (return)
 )
@@ -44,7 +44,7 @@
 )
 
 (subr test-fibonacci ()
-  (push 7)
+  (push 20)
   (push fibonacci)
   (call)
   (push system-ostream)
