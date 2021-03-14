@@ -1,7 +1,7 @@
 (mod-load code.jzp)
 
 (entry main ()
-  (push test-fibonacci)
+  (push test-make-array)
   (call)
   (return)
 )
@@ -72,6 +72,15 @@
 
 (subr test-output ()
   (push "hello world!")
+  (push system-ostream)
+  (push stream-output)
+  (call)
+  (return)
+)
+
+(subr test-string ()
+  (push "hello world!")
+  (ref 0)
   (push system-ostream)
   (push stream-output)
   (call)

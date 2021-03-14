@@ -558,36 +558,73 @@ void bc_return_void(vcontext* ctx){
 
 void bc_ref(vcontext* ctx,
 	    usize_t index){
+  vslot slot_obj;
   vslot slot;
   vslot* slot_list;
   vgc_obj* obj;
+  vgc_string* str;
 
-  vcontext_obj_pop(ctx,obj,vgc_obj);
-  if(!obj)
-    uabort("vm:refrence null object!");
-  if(vgc_obj_ref_check(obj,index))
-    uabort("vm:ref obj error!");
-  slot_list = vgc_obj_slot_list(obj);
-  slot = slot_list[index];
-  vcontext_stack_push(ctx,slot);
+  vcontext_stack_pop(ctx,&slot_obj);
+  if (vslot_is_ref(slot_obj)) {
+    obj = vslot_ref_get(slot_obj,vgc_obj);
+    if(!obj) {
+      uabort("vm:ref is null object!");
+    }
+    if (vgc_obj_typeof(obj,vgc_obj_type_string)) {
+      str = (vgc_string*)obj;
+      if (!vgc_str_bound_check(str,index)) {
+	uabort("vm:ref obj error!");	
+      }
+      vslot_int_set(slot,str->u.b[index]);
+    } else {
+      if(vgc_obj_ref_check(obj,index)) {
+	uabort("vm:ref obj error!");
+      }
+      slot_list = vgc_obj_slot_list(obj);
+      slot = slot_list[index];      
+    }
+    vcontext_stack_push(ctx,slot);    
+  } else {
+    uabort("vm:ref obj is not reference!");
+  }
 }
 
 void bc_set(vcontext* ctx,
-	    usize_t   index){
+	    usize_t index){
   vslot slot_obj;
   vslot slot_val;
   vslot* slot_list;
   vgc_obj* obj;
+  vgc_string* str;
+  int val;
 
   vcontext_stack_pop(ctx,&slot_obj);
   vcontext_stack_pop(ctx,&slot_val);
-  obj = vslot_ref_get(slot_obj,vgc_obj);
-  if(!obj)
-    uabort("vm:set null object!");
-  if(vgc_obj_ref_check(obj,index))
-    uabort("vm:set obj error!");
-  slot_list = vgc_obj_slot_list(obj);
-  slot_list[index] = slot_val;
+  if (vslot_is_ref(slot_obj)) {
+    obj = vslot_ref_get(slot_obj,vgc_obj);
+    if (!obj) {
+      uabort("vm:set is null object!");
+    }
+    if (vgc_obj_typeof(obj,vgc_obj_type_string)) {
+      str = (vgc_string*)obj;
+      if (!vgc_str_bound_check(str,index)) {
+	uabort("vm:set obj error!");	
+      }
+      if (!vslot_is_int(slot_val)) {
+	uabort("vm:set val is not integer!");
+      }
+      val = vslot_int_get(slot_val);
+      str->u.b[index] = val;
+    } else {
+      if(vgc_obj_ref_check(obj,index)) {
+	uabort("vm:set obj error!");
+      }
+      slot_list = vgc_obj_slot_list(obj);
+      slot_list[index] = slot_val;
+    }
+  } else {
+    uabort("vm:set obj is not reference!");
+  }
 }
 
 #define CHECK_CURR_CALL							\
