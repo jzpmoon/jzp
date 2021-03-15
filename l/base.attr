@@ -724,7 +724,6 @@ LDEFATTR(ref,"ref",{
     last_obj* obj;
     last_obj* next;
 
-    inst = NULL;
     if(!parent || parent->t != vdfgk_blk){
       uabort("ref inst can not use here!");
     }
@@ -737,12 +736,14 @@ LDEFATTR(ref,"ref",{
     }
     obj = last_car(next);
     if(obj->t == lastk_symbol){
-      uabort("ref inst error!");
+      last_symbol* sym = (last_symbol*)obj;
+      inst = vps_irefdt(top->vps,sym->name);
     }else if(obj->t == lastk_integer){
       last_integer* inte = (last_integer*)obj;
       inst = vps_irefimm(top->vps,inte->value);
     }else{
       uabort("ref inst error!");
+      inst = NULL;
     }
     ulog("ref");
     LATTR_RETURN(lar_vps_apd,inst);
@@ -756,7 +757,6 @@ LDEFATTR(set,"set",{
     last_obj* obj;
     last_obj* next;
 
-    inst = NULL;
     if(!parent || parent->t != vdfgk_blk){
       uabort("set inst can not use here!");
     }
@@ -769,12 +769,14 @@ LDEFATTR(set,"set",{
     }
     obj = last_car(next);
     if(obj->t == lastk_symbol){
-      uabort("set inst error!");
+      last_symbol* sym = (last_symbol*)obj;
+      inst = vps_isetdt(top->vps,sym->name);
     }else if(obj->t == lastk_integer){
       last_integer* inte = (last_integer*)obj;
       inst = vps_isetimm(top->vps,inte->value);
     }else{
       uabort("set inst error!");
+      inst = NULL;
     }
     ulog("set");
     LATTR_RETURN(lar_vps_apd,inst);

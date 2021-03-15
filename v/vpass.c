@@ -285,6 +285,13 @@ vps_inst* vps_irefimm(vps_cntr* vps,int imm){
   return inst;  
 }
 
+vps_inst* vps_irefdt(vps_cntr* vps,ustring* name)
+{
+  vps_inst* inst;
+  inst = vps_inst_new(vps,vinstk_locdt,Brefl,name,NULL,NULL);
+  return inst;
+}
+
 vps_inst* vps_isetimm(vps_cntr* vps,int imm){
   vps_inst* inst;
   inst = vps_inst_new(vps,vinstk_imm,Bset,NULL,NULL,NULL);
@@ -292,6 +299,13 @@ vps_inst* vps_isetimm(vps_cntr* vps,int imm){
     inst->inst.operand = imm;
   }
   return inst;  
+}
+
+vps_inst* vps_isetdt(vps_cntr* vps,ustring* name)
+{
+  vps_inst* inst;
+  inst = vps_inst_new(vps,vinstk_locdt,Bsetl,name,NULL,NULL);
+  return inst;
 }
 
 vps_data* vps_num_new(vps_cntr* vps,

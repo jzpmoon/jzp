@@ -68,17 +68,6 @@ void vgc_ustr2vstr(vgc_string* vstr,ustring* ustr)
 {
   memcpy(vstr->u.b,ustr->value,ustr->len);
 }
-/*
-void vgc_string_log(vcontext* ctx){
-  int i = 0;
-  vgc_string* string;
-  vcontext_obj_pop(ctx,string,vgc_string);
-  while(i < string->len){
-    ulog("string:%d",string->u.b[i]);
-    i++;
-  }
-  vcontext_obj_push(ctx,string);
-  }*/
 
 vgc_ref* vgc_ref_new(vgc_heap* heap,vslot slot)
 {

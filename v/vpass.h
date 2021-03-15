@@ -173,7 +173,9 @@ vps_inst* vps_icall(vps_cntr* vps);
 vps_inst* vps_ireturn(vps_cntr* vps);
 vps_inst* vps_iretvoid(vps_cntr* vps);
 vps_inst* vps_irefimm(vps_cntr* vps,int imm);
+vps_inst* vps_irefdt(vps_cntr* vps,ustring* name);
 vps_inst* vps_isetimm(vps_cntr* vps,int imm);
+vps_inst* vps_isetdt(vps_cntr* vps,ustring* name);
 
 vps_data* vps_num_new(vps_cntr* vps,
 		      ustring* name,

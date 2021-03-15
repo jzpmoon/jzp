@@ -2,16 +2,18 @@
 
 #define VBYTECODE							\
   DF(Bload,"load",0004,2)						\
-  DF(Bstore,"store",0014,2)						\
-  DF(Bpush,"push",0024,2)						\
-  DF(Bpop,"pop",0034,2)							\
-  DF(Bjmp,"jmp",0044,3)					                \
-  DF(Bjmpi,"jmpi",0054,3)				      		\
-  DF(Bref,"ref",0064,3)						        \
-  DF(Bset,"set",0074,3)							\
-  DF(Btop,"top",0104,2)							\
+  DF(Bstore,"store",0010,2)						\
+  DF(Bpush,"push",0014,2)						\
+  DF(Bpopv,"popv",0020,1)						\
+  DF(Bpop,"pop",0024,2)							\
+  DF(Bjmp,"jmp",0030,3)					                \
+  DF(Bjmpi,"jmpi",0034,3)				      		\
+  DF(Brefl,"refl",0037,3)						\
+  DF(Bref,"ref",0040,3)						        \
+  DF(Bsetl,"setl",0043,3)						\
+  DF(Bset,"set",0044,3)							\
+  DF(Btop,"top",0050,2)							\
     									\
-  DF(Bpopv,"popv",0361,1)						\
   DF(Beq,"eq",0362,1)							\
   DF(Bgt,"gt",0363,1)							\
   DF(Blt,"lt",0364,1)							\

@@ -17,7 +17,7 @@
     uhstb_##t##_cursor* c = (uhstb_##t##_cursor*)cursor;		\
     void* k;								\
     while(!c->next_nd){							\
-      if(hstb->len <= c->next_idx){					\
+      if(hstb->len <= c->next_idx + 1){					\
 	return NULL;							\
       }else{								\
 	c->next_idx++;							\

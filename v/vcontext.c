@@ -380,7 +380,7 @@ vgc_subr* vcontext_graph_load(vcontext* ctx,vmod* mod,vdfg_graph* grp){
     data = *datap;
     ldata_load(heap,consts,data);
   }
-  
+
   return subr;
 }
 
@@ -411,8 +411,9 @@ int vcontext_mod2mod(vcontext* ctx,vmod* dest_mod,vps_mod* src_mod)
 
   (data->iterate)(&cursor);
   while(1){
-    vps_datap* dp = (data->next)((uset*)data,&cursor);
+    vps_datap* dp;
     vps_data* d;
+    dp = (data->next)((uset*)data,&cursor);
     if(!dp){
       break;
     }
@@ -422,14 +423,16 @@ int vcontext_mod2mod(vcontext* ctx,vmod* dest_mod,vps_mod* src_mod)
 
   (code->iterate)(&cursor);
   while(1){
-    vdfg_graphp* gp = (code->next)((uset*)code,&cursor);
+    vdfg_graphp* gp;
     vdfg_graph* g;
+    gp = (code->next)((uset*)code,&cursor);
     if(!gp){
       break;
     }
     g = *gp;
     vcontext_graph_load(ctx,dest_mod,g);
   }
+
   if (src_mod->entry) {
     dest_mod->init = vcontext_graph_load(ctx,dest_mod,src_mod->entry);
   }

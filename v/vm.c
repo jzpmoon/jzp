@@ -573,12 +573,12 @@ void bc_ref(vcontext* ctx,
     if (vgc_obj_typeof(obj,vgc_obj_type_string)) {
       str = (vgc_string*)obj;
       if (!vgc_str_bound_check(str,index)) {
-	uabort("vm:ref obj error!");	
+	uabort("vm:ref string out of bounds!");	
       }
       vslot_int_set(slot,str->u.b[index]);
     } else {
       if(vgc_obj_ref_check(obj,index)) {
-	uabort("vm:ref obj error!");
+	uabort("vm:ref object or array out of bounds!");
       }
       slot_list = vgc_obj_slot_list(obj);
       slot = slot_list[index];      
@@ -743,11 +743,35 @@ void vcontext_execute(vcontext* ctx){
       ulog("Bretvoid");
       bc_return_void(ctx);
       break;
+    case Brefl:
+      {
+	vslot slot;
+	NEXT2;
+	ulog("Brefl %d",op);
+	slot = bc_locals(ctx,op);
+	if (!vslot_is_int(slot)) {
+	  uabort("not a integer!");
+	}
+	bc_ref(ctx,vslot_int_get(slot));
+	break;
+      }
     case Bref:
       NEXT2;
       ulog("Bref %d",op);
       bc_ref(ctx,op);
       break;
+    case Bsetl:
+      {
+	vslot slot;
+	NEXT2;
+	ulog("Bsetl %d",op);
+	slot = bc_locals(ctx,op);
+	if (!vslot_is_int(slot)) {
+	  uabort("not a integer!");
+	}
+	bc_set(ctx,vslot_int_get(slot));
+	break;
+      }
     case Bset:
       NEXT2;
       ulog("Bset %d",op);
