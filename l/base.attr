@@ -1,18 +1,24 @@
 /*
  * common function define subr
  */
-static vdfg_graph* subr(vps_mod* top,vps_dfg* parent,last_obj* ast_obj){ 
+static vdfg_graph* subr(last_attr_req* subreq){ 
   vps_cntr* vps;
+  vps_mod* top;
   last_obj* next;
   last_obj* obj;
   last_symbol* subr_name;
   last_obj* args;
   vdfg_graph* grp;
   vdfg_block* blk;
+  last_attr_req req;
 
-  vps = top->vps;
+  vps = subreq->vps;
+  top = subreq->top;
+  req.vps = subreq->vps;
+  req.top = subreq->top;
+  req.ts = subreq->ts;
 
-  next = last_cdr(ast_obj);
+  next = last_cdr(subreq->ast_obj);
   if(next->t != lastk_cons){
     uabort("subr error!");
   }
@@ -70,7 +76,8 @@ static vdfg_graph* subr(vps_mod* top,vps_dfg* parent,last_obj* ast_obj){
   }
   blk->parent = (vps_t*)grp;
   vdfg_grp_cdapd(vps,grp,(vps_dfg*)blk);
-
+  req.parent = (vps_dfg*)blk;
+  
   next = last_cdr(next);
   while(next){
     last_obj* car;
@@ -92,8 +99,9 @@ static vdfg_graph* subr(vps_mod* top,vps_dfg* parent,last_obj* ast_obj){
       last_attr_res res;
       int retval;
 
+      req.ast_obj = obj;
       attr = inst_name->attr;
-      retval = (attr->action)(top,(vps_dfg*)blk,obj,&res);
+      retval = (attr->action)(&req,&res);
       if (retval != 0) {
 	if (res.res_type == lar_vps_apd) {
 	  /* append instruction */
@@ -117,6 +125,7 @@ static vdfg_graph* subr(vps_mod* top,vps_dfg* parent,last_obj* ast_obj){
 	  blk = (vdfg_block*)res_vps;
 	  blk->parent = (vps_t*)grp;
 	  vdfg_grp_cdapd(vps,grp,(vps_dfg*)blk);
+	  req.parent = (vps_dfg*)blk;
 	} else {
 	  /* others */
 	  uabort("unknow res_type!");
@@ -133,15 +142,17 @@ static vdfg_graph* subr(vps_mod* top,vps_dfg* parent,last_obj* ast_obj){
  * define attribute entry
  */
 LDEFATTR(entry,"entry",{
+    vps_mod* top;
     vdfg_graph* grp;
 
-    if (parent) {
+    top = req->top;
+    if (req->parent) {
       uabort("subr inst can not use here!");
     }
     if (top->entry) {
       uabort("mod entry already exists!");
     }
-    grp = subr(top,parent,ast_obj);
+    grp = subr(req);
     grp->scope = VPS_SCOPE_LOCAL;
     top->entry = grp;
     LATTR_RETURN_VOID;
@@ -153,12 +164,12 @@ LDEFATTR(entry,"entry",{
 LDEFATTR(g_subr,"g-subr",{
     vdfg_graph* grp;
 
-    if (parent) {
+    if (req->parent) {
       uabort("subr inst can not use here!");
     }
-    grp = subr(top,parent,ast_obj);
+    grp = subr(req);
     grp->scope = VPS_SCOPE_GLOBAL;
-    vps_mod_code_put(top,grp);
+    vps_mod_code_put(req->top,grp);
     LATTR_RETURN_VOID;
   })
   
@@ -168,12 +179,12 @@ LDEFATTR(g_subr,"g-subr",{
 LDEFATTR(subr,"subr",{
     vdfg_graph* grp;
 
-    if (parent) {
+    if (req->parent) {
       uabort("subr inst can not use here!");
     }
-    grp = subr(top,parent,ast_obj);
+    grp = subr(req);
     grp->scope = VPS_SCOPE_LOCAL;
-    vps_mod_code_put(top,grp);
+    vps_mod_code_put(req->top,grp);
     LATTR_RETURN_VOID;
   })
 
@@ -181,17 +192,13 @@ LDEFATTR(subr,"subr",{
  * define attribute g-var
  */
 LDEFATTR(g_var,"g-var",{
-    vps_cntr* vps;
-    vps_inst* inst;
     last_obj* obj;
     last_obj* next;
 
-    inst = NULL;
-    vps = top->vps;
-    if(parent){
+    if(req->parent){
       uabort("g-var inst can not use here!");
     }
-    next = last_cdr(ast_obj);
+    next = last_cdr(req->ast_obj);
     if(!next){
       uabort("g-var inst have no operand!");
     }
@@ -202,9 +209,9 @@ LDEFATTR(g_var,"g-var",{
     if(obj->t == lastk_symbol){
       last_symbol* sym = (last_symbol*)obj;
       vps_data* data;
-      data = vps_any_new(vps,sym->name,vstk_heap);
+      data = vps_any_new(req->vps,sym->name,vstk_heap);
       data->scope = VPS_SCOPE_GLOBAL;
-      vps_mod_data_put(top,data);
+      vps_mod_data_put(req->top,data);
     }else{
       uabort("g-var inst error!");
     }
@@ -216,13 +223,19 @@ LDEFATTR(g_var,"g-var",{
  * define attribute var
  */
 LDEFATTR(var,"var",{
+    last_obj* ast_obj;
     vps_cntr* vps;
+    vps_mod* top;
+    vps_dfg* parent;
     vps_inst* inst;
     last_obj* obj;
     last_obj* next;
 
-    inst = NULL;
-    vps = top->vps;
+    ast_obj = req->ast_obj;
+    top = req->top;
+    parent = req->parent;
+    vps = req->vps;
+    
     if(parent){
       vdfg_graph* grp;
       vdfg_block* blk;
@@ -259,6 +272,7 @@ LDEFATTR(var,"var",{
 	inst = vps_inop(vps);
       }else{
 	uabort("var inst error!");
+	inst = NULL;
       }
       ulog("subr var");
       LATTR_RETURN(lar_vps_apd,inst);
@@ -292,15 +306,21 @@ LDEFATTR(var,"var",{
  * define attribute load
  */
 LDEFATTR(load,"load",{
+    vps_cntr* vps;
+    vps_mod* top;
+    vps_dfg* parent;
     vps_inst* inst;
     last_obj* obj;
     last_obj* next;
 
-    inst = NULL;
+    vps = req->vps;
+    top = req->top;
+    parent = req->parent;
+    
     if(!parent || parent->t != vdfgk_blk){
       uabort("load inst can not use here!");
     }
-    next = last_cdr(ast_obj);
+    next = last_cdr(req->ast_obj);
     if(!next){
       uabort("load inst have no operand!");
     }
@@ -310,12 +330,13 @@ LDEFATTR(load,"load",{
     obj = last_car(next);
     if(obj->t == lastk_symbol){
       last_symbol* sym = (last_symbol*)obj;
-      inst = vps_iloaddt(top->vps,sym->name);
+      inst = vps_iloaddt(vps,sym->name);
     }else if(obj->t == lastk_integer){
       last_integer* inte = (last_integer*)obj;
-      inst = vps_iloadimm(top->vps,inte->value);
+      inst = vps_iloadimm(vps,inte->value);
     }else{
-      uabort("load inst error!");      
+      uabort("load inst error!");
+      inst = NULL;
     }
     ulog("load");
     LATTR_RETURN(lar_vps_apd,inst);
@@ -325,15 +346,17 @@ LDEFATTR(load,"load",{
  * define attribute store
  */
 LDEFATTR(store,"store",{
+    vps_dfg* parent;
     vps_inst* inst;
     last_obj* obj;
     last_obj* next;
 
-    inst = NULL;
+    parent = req->parent;
+    
     if(!parent || parent->t != vdfgk_blk){
       uabort("store inst can not use here!");
     }
-    next = last_cdr(ast_obj);
+    next = last_cdr(req->ast_obj);
     if(!next){
       uabort("store inst have no operand!");
     }
@@ -343,12 +366,13 @@ LDEFATTR(store,"store",{
     obj = last_car(next);
     if(obj->t == lastk_symbol){
       last_symbol* sym = (last_symbol*)obj;
-      inst = vps_istoredt(top->vps,sym->name);
+      inst = vps_istoredt(req->vps,sym->name);
     }else if(obj->t == lastk_integer){
       last_integer* inte = (last_integer*)obj;
-      inst = vps_istoreimm(top->vps,inte->value);
+      inst = vps_istoreimm(req->vps,inte->value);
     }else{
       uabort("store inst error!");      
+      inst = NULL;
     }
     ulog("store");
     LATTR_RETURN(lar_vps_apd,inst);
@@ -358,13 +382,15 @@ LDEFATTR(store,"store",{
  * define attribute push
  */
 LDEFATTR(push,"push",{
+    vps_dfg* parent;
     vps_dfg* dfg;
     vdfg_graph* grp;
     vps_inst* inst;
     last_obj* obj;
     last_obj* next;
 
-    inst = NULL;
+    parent = req->parent;
+    
     if(!parent || parent->t != vdfgk_blk){
       uabort("push inst can not use here!");
     }
@@ -373,7 +399,7 @@ LDEFATTR(push,"push",{
       uabort("push inst must be use at subr!");
     }
     grp = (vdfg_graph*)dfg->parent;
-    next = last_cdr(ast_obj);
+    next = last_cdr(req->ast_obj);
     if(!next){
       uabort("push inst have no operand!");
     }
@@ -383,18 +409,19 @@ LDEFATTR(push,"push",{
     obj = last_car(next);
     if(obj->t == lastk_symbol){
       last_symbol* sym = (last_symbol*)obj;
-      inst = vps_ipushdt(top->vps,grp,sym->name);
+      inst = vps_ipushdt(req->vps,grp,sym->name);
     }else if(obj->t == lastk_integer){
       last_integer* inte = (last_integer*)obj;
-      inst = vps_ipushint(top->vps,grp,inte->name,inte->value);
+      inst = vps_ipushint(req->vps,grp,inte->name,inte->value);
     }else if(obj->t == lastk_number){
       last_number* num = (last_number*)obj;
-      inst = vps_ipushnum(top->vps,grp,num->name,num->value);
+      inst = vps_ipushnum(req->vps,grp,num->name,num->value);
     }else if(obj->t == lastk_string){
       last_string* str = (last_string*)obj;
-      inst = vps_ipushstr(top->vps,grp,str->value);
+      inst = vps_ipushstr(req->vps,grp,str->value);
     }else{
       uabort("push inst error!");
+      inst = NULL;
     }
     ulog("push");
     LATTR_RETURN(lar_vps_apd,inst);
@@ -403,15 +430,17 @@ LDEFATTR(push,"push",{
  * define attribute top
  */
 LDEFATTR(top,"top",{
+    vps_dfg* parent;
     vps_inst* inst;
     last_obj* obj;
     last_obj* next;
 
-    inst = NULL;
+    parent = req->parent;
+    
     if(!parent || parent->t != vdfgk_blk){
       uabort("top inst can not use here!");
     }
-    next = last_cdr(ast_obj);
+    next = last_cdr(req->ast_obj);
     if(!next){
       uabort("top inst have no operand!");
     }
@@ -421,9 +450,10 @@ LDEFATTR(top,"top",{
     obj = last_car(next);
     if(obj->t == lastk_integer){
       last_integer* inte = (last_integer*)obj;
-      inst = vps_itop(top->vps,inte->value);
+      inst = vps_itop(req->vps,inte->value);
     }else{
       uabort("top inst error!");
+      inst = NULL;
     }
     ulog("top");
     LATTR_RETURN(lar_vps_apd,inst);
@@ -433,12 +463,15 @@ LDEFATTR(top,"top",{
  * define attribute pop
  */
 LDEFATTR(pop,"pop",{
+    vps_dfg* parent;
     vps_dfg* dfg;
     vdfg_graph* grp;
     vps_inst* inst;
     last_obj* obj;
     last_obj* next;
 
+    parent = req->parent;
+    
     if(!parent || parent->t != vdfgk_blk){
       uabort("pop inst can not use here!");
     }
@@ -447,7 +480,7 @@ LDEFATTR(pop,"pop",{
       uabort("push inst must be use at subr!");
     }
     grp = (vdfg_graph*)dfg->parent;
-    next = last_cdr(ast_obj);
+    next = last_cdr(req->ast_obj);
     if (next) {
       if (next->t != lastk_cons) {
 	uabort("top inst error!");
@@ -455,13 +488,13 @@ LDEFATTR(pop,"pop",{
       obj = last_car(next);
       if (obj->t == lastk_symbol) {
 	last_symbol* sym = (last_symbol*)obj;
-	inst = vps_ipopdt(top->vps,grp,sym->name);
+	inst = vps_ipopdt(req->vps,grp,sym->name);
       } else {
 	uabort("pop inst error!");
 	inst = NULL;
       }
     } else {
-      inst = vps_ipopv(top->vps);
+      inst = vps_ipopv(req->vps);
     }
     
     ulog("pop");
@@ -472,12 +505,15 @@ LDEFATTR(pop,"pop",{
  * define attribute add
  */
 LDEFATTR(add,"add",{
+    vps_dfg* parent;
     vps_inst* inst;
 
+    parent = req->parent;
+    
     if(!parent || parent->t != vdfgk_blk){
       uabort("add inst can not use here!");
     }
-    inst = vps_iadd(top->vps);
+    inst = vps_iadd(req->vps);
     ulog("add");
     LATTR_RETURN(lar_vps_apd,inst);
   })
@@ -486,12 +522,15 @@ LDEFATTR(add,"add",{
  * define attribute sub
  */
 LDEFATTR(sub,"sub",{
+    vps_dfg* parent;
     vps_inst* inst;
 
+    parent = req->parent;
+    
     if(!parent || parent->t != vdfgk_blk){
       uabort("sub inst can not use here!");
     }
-    inst = vps_isub(top->vps);
+    inst = vps_isub(req->vps);
     ulog("sub");
     LATTR_RETURN(lar_vps_apd,inst);
   })
@@ -500,12 +539,15 @@ LDEFATTR(sub,"sub",{
  * define attribute mul
  */
 LDEFATTR(mul,"mul",{
+    vps_dfg* parent;
     vps_inst* inst;
+    
+    parent = req->parent;
 
     if(!parent || parent->t != vdfgk_blk){
       uabort("mul inst can not use here!");
     }
-    inst = vps_imul(top->vps);
+    inst = vps_imul(req->vps);
     ulog("mul");
     LATTR_RETURN(lar_vps_apd,inst);
   })
@@ -514,12 +556,15 @@ LDEFATTR(mul,"mul",{
  * define attribute div
  */
 LDEFATTR(div,"div",{
+    vps_dfg* parent;
     vps_inst* inst;
 
+    parent = req->parent;
+    
     if(!parent || parent->t != vdfgk_blk){
       uabort("div inst can not use here!");
     }
-    inst = vps_idiv(top->vps);
+    inst = vps_idiv(req->vps);
     ulog("div");
     LATTR_RETURN(lar_vps_apd,inst);
   })
@@ -528,15 +573,17 @@ LDEFATTR(div,"div",{
  * define attribute jmpi
  */
 LDEFATTR(jmpi,"jmpi",{
+    vps_dfg* parent;
     vps_inst* inst;
     last_obj* obj;
     last_obj* next;
 
-    inst = NULL;
+    parent = req->parent;
+    
     if(!parent || parent->t != vdfgk_blk){
       uabort("jmpi inst can not use here!");
     }
-    next = last_cdr(ast_obj);
+    next = last_cdr(req->ast_obj);
     if(!next){
       uabort("jmpi inst have no operand!");
     }
@@ -546,12 +593,13 @@ LDEFATTR(jmpi,"jmpi",{
     obj = last_car(next);
     if(obj->t == lastk_symbol){
       last_symbol* symbol = (last_symbol*)obj;
-      inst = vps_ijmpilb(top->vps,symbol->name);
+      inst = vps_ijmpilb(req->vps,symbol->name);
     }else if(obj->t == lastk_integer){
       last_integer* inte = (last_integer*)obj;
-      inst = vps_ijmpiimm(top->vps,inte->value);
+      inst = vps_ijmpiimm(req->vps,inte->value);
     }else{
       uabort("jmpi inst error!");
+      inst = NULL;
     }
     ulog("jmpi");
     LATTR_RETURN(lar_vps_apd,inst);
@@ -561,15 +609,17 @@ LDEFATTR(jmpi,"jmpi",{
  * define attribute jmp
  */
 LDEFATTR(jmp,"jmp",{
+    vps_dfg* parent;
     vps_inst* inst;
     last_obj* obj;
     last_obj* next;
 
-    inst = NULL;
+    parent = req->parent;
+    
     if(!parent || parent->t != vdfgk_blk){
       uabort("jmp inst can not use here!");
     }
-    next = last_cdr(ast_obj);
+    next = last_cdr(req->ast_obj);
     if(!next){
       uabort("jmp inst have no operand!");
     }
@@ -579,12 +629,13 @@ LDEFATTR(jmp,"jmp",{
     obj = last_car(next);
     if(obj->t == lastk_symbol){
       last_symbol* symbol = (last_symbol*)obj;
-      inst = vps_ijmplb(top->vps,symbol->name);
+      inst = vps_ijmplb(req->vps,symbol->name);
     }else if(obj->t == lastk_integer){
       last_integer* inte = (last_integer*)obj;
-      inst = vps_ijmpimm(top->vps,inte->value);
+      inst = vps_ijmpimm(req->vps,inte->value);
     }else{
       uabort("jmp inst error!");
+      inst = NULL;
     }
     ulog("jmp");
     LATTR_RETURN(lar_vps_apd,inst);
@@ -594,12 +645,15 @@ LDEFATTR(jmp,"jmp",{
  * define attribute eq
  */
 LDEFATTR(eq,"eq",{
+    vps_dfg* parent;
     vps_inst* inst;
 
+    parent = req->parent;
+    
     if(!parent || parent->t != vdfgk_blk){
       uabort("eq inst can not use here!");
     }
-    inst = vps_ieq(top->vps);
+    inst = vps_ieq(req->vps);
     ulog("eq");
     LATTR_RETURN(lar_vps_apd,inst);
   })
@@ -608,12 +662,15 @@ LDEFATTR(eq,"eq",{
  * define attribute gt
  */
 LDEFATTR(gt,"gt",{
+    vps_dfg* parent;
     vps_inst* inst;
 
+    parent = req->parent;
+    
     if(!parent || parent->t != vdfgk_blk){
       uabort("gt inst can not use here!");
     }
-    inst = vps_igt(top->vps);
+    inst = vps_igt(req->vps);
     ulog("gt");
     LATTR_RETURN(lar_vps_apd,inst);
   })
@@ -622,12 +679,15 @@ LDEFATTR(gt,"gt",{
  * define attribute lt
  */
 LDEFATTR(lt,"lt",{
+    vps_dfg* parent;
     vps_inst* inst;
 
+    parent = req->parent;
+	
     if(!parent || parent->t != vdfgk_blk){
       uabort("lt inst can not use here!");
     }
-    inst = vps_ilt(top->vps);
+    inst = vps_ilt(req->vps);
     ulog("lt");
     LATTR_RETURN(lar_vps_apd,inst);
   })
@@ -636,12 +696,15 @@ LDEFATTR(lt,"lt",{
  * define attribute and
  */
 LDEFATTR(and,"and",{
+    vps_dfg* parent;
     vps_inst* inst;
 
+    parent = req->parent;
+    
     if(!parent || parent->t != vdfgk_blk){
       uabort("and inst can not use here!");
     }
-    inst = vps_iand(top->vps);
+    inst = vps_iand(req->vps);
     ulog("and");
     LATTR_RETURN(lar_vps_apd,inst);
   })
@@ -650,12 +713,15 @@ LDEFATTR(and,"and",{
  * define attribute or
  */
 LDEFATTR(or,"or",{
+    vps_dfg* parent;
     vps_inst* inst;
 
+    parent = req->parent;
+    
     if(!parent || parent->t != vdfgk_blk){
       uabort("or inst can not use here!");
     }
-    inst = vps_ior(top->vps);
+    inst = vps_ior(req->vps);
     ulog("or");
     LATTR_RETURN(lar_vps_apd,inst);
   })
@@ -664,12 +730,15 @@ LDEFATTR(or,"or",{
  * define attribute not
  */
 LDEFATTR(not,"not",{
+    vps_dfg* parent;
     vps_inst* inst;
 
+    parent = req->parent;
+    
     if(!parent || parent->t != vdfgk_blk){
       uabort("not inst can not use here!");
     }
-    inst = vps_inot(top->vps);
+    inst = vps_inot(req->vps);
     ulog("not");
     LATTR_RETURN(lar_vps_apd,inst);
   })
@@ -678,12 +747,15 @@ LDEFATTR(not,"not",{
  * define attribute call
  */
 LDEFATTR(call,"call",{
+    vps_dfg* parent;
     vps_inst* inst;
 
+    parent = req->parent;
+    
     if(!parent || parent->t != vdfgk_blk){
       uabort("call inst can not use here!");
     }
-    inst = vps_icall(top->vps);
+    inst = vps_icall(req->vps);
     ulog("call");
     LATTR_RETURN(lar_vps_apd,inst);
   })
@@ -692,12 +764,15 @@ LDEFATTR(call,"call",{
  * define attribute return
  */
 LDEFATTR(return,"return",{
+    vps_dfg* parent;
     vps_inst* inst;
 
+    parent = req->parent;
+    
     if(!parent || parent->t != vdfgk_blk){
       uabort("return inst can not use here!");
     }
-    inst = vps_ireturn(top->vps);
+    inst = vps_ireturn(req->vps);
     ulog("return");
     LATTR_RETURN(lar_vps_apd,inst);
   })
@@ -706,12 +781,15 @@ LDEFATTR(return,"return",{
  * define attribute retvoid
  */
 LDEFATTR(retvoid,"retvoid",{
+    vps_dfg* parent;
     vps_inst* inst;
 
+    parent = req->parent;
+    
     if(!parent || parent->t != vdfgk_blk){
       uabort("retvoid inst can not use here!");
     }
-    inst = vps_iretvoid(top->vps);
+    inst = vps_iretvoid(req->vps);
     ulog("retvoid");
     LATTR_RETURN(lar_vps_apd,inst);
   })
@@ -720,14 +798,17 @@ LDEFATTR(retvoid,"retvoid",{
  * define attribute ref
  */
 LDEFATTR(ref,"ref",{
+    vps_dfg* parent;
     vps_inst* inst;
     last_obj* obj;
     last_obj* next;
 
+    parent = req->parent;
+    
     if(!parent || parent->t != vdfgk_blk){
       uabort("ref inst can not use here!");
     }
-    next = last_cdr(ast_obj);
+    next = last_cdr(req->ast_obj);
     if(!next){
       uabort("ref inst have no operand!");
     }
@@ -737,10 +818,10 @@ LDEFATTR(ref,"ref",{
     obj = last_car(next);
     if(obj->t == lastk_symbol){
       last_symbol* sym = (last_symbol*)obj;
-      inst = vps_irefdt(top->vps,sym->name);
+      inst = vps_irefdt(req->vps,sym->name);
     }else if(obj->t == lastk_integer){
       last_integer* inte = (last_integer*)obj;
-      inst = vps_irefimm(top->vps,inte->value);
+      inst = vps_irefimm(req->vps,inte->value);
     }else{
       uabort("ref inst error!");
       inst = NULL;
@@ -753,14 +834,17 @@ LDEFATTR(ref,"ref",{
  * define attribute set
  */
 LDEFATTR(set,"set",{
+    vps_dfg* parent;
     vps_inst* inst;
     last_obj* obj;
     last_obj* next;
 
+    parent = req->parent;
+    
     if(!parent || parent->t != vdfgk_blk){
       uabort("set inst can not use here!");
     }
-    next = last_cdr(ast_obj);
+    next = last_cdr(req->ast_obj);
     if(!next){
       uabort("set inst have no operand!");
     }
@@ -770,10 +854,10 @@ LDEFATTR(set,"set",{
     obj = last_car(next);
     if(obj->t == lastk_symbol){
       last_symbol* sym = (last_symbol*)obj;
-      inst = vps_isetdt(top->vps,sym->name);
+      inst = vps_isetdt(req->vps,sym->name);
     }else if(obj->t == lastk_integer){
       last_integer* inte = (last_integer*)obj;
-      inst = vps_isetimm(top->vps,inte->value);
+      inst = vps_isetimm(req->vps,inte->value);
     }else{
       uabort("set inst error!");
       inst = NULL;
@@ -786,31 +870,34 @@ LDEFATTR(set,"set",{
  * define attribute label
  */
 LDEFATTR(label,"label",{
+    vps_dfg* parent;
     vdfg_block* blk;
     last_obj* obj;
     last_obj* next;
 
+    parent = req->parent;
+    
     if(!parent || parent->t != vdfgk_blk){
       uabort("label inst can not use here!");
     }
-    next = last_cdr(ast_obj);
+    next = last_cdr(req->ast_obj);
     if(!next){
       uabort("label inst have no operand!");
     }
     if(next->t != lastk_cons){
       uabort("label inst error!");
     }
-    blk = NULL;
     obj = last_car(next);
     if (obj->t == lastk_symbol) {
       last_symbol* symbol = (last_symbol*)obj;
-      blk = vdfg_block_new(top->vps);
+      blk = vdfg_block_new(req->vps);
       if (!blk) {
 	uabort("label new blk error!");
       }
       blk->name = symbol->name;
     } else {
       uabort("label inst error!");
+      blk = NULL;
     }
     ulog("label");
     LATTR_RETURN(lar_blk_new,blk);
@@ -820,12 +907,15 @@ LDEFATTR(label,"label",{
  * define attribute nop
  */
 LDEFATTR(nop,"nop",{
+    vps_dfg* parent;
     vps_inst* inst;
 
+    parent = req->parent;
+    
     if(!parent || parent->t != vdfgk_blk){
       uabort("nop inst can not use here!");
     }
-    inst = vps_inop(top->vps);
+    inst = vps_inop(req->vps);
     ulog("nop");
     LATTR_RETURN(lar_vps_apd,inst);
   })

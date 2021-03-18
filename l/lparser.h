@@ -18,6 +18,14 @@ enum{
   lar_blk_new,
 };
 
+typedef struct _last_attr_req{
+  vps_cntr* vps;
+  vps_mod* top;
+  vps_dfg* parent;
+  ltoken_state* ts;
+  last_obj* ast_obj;
+} last_attr_req;
+
 /*
  * field member "res_type" from above enum.
  */
@@ -29,9 +37,7 @@ typedef struct _last_attr_res{
 /*
  * return value: 0 nothing res, 1 have res.
  */
-typedef int(*last_attr_ft)(vps_mod* top,
-			   vps_dfg* parent,
-			   last_obj* ast_obj,
+typedef int(*last_attr_ft)(last_attr_req* req,
 			   last_attr_res* res);
 
 typedef struct _last_attr{
@@ -102,9 +108,7 @@ void last_obj_log(last_obj* ast_obj);
 
 #define LDEFATTR(aname,sname,body)			\
   int							\
-  _last_attr_action_##aname(vps_mod* top,		\
-			    vps_dfg* parent,		\
-			    last_obj* ast_obj,		\
+  _last_attr_action_##aname(last_attr_req* req,		\
 			    last_attr_res* res){	\
     body						\
       }							\

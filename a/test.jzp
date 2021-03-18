@@ -1,7 +1,7 @@
 (mod-load code.jzp)
 
 (entry main ()
-  (push test-string)
+  (push test-fibonacci)
   (call)
   (return)
 )
@@ -92,7 +92,7 @@
   (push stream-output)
   (call)
   (load char)
-  (push 0)
+  (push 101)
   (eq)
   (jmpi exit)
   (load tmp)

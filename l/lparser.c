@@ -549,8 +549,15 @@ int last2vps(ltoken_state* ts,last_obj* ast_obj,vps_mod* mod){
       last_symbol* sym = (last_symbol*)obj;
       if(sym->attr){
 	last_attr* attr = sym->attr;
+	last_attr_req req;
 	last_attr_res res;
-	(attr->action)(mod,NULL,ast_obj,&res);
+
+	req.vps = mod->vps;
+	req.top = mod;
+	req.parent = NULL;
+	req.ts = ts;
+	req.ast_obj =ast_obj;
+	(attr->action)(&req,&res);
       }
     }
   }
