@@ -430,6 +430,7 @@ int vcontext_mod2mod(vcontext* ctx,vmod* dest_mod,vps_mod* src_mod)
       break;
     }
     g = *gp;
+    ulog("load vps graph name:%s",g->name->value);
     vcontext_graph_load(ctx,dest_mod,g);
   }
 
@@ -483,6 +484,7 @@ int vcontext_vps_load(vcontext* ctx,vps_cntr* vps)
       break;
     }
     mod = *next;
+    ulog("load vps mod:%s",mod->name->value);
     vcontext_mod_load(ctx,mod);
   }
   vps_cntr_clean(vps);

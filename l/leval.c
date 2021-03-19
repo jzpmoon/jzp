@@ -4,38 +4,10 @@
 
 vps_mod* leval_vps_load(leval* eval,char* file_path)
 {
-  FILE* file;
   vps_mod* mod;
-  last_obj* ast_obj;
-  ustring* mod_name;
   
-  file = fopen(file_path,"r");
-  if(!file){
-    uabort("open file error!");
-  }
-  ltoken_state_reset(eval->ts,file);
-
-  mod_name = ustring_table_put(eval->ctx->symtb,file_path,-1);
-  if (!mod_name) {
-    uabort("mod name put symtb error!");
-  }
-
-  mod = vps_mod_new(&eval->vps,mod_name);
-  if (!mod) {
-    uabort("new mod error!");
-  }
-
-  while(1){
-    ast_obj = lparser_parse(eval->ts);
-    if (ast_obj == NULL){
-      break;
-    }
-    last2vps(eval->ts,ast_obj,mod);
-  }
-
-  vps_mod_loaded(mod);
+  mod = lfile2vps(file_path,eval->ts,&eval->vps);
   umem_pool_clean(&eval->ts->mp);
-  
   return mod;
 }
 

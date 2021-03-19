@@ -1,16 +1,43 @@
 #include "ualloc.h"
 #include "ubuffer.h"
 
-ubuffer* ubuffer_new(int size){
-  int _size = TYPE_SIZE_OF(ubuffer,char,size);
+ubuffer* ubuffer_new(int size)
+{
+  int _size;
   ubuffer* buff;
-  unew(buff,
-       _size,
-       return NULL;);
-  buff->pos   = 0;
-  buff->limit = 0;
-  buff->size  = size;
+  uallocator* allocator;
+
+  _size = TYPE_SIZE_OF(ubuffer,char,size);
+  allocator = &u_global_allocator;
+  buff = allocator->alloc(allocator,_size);
+  if (buff) {
+    buff->allocator = allocator;
+    buff->pos   = 0;
+    buff->limit = 0;
+    buff->size  = size;
+  }
   return buff;
+}
+
+ubuffer* ubuffer_alloc(uallocator* allocator,int size)
+{
+  int _size;
+  ubuffer* buff;
+
+  _size = TYPE_SIZE_OF(ubuffer,char,size);
+  buff = allocator->alloc(allocator,_size);
+  if (buff) {
+    buff->allocator = allocator;
+    buff->pos   = 0;
+    buff->limit = 0;
+    buff->size  = size;
+  }
+  return buff;
+}
+
+void ubuffer_dest(ubuffer* buff)
+{
+  buff->allocator->free(buff->allocator,buff);
 }
 
 int ubuffer_read_from_buff(ubuffer* to_buff,

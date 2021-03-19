@@ -2,8 +2,10 @@
 #define _UBUFFER_H_
 
 #include "uerror.h"
+#include "ualloc.h"
 
 typedef struct _ubuffer{
+  uallocator* allocator;
   int pos;
   int limit;
   int size;
@@ -12,8 +14,9 @@ typedef struct _ubuffer{
 
 ubuffer* ubuffer_new(int size);
 
-#define ubuffer_dest(buff) \
-  ufree(buff)
+ubuffer* ubuffer_alloc(uallocator* allocator,int size);
+
+void ubuffer_dest(ubuffer* buff);
 
 int ubuffer_read_from_buff(ubuffer* to_buff,
 			   ubuffer* from_buff);

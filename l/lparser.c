@@ -575,3 +575,39 @@ int last2vps(ltoken_state* ts,last_obj* ast_obj,vps_mod* mod){
   }
   return 0;
 }
+
+vps_mod* lfile2vps(char* file_path,ltoken_state* ts,vps_cntr* vps)
+{
+  FILE* file;
+  vps_mod* mod;
+  last_obj* ast_obj;
+  ustring* mod_name;
+  
+  file = fopen(file_path,"r");
+  if(!file){
+    uabort("open file error!");
+  }
+  ltoken_state_reset(ts,file);
+
+  mod_name = ustring_table_put(ts->symtb,file_path,-1);
+  if (!mod_name) {
+    uabort("mod name put symtb error!");
+  }
+
+  mod = vps_mod_new(vps,mod_name);
+  if (!mod) {
+    uabort("new mod error!");
+  }
+
+  while(1){
+    ast_obj = lparser_parse(ts);
+    if (ast_obj == NULL){
+      break;
+    }
+    last2vps(ts,ast_obj,mod);
+  }
+
+  vps_mod_loaded(mod);
+  
+  return mod;
+}

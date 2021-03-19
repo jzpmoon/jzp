@@ -158,4 +158,6 @@ void ltoken_state_attr_init(ltoken_state* ts);
 
 int last2vps(ltoken_state* ts,last_obj* ast_obj,vps_mod* mod);
 
+vps_mod* lfile2vps(char* file_path,ltoken_state* ts,vps_cntr* vps);
+
 #endif
