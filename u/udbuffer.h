@@ -12,6 +12,8 @@ typedef struct _udbuffer{
 
 udbuffer* udbuffer_new(int size);
 
+udbuffer* udbuffer_alloc(uallocator* allocator,int size);
+
 int udbuffer_read_next(udbuffer* dbuff);
 
 int udbuffer_look_ahead(udbuffer* dbuff);

@@ -5,9 +5,9 @@
 vps_mod* leval_vps_load(leval* eval,char* file_path)
 {
   vps_mod* mod;
-  
-  mod = lfile2vps(file_path,eval->ts,&eval->vps);
-  umem_pool_clean(&eval->ts->mp);
+
+  mod = lfile2vps(eval->reader,file_path,&eval->vps);
+  lreader_clean(eval->reader);
   return mod;
 }
 
@@ -47,8 +47,7 @@ leval* lstartup(){
   vcontext* ctx;
   vmod* mod;
   ustring* mod_name;
-  ustream* stream;
-  ltoken_state* ts;
+  lreader* reader;
   leval_loader loader;
 
   eval = ualloc(sizeof(leval));
@@ -75,14 +74,9 @@ leval* lstartup(){
   
   mod = vcontext_mod_add(ctx,mod_name);
 
-  stream = ustream_new(USTREAM_INPUT,USTREAM_FILE);
-  if (!stream) {
-    uabort("new file input stream error!");
-  }
-
-  ts = ltoken_state_new(stream,ctx->symtb,ctx->strtb);
-  if (!ts) {
-    uabort("new token state error!");
+  reader = lreader_new(ctx->symtb,ctx->strtb);
+  if (!reader) {
+    uabort("new reader error!");
   }
 
   vps_cntr_init(&eval->vps);
@@ -90,7 +84,7 @@ leval* lstartup(){
   eval->heap = heap;
   eval->ctx = ctx;
   eval->mod = mod;
-  eval->ts = ts;
+  eval->reader = reader;
   
   loader.load = leval_loader_load;
   loader.eval = eval;

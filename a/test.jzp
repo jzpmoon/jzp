@@ -1,4 +1,4 @@
-(mod-load code.jzp)
+(src-load code.jzp)
 
 (entry main ()
   (push test-fibonacci)

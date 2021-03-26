@@ -16,7 +16,7 @@ struct _leval{
   vcontext* ctx;
   vmod* mod;
   vps_cntr vps;
-  ltoken_state* ts;
+  lreader* reader;
   leval_loader loader;
 };
 

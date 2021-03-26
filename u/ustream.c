@@ -6,8 +6,14 @@
 #define USTREAM_FILE_GET(stream) ((stream)->u.s.file)
 
 ustream* ustream_new_by_buff(int iot,ubuffer* buff,URI_DECL){
+  uallocator* allocator;
   ustream* stream;
-  unew(stream,sizeof(ustream),URI_RETVAL(UERR_OFM,NULL););
+
+  allocator = &u_global_allocator;
+  stream = allocator->alloc(allocator,sizeof(ustream));
+  if (!stream) {
+    URI_RETVAL(UERR_OFM,NULL);
+  }
   stream->iot    = iot;
   stream->dst    = USTREAM_BUFF;
   stream->u.buff = buff;
@@ -15,15 +21,23 @@ ustream* ustream_new_by_buff(int iot,ubuffer* buff,URI_DECL){
 }
 
 ustream* ustream_new_by_file(int iot,FILE* file,URI_DECL){
+  uallocator* allocator;
   ustream* stream;
-  udbuffer* dbuff = NULL;
-  unew(stream,sizeof(ustream),URI_RETVAL(UERR_OFM,NULL););
+  udbuffer* dbuff;
+
+  allocator = &u_global_allocator;
+  stream = allocator->alloc(allocator,sizeof(ustream));
+  if (!stream) {
+    URI_RETVAL(UERR_OFM,NULL);
+  }
   if(iot == USTREAM_INPUT){
-    dbuff = udbuffer_new(USTREAM_FILE_BUFF_SIZE);
+    dbuff = udbuffer_alloc(allocator,USTREAM_FILE_BUFF_SIZE);
     if(!dbuff){
-      ufree(stream);
+      allocator->free(allocator,stream);
       URI_RETVAL(UERR_OFM,NULL);
     }
+  } else {
+    dbuff = NULL;
   }
   stream->iot    = iot;
   stream->dst    = USTREAM_FILE;
@@ -33,9 +47,18 @@ ustream* ustream_new_by_file(int iot,FILE* file,URI_DECL){
 }
 
 ustream* ustream_new(int iot,int dst){
+  uallocator* allocator;
+
+  allocator = &u_global_allocator;
+  return ustream_alloc(allocator,iot,dst);
+}
+
+ustream* ustream_alloc(uallocator* allocator,int iot,int dst)
+{
   ustream* stream;
   udbuffer* dbuff;
-  stream = ualloc(sizeof(ustream));
+
+  stream = allocator->alloc(allocator,sizeof(ustream));
   if (stream) {
     stream->iot = iot;
     stream->dst = dst;
@@ -43,9 +66,9 @@ ustream* ustream_new(int iot,int dst){
       stream->u.buff = NULL;
     } else if (dst == USTREAM_FILE) {
       if(stream->iot == USTREAM_INPUT){
-	dbuff = udbuffer_new(USTREAM_FILE_BUFF_SIZE);
+	dbuff = udbuffer_alloc(allocator,USTREAM_FILE_BUFF_SIZE);
 	if(!dbuff){
-	  ufree(stream);
+	  allocator->free(allocator,stream);
 	  return NULL;
 	}
 	stream->u.s.dbuff = dbuff;
@@ -55,7 +78,7 @@ ustream* ustream_new(int iot,int dst){
       stream->u.s.file = NULL;
     }
   }
-  return stream;
+  return stream;  
 }
 
 int ustream_open_by_file(ustream* stream,FILE* file){

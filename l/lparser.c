@@ -412,11 +412,11 @@ void last_obj_log(last_obj* ast_obj){
 }
 
 last_cons* last_cons_new(ltoken_state* ts,last_obj* car,last_obj* cdr){
-  umem_pool* pool;
+  uallocator* allocator;
   last_cons* cons;
 
-  pool = &ts->mp;
-  cons = umem_pool_alloc(pool,sizeof(last_cons));
+  allocator = ts->allocator;
+  cons = allocator->alloc(allocator,sizeof(last_cons));
   if(cons){
     cons->t = lastk_cons;
     cons->car = car;
@@ -426,11 +426,11 @@ last_cons* last_cons_new(ltoken_state* ts,last_obj* car,last_obj* cdr){
 }
 
 last_symbol* last_symbol_new(ltoken_state* ts,ustring* name,last_attr* attr){
-  umem_pool* pool;
+  uallocator* allocator;
   last_symbol* symbol;
 
-  pool = &ts->mp;
-  symbol = umem_pool_alloc(pool,sizeof(last_symbol));
+  allocator = ts->allocator;
+  symbol = allocator->alloc(allocator,sizeof(last_symbol));
   if(symbol){
     symbol->t = lastk_symbol;
     symbol->name = name;
@@ -440,11 +440,11 @@ last_symbol* last_symbol_new(ltoken_state* ts,ustring* name,last_attr* attr){
 }
 
 last_integer* last_integer_new(ltoken_state* ts,ustring* name,int inte){
-  umem_pool* pool;
+  uallocator* allocator;
   last_integer* integer;
-  
-  pool = &ts->mp;
-  integer = umem_pool_alloc(pool,sizeof(last_integer));
+
+  allocator = ts->allocator;
+  integer = allocator->alloc(allocator,sizeof(last_integer));
   if(integer){
     integer->t = lastk_integer;
     integer->name = name;
@@ -454,11 +454,11 @@ last_integer* last_integer_new(ltoken_state* ts,ustring* name,int inte){
 }
 
 last_number* last_number_new(ltoken_state* ts,ustring* name,double dnum){
-  umem_pool* pool;
+  uallocator* allocator;
   last_number* number;
-  
-  pool = &ts->mp;
-  number = umem_pool_alloc(pool,sizeof(last_number));
+
+  allocator = ts->allocator;
+  number = allocator->alloc(allocator,sizeof(last_number));
   if(number){
     number->t = lastk_number;
     number->name = name;
@@ -468,11 +468,11 @@ last_number* last_number_new(ltoken_state* ts,ustring* name,double dnum){
 }
 
 last_string* last_string_new(ltoken_state* ts,ustring* string){
-  umem_pool* pool;
+  uallocator* allocator;
   last_string* str;
   
-  pool = &ts->mp;
-  str = umem_pool_alloc(pool,sizeof(last_string));
+  allocator = ts->allocator;
+  str = allocator->alloc(allocator,sizeof(last_string));
   if(str){
     str->t = lastk_string;
     str->value = string;
@@ -480,9 +480,8 @@ last_string* last_string_new(ltoken_state* ts,ustring* string){
   return str;
 }
 
-void ltoken_state_init(ltoken_state* ts,
-		       ustream* stream){
-  ts->stream = stream;
+void ltoken_state_init(ltoken_state* ts)
+{
   ubuffer_ready_write(ts->buff);
   ts->token = ltk_bad;
   ts->str = NULL;
@@ -493,41 +492,55 @@ void ltoken_state_init(ltoken_state* ts,
   ts->coord.y = 1;
 }
 
-#define LATTR_TABLE_SIZE 17
-
 ltoken_state* ltoken_state_new(ustream* stream,
 			       ustring_table* symtb,
-			       ustring_table* strtb){
+			       ustring_table* strtb,
+			       uhstb_last_attr* attrtb)
+{
+  return ltoken_state_alloc(&u_global_allocator,
+			    stream,
+			    symtb,
+			    strtb,
+			    attrtb);
+}
+
+ltoken_state* ltoken_state_alloc(uallocator* allocator,
+				 ustream* stream,
+				 ustring_table* symtb,
+				 ustring_table* strtb,
+				 uhstb_last_attr* attrtb)
+{
   ltoken_state* ts;
   ubuffer* buff;
-  uhstb_last_attr* attrtb;
   
-  buff = ubuffer_new(LTOKEN_BUFF_SIZE);
+  buff = ubuffer_alloc(allocator,LTOKEN_BUFF_SIZE);
   if(!buff){
-    goto err;
+    return NULL;
   }
   
-  attrtb = uhstb_last_attr_new(LATTR_TABLE_SIZE);
-  if(!attrtb){
-    goto err;
+  ts = allocator->alloc(allocator,sizeof(ltoken_state));
+  if (!ts) {
+    allocator->free(allocator,buff);
+    return NULL;
   }
-
-  unew(ts,sizeof(ltoken_state),goto err;);
-  
+  ts->allocator = allocator;
+  ts->stream = stream;
   ts->buff = buff;
   ts->symtb = symtb;
   ts->strtb = strtb;
   ts->attrtb = attrtb;
-
-  umem_pool_init(&ts->mp,-1);
   
-  ltoken_state_init(ts,stream);
+  ltoken_state_init(ts);
   ltoken_state_attr_init(ts);
   
   return ts;
- err:
-  ubuffer_dest(buff);
-  return NULL;
+}
+
+void ltoken_state_close(ltoken_state* ts)
+{
+  ustream* stream = ts->stream;
+  ustream_close(stream);
+  ulog("stream close");
 }
 
 void ltoken_state_reset(ltoken_state* ts,FILE* file){
@@ -538,10 +551,11 @@ void ltoken_state_reset(ltoken_state* ts,FILE* file){
     uabort("token state file stream open error!");
   }
   ulog("stream open");
-  ltoken_state_init(ts,stream);
+  ltoken_state_init(ts);
 }
 
-int last2vps(ltoken_state* ts,last_obj* ast_obj,vps_mod* mod){
+int last2vps(lreader* reader,last_obj* ast_obj,vps_mod* mod)
+{
   switch(ast_obj->t){
   case lastk_cons:{
     last_obj* obj = last_car(ast_obj);
@@ -555,7 +569,7 @@ int last2vps(ltoken_state* ts,last_obj* ast_obj,vps_mod* mod){
 	req.vps = mod->vps;
 	req.top = mod;
 	req.parent = NULL;
-	req.ts = ts;
+	req.reader = reader;
 	req.ast_obj =ast_obj;
 	(attr->action)(&req,&res);
       }
@@ -576,9 +590,10 @@ int last2vps(ltoken_state* ts,last_obj* ast_obj,vps_mod* mod){
   return 0;
 }
 
-vps_mod* lfile2vps(char* file_path,ltoken_state* ts,vps_cntr* vps)
+vps_mod* lfile2vps(lreader* reader,char* file_path,vps_cntr* vps)
 {
   FILE* file;
+  ltoken_state* ts;
   vps_mod* mod;
   last_obj* ast_obj;
   ustring* mod_name;
@@ -587,6 +602,12 @@ vps_mod* lfile2vps(char* file_path,ltoken_state* ts,vps_cntr* vps)
   if(!file){
     uabort("open file error!");
   }
+  
+  ts = lreader_from(reader);
+  if (!ts) {
+    uabort("reader from error!");
+  }
+
   ltoken_state_reset(ts,file);
 
   mod_name = ustring_table_put(ts->symtb,file_path,-1);
@@ -604,9 +625,9 @@ vps_mod* lfile2vps(char* file_path,ltoken_state* ts,vps_cntr* vps)
     if (ast_obj == NULL){
       break;
     }
-    last2vps(ts,ast_obj,mod);
+    last2vps(reader,ast_obj,mod);
   }
-
+  ltoken_state_close(ts);
   vps_mod_loaded(mod);
   
   return mod;

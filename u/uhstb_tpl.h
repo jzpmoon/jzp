@@ -19,7 +19,8 @@
     int count;					\
     uallocator* allocator;			\
     uhsnd_##t* ndar[1];				\
-  } uhstb_##t
+  } uhstb_##t;					\
+  typedef int(*uhstb_##t##_ft)(t)
 
 #define uhstb_key_ft_tpl(t)			\
   typedef t(*uhstb_##t##_key_ft)(t*)
@@ -32,7 +33,10 @@
 
 #define uhstb_alloc_decl_tpl(t)					\
   uhstb_##t* uhstb_##t##_alloc(uallocator* allocator,int len)
-  
+
+#define uhstb_dest_decl_tpl(t)					\
+  void uhstb_##t##_dest(uhstb_##t* hstb,uhstb_##t##_ft dest)
+
 #define uhstb_put_decl_tpl(t)				\
   int uhstb_##t##_put(uhstb_##t*          hstb,		\
 		      unsigned int        hscd,		\
@@ -54,6 +58,7 @@
   uhstb_comp_ft_tpl(t);				\
   uhstb_new_decl_tpl(t);			\
   uhstb_alloc_decl_tpl(t);			\
+  uhstb_dest_decl_tpl(t);			\
   uhstb_put_decl_tpl(t);			\
   uhstb_get_decl_tpl(t)
 

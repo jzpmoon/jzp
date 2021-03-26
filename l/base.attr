@@ -16,7 +16,7 @@ static vdfg_graph* subr(last_attr_req* subreq){
   top = subreq->top;
   req.vps = subreq->vps;
   req.top = subreq->top;
-  req.ts = subreq->ts;
+  req.reader = subreq->reader;
 
   next = last_cdr(subreq->ast_obj);
   if(next->t != lastk_cons){

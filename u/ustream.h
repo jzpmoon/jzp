@@ -27,6 +27,8 @@ ustream* ustream_new_by_file(int iot,FILE* file,URI_DECL);
 
 ustream* ustream_new(int iot,int dst);
 
+ustream* ustream_alloc(uallocator* allocator,int iot,int dst);
+
 int ustream_open_by_file(ustream* stream,FILE* file);
 
 void ustream_close(ustream* stream);

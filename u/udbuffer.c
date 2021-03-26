@@ -2,13 +2,24 @@
 #include "udbuffer.h"
 
 udbuffer* udbuffer_new(int size){
+  uallocator* allocator;
+
+  allocator = &u_global_allocator;
+  return udbuffer_alloc(allocator,size);
+}
+
+udbuffer* udbuffer_alloc(uallocator* allocator,int size)
+{
   udbuffer* dbuff;
-  unew(dbuff,sizeof(udbuffer),return NULL;);
-  dbuff->buff_prev = NULL;
-  dbuff->buff_next = NULL;
-  dbuff->buff_curr = NULL;
-  dbuff->buff_size = size;
-  return dbuff;
+
+  dbuff = allocator->alloc(allocator,sizeof(udbuffer));
+  if (dbuff) {
+    dbuff->buff_prev = NULL;
+    dbuff->buff_next = NULL;
+    dbuff->buff_curr = NULL;
+    dbuff->buff_size = size;
+  }
+  return dbuff;  
 }
 
 int udbuffer_read_next(udbuffer* dbuff){

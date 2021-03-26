@@ -68,6 +68,21 @@
     return hstb;						\
   }
 
+#define uhstb_dest_tpl(t)					\
+  void uhstb_##t##_dest(uhstb_##t* hstb,uhstb_##t##_ft dest)	\
+  {								\
+    int i;							\
+    for (i = 0;i < hstb->len;i++) {				\
+      uhsnd_##t* nd = hstb->ndar[i];				\
+      while (nd) {						\
+	dest(nd->k);						\
+	nd = nd->next;						\
+      }								\
+      hstb->allocator->free(hstb->allocator,nd);		\
+    }								\
+    hstb->allocator->free(hstb->allocator,hstb);		\
+  }
+
 #define uhstb_put_tpl(t)						\
   int uhstb_##t##_put(uhstb_##t*          hstb,				\
 		      unsigned int        hscd,				\
@@ -142,5 +157,6 @@
   uhstb_cursor_next_tpl(t);			\
   uhstb_new_tpl(t);				\
   uhstb_alloc_tpl(t);				\
+  uhstb_dest_tpl(t);				\
   uhstb_put_tpl(t);				\
   uhstb_get_tpl(t)

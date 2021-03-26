@@ -2,6 +2,7 @@
  * define attribute src-load
  */
 LDEFATTR(src_load,"src-load",{
+    ltoken_state* ts;
     last_obj* next;
     last_obj* obj;
     last_symbol* src_name;
@@ -17,11 +18,13 @@ LDEFATTR(src_load,"src-load",{
       uabort("src name invalid!");
     }
     src_name = (last_symbol*)obj;
-    
-    mod = lfile2vps(src_name->name->value,req->ts,req->vps);
-    if (!mod) {
-      uabort("src to vps mod error");
+
+    ts = lreader_from(req->reader);
+    if (!ts) {
+      uabort("reader from error!");
     }
+    
+    mod = lfile2vps(req->reader,src_name->name->value,req->vps);
     
     vps_cntr_load(req->vps,mod);
     ulog("src-load");

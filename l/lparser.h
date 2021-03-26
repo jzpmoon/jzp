@@ -1,58 +1,9 @@
 #ifndef _LPARSER_H_
 #define _LPARSER_H_
 
-#include "vpass.h"
-#include "ltoken.h"
-
-#define LASTHEADER \
-  int t
-
-typedef struct _last_obj{
-  LASTHEADER;
-} last_obj;
+#include "lreader.h"
 
 last_obj* lparser_parse(ltoken_state* ts);
-
-enum{
-  lar_vps_apd,
-  lar_blk_new,
-};
-
-typedef struct _last_attr_req{
-  vps_cntr* vps;
-  vps_mod* top;
-  vps_dfg* parent;
-  ltoken_state* ts;
-  last_obj* ast_obj;
-} last_attr_req;
-
-/*
- * field member "res_type" from above enum.
- */
-typedef struct _last_attr_res{
-  vps_t* res_vps;
-  int res_type;
-} last_attr_res;
-
-/*
- * return value: 0 nothing res, 1 have res.
- */
-typedef int(*last_attr_ft)(last_attr_req* req,
-			   last_attr_res* res);
-
-typedef struct _last_attr{
-  char* sname;
-  ustring* name;
-  last_attr_ft action;
-} last_attr;
-
-enum {
-  lastk_cons,
-  lastk_symbol,
-  lastk_integer,
-  lastk_number,
-  lastk_string,
-};
 
 typedef struct _last_cons{
   LASTHEADER;
@@ -82,8 +33,6 @@ typedef struct _last_string{
   LASTHEADER;
   ustring* value;
 } last_string;
-
-uhstb_decl_tpl(last_attr);
 
 last_cons* last_cons_new(ltoken_state* ts,last_obj* car,last_obj* cdr);
 
@@ -156,8 +105,8 @@ int last_attr_get_comp(last_attr* k1,last_attr* k2);
 
 void ltoken_state_attr_init(ltoken_state* ts);
 
-int last2vps(ltoken_state* ts,last_obj* ast_obj,vps_mod* mod);
+int last2vps(lreader* reader,last_obj* ast_obj,vps_mod* mod);
 
-vps_mod* lfile2vps(char* file_path,ltoken_state* ts,vps_cntr* vps);
+vps_mod* lfile2vps(lreader* reader,char* file_path,vps_cntr* vps);
 
 #endif

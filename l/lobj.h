@@ -3,7 +3,7 @@
 
 #include "ustream.h"
 #include "vgc_obj.h"
-#include "ltoken.h"
+#include "lparser.h"
 
 typedef struct _lobj_stream{
   VGCHEADEREX;
