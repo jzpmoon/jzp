@@ -357,15 +357,17 @@ vgc_subr* vcontext_graph_load(vcontext* ctx,vmod* mod,vdfg_graph* grp){
   if (!subr) {
     uabort("new subr error!");
   }
-  /*
-   * add to local symbol table
-   */
-  vmod_lobj_put(heap,mod,grp->name,(vgc_obj*)subr);
-  /*
-   * if scope is global then also add to global symbol table
-   */
-  if (grp->scope == VPS_SCOPE_GLOBAL) {
-    vmod_gobj_put(heap,mod,grp->name,(vgc_obj*)subr);
+  if (grp->name) {
+    /*
+     * add to local symbol table
+     */
+    vmod_lobj_put(heap,mod,grp->name,(vgc_obj*)subr);
+    /*
+     * if scope is global then also add to global symbol table
+     */
+    if (grp->scope == VPS_SCOPE_GLOBAL) {
+      vmod_gobj_put(heap,mod,grp->name,(vgc_obj*)subr);
+    }
   }
   umem_pool_clean(&ctx->mp);
   /* load imm data */

@@ -105,7 +105,7 @@ int last_attr_get_comp(last_attr* k1,last_attr* k2);
 
 void ltoken_state_attr_init(ltoken_state* ts);
 
-int last2vps(lreader* reader,last_obj* ast_obj,vps_mod* mod);
+int last2vps(last_attr_req* req,last_attr_res* res);
 
 vps_mod* lfile2vps(lreader* reader,char* file_path,vps_cntr* vps);
 

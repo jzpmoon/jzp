@@ -1,6 +1,6 @@
 (src-load code.jzp)
 
-(entry main ()
+(subr entry-subr ()
   (push test-fibonacci)
   (call)
   (return)
@@ -103,3 +103,5 @@
   (label exit)
   (return)
 )
+
+(entry-subr)

@@ -139,32 +139,12 @@ static vdfg_graph* subr(last_attr_req* subreq){
 }
 
 /*
- * define attribute entry
- */
-LDEFATTR(entry,"entry",{
-    vps_mod* top;
-    vdfg_graph* grp;
-
-    top = req->top;
-    if (req->parent) {
-      uabort("subr inst can not use here!");
-    }
-    if (top->entry) {
-      uabort("mod entry already exists!");
-    }
-    grp = subr(req);
-    grp->scope = VPS_SCOPE_LOCAL;
-    top->entry = grp;
-    LATTR_RETURN_VOID;
-  })
-
-/*
  * define attribute subr
  */
 LDEFATTR(g_subr,"g-subr",{
     vdfg_graph* grp;
 
-    if (req->parent) {
+    if (req->parent != (vps_dfg*)req->top->entry) {
       uabort("subr inst can not use here!");
     }
     grp = subr(req);
@@ -179,7 +159,7 @@ LDEFATTR(g_subr,"g-subr",{
 LDEFATTR(subr,"subr",{
     vdfg_graph* grp;
 
-    if (req->parent) {
+    if (req->parent != (vps_dfg*)req->top->entry) {
       uabort("subr inst can not use here!");
     }
     grp = subr(req);
@@ -195,7 +175,7 @@ LDEFATTR(g_var,"g-var",{
     last_obj* obj;
     last_obj* next;
 
-    if(req->parent){
+    if(req->parent != (vps_dfg*)req->top->entry){
       uabort("g-var inst can not use here!");
     }
     next = last_cdr(req->ast_obj);
@@ -276,7 +256,7 @@ LDEFATTR(var,"var",{
       }
       ulog("subr var");
       LATTR_RETURN(lar_vps_apd,inst);
-    }else if(!parent){
+    }else if(parent == (vps_dfg*)req->top->entry){
       next = last_cdr(ast_obj);
       if(!next){
 	uabort("var inst have no operand!");
@@ -924,7 +904,6 @@ LDEFATTR(nop,"nop",{
  * declare attribute
  */
 LATTRONLOAD(base,{
-    LDECLATTR(entry);
     LDECLATTR(g_subr);
     LDECLATTR(subr);
     LDECLATTR(g_var);

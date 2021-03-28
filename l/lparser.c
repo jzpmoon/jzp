@@ -250,6 +250,66 @@ int ltoken_next(ltoken_state* ts){
   }
 }
 
+static int symcall_action(last_attr_req* req,
+			  last_attr_res* res)
+{
+  last_obj* ast_obj;
+  vps_cntr* vps;
+  vps_dfg* parent;
+  vdfg_block* blk;
+  vdfg_graph* grp;
+  vps_inst* inst;
+  last_obj* obj;
+  last_obj* next;
+  last_symbol* symbol;
+  
+  ast_obj = req->ast_obj;
+  vps = req->vps;
+  parent = req->parent;
+  if (parent->t != vdfgk_grp) {
+    uabort("parent not a graph!");
+  }
+  grp = (vdfg_graph*)parent;
+  obj = last_car(ast_obj);
+  symbol = (last_symbol*)obj;
+  blk = vdfg_block_new(vps);
+  if(!blk){
+    uabort("new blk error!");
+  }
+  blk->parent = (vps_t*)grp;
+  next = last_cdr(ast_obj);
+  while (next) {
+    obj = last_car(next);
+    if (obj->t == lastk_symbol) {
+      last_symbol* sym = (last_symbol*)obj;
+      inst = vps_ipushdt(vps,grp,sym->name);
+    }else if(obj->t == lastk_integer){
+      last_integer* inte = (last_integer*)obj;
+      inst = vps_ipushint(vps,grp,inte->name,inte->value);
+    }else if(obj->t == lastk_number){
+      last_number* num = (last_number*)obj;
+      inst = vps_ipushnum(vps,grp,num->name,num->value);
+    }else if(obj->t == lastk_string){
+      last_string* str = (last_string*)obj;
+      inst = vps_ipushstr(vps,grp,str->value);
+    }else{
+      uabort("push inst error!");
+      inst = NULL;
+    }
+    vdfg_blk_apd(blk,inst);
+    next = last_cdr(next);
+  }
+  inst = vps_ipushdt(vps,grp,symbol->name);
+  vdfg_blk_apd(blk,inst);
+  inst = vps_icall(vps);
+  vdfg_blk_apd(blk,inst);
+
+  ulog("symcall");
+  LATTR_RETURN(lar_vps_apd,blk);
+}
+
+static last_attr last_attr_symcall = {NULL,NULL,symcall_action};
+
 last_obj* lparser_atom_parse(ltoken_state* ts){
   int tk = ts->token;
   switch(tk){
@@ -271,6 +331,9 @@ last_obj* lparser_atom_parse(ltoken_state* ts){
 			  &in_attr,
 			  &attr,
 			  last_attr_get_comp);
+      if (!attr) {
+	attr = &last_attr_symcall;
+      }
       sym = last_symbol_new(ts,ts->id,attr);
       if(!sym){
 	uabort("lparser_atom_parse error!");
@@ -554,24 +617,21 @@ void ltoken_state_reset(ltoken_state* ts,FILE* file){
   ltoken_state_init(ts);
 }
 
-int last2vps(lreader* reader,last_obj* ast_obj,vps_mod* mod)
+int last2vps(last_attr_req* req,last_attr_res* res)
 {
+  last_obj* ast_obj;
+  
+  ast_obj = req->ast_obj;  
   switch(ast_obj->t){
   case lastk_cons:{
     last_obj* obj = last_car(ast_obj);
     if(obj->t == lastk_symbol){
       last_symbol* sym = (last_symbol*)obj;
       if(sym->attr){
-	last_attr* attr = sym->attr;
-	last_attr_req req;
-	last_attr_res res;
+	last_attr* attr;
 
-	req.vps = mod->vps;
-	req.top = mod;
-	req.parent = NULL;
-	req.reader = reader;
-	req.ast_obj =ast_obj;
-	(attr->action)(&req,&res);
+	attr = sym->attr;
+	return (attr->action)(req,res);
       }
     }
   }
@@ -585,9 +645,9 @@ int last2vps(lreader* reader,last_obj* ast_obj,vps_mod* mod)
   case lastk_string:
     break;
   default:
-    return -1;
+    uabort("unknow last type!");
   }
-  return 0;
+  LATTR_RETURN_VOID;
 }
 
 vps_mod* lfile2vps(lreader* reader,char* file_path,vps_cntr* vps)
@@ -597,6 +657,11 @@ vps_mod* lfile2vps(lreader* reader,char* file_path,vps_cntr* vps)
   vps_mod* mod;
   last_obj* ast_obj;
   ustring* mod_name;
+  vdfg_graph* grp;
+  vdfg_block* blk;
+  last_attr_req req;
+  last_attr_res res;
+  int retval;
   
   file = fopen(file_path,"r");
   if(!file){
@@ -619,16 +684,53 @@ vps_mod* lfile2vps(lreader* reader,char* file_path,vps_cntr* vps)
   if (!mod) {
     uabort("new mod error!");
   }
-
+  grp = vdfg_graph_new(vps);
+  if(!grp){
+    uabort("new grp error!");
+  }
+  grp->parent = (vps_t*)mod;
+  grp->scope = VPS_SCOPE_LOCAL;
+  mod->entry = grp;
+  req.vps = vps;
+  req.top = mod;
+  req.parent = (vps_dfg*)grp;
+  req.reader = reader;
+  blk = NULL;
   while(1){
     ast_obj = lparser_parse(ts);
     if (ast_obj == NULL){
       break;
     }
-    last2vps(reader,ast_obj,mod);
+    req.ast_obj =ast_obj;
+    retval = last2vps(&req,&res);
+    if (retval != 0) {
+      if (res.res_type == lar_vps_apd) {
+	vps_t* res_vps = res.res_vps;
+	if (!res_vps) {
+	  uabort("res_vps can not be null!");
+	}
+	if(res_vps->t != vdfgk_blk){
+	  uabort("not a blk!");
+	}
+	blk = (vdfg_block*)res_vps;
+	vdfg_grp_cdapd(vps,grp,(vps_dfg*)res_vps);
+      } else {
+	uabort("res_type error!");
+      }
+    }
   }
   ltoken_state_close(ts);
+  if (!blk) {
+    blk = vdfg_block_new(vps);
+    if(!blk){
+      uabort("new blk error!");
+    }
+    blk->parent = (vps_t*)grp;
+    vdfg_grp_cdapd(vps,grp,(vps_dfg*)blk);
+  }
+  vps_inst* inst = vps_iretvoid(vps);
+  vdfg_blk_apd(blk,inst);
   vps_mod_loaded(mod);
-  
+
   return mod;
 }
