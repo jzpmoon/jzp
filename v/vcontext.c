@@ -10,8 +10,8 @@ static void gdata_load(vcontext* ctx,vmod* mod,vps_data* data);
 static void ldata_load(vgc_heap* heap,vgc_array* consts,vps_data* data);
 static vslot data2data(vgc_heap* heap,vps_data* data);
 static int inst2inst(vgc_array* consts,
-		     ulist_vps_dfgp* dfgs,
-		     vdfg_block* blk,
+		     ulist_vps_cfgp* cfgs,
+		     vcfg_block* blk,
 		     vmod* mod,
 		     ulist_vinstp* insts);
 
@@ -142,25 +142,25 @@ static int vobjtb_key_comp(vsymbol* sym1,vsymbol* sym2){
   return ustring_comp(sym1->name, sym2->name);
 }
 
-static int get_insts_count(ulist_vps_dfgp* dfgs,ustring* name)
+static int get_insts_count(ulist_vps_cfgp* cfgs,ustring* name)
 {
   ucursor cursor;
   int find_flag = 0;
   int insts_count = 0;
   
-  dfgs->iterate(&cursor);
+  cfgs->iterate(&cursor);
   while(1){
-    vps_dfgp* dfgp = dfgs->next((uset*)dfgs,&cursor);
-    vps_dfg* dfg; 
-    vdfg_block* blk;
-    if(!dfgp){
+    vps_cfgp* cfgp = cfgs->next((uset*)cfgs,&cursor);
+    vps_cfg* cfg; 
+    vcfg_block* blk;
+    if(!cfgp){
       break;
     }
-    dfg = *dfgp;
-    if(dfg->t != vdfgk_blk){
-      uabort("vps_dfg not a block!");
+    cfg = *cfgp;
+    if(cfg->t != vcfgk_blk){
+      uabort("vps_cfg not a block!");
     }
-    blk = (vdfg_block*)dfg;
+    blk = (vcfg_block*)cfg;
     if (blk->name == name) {
       find_flag = 1;
       break;
@@ -174,8 +174,8 @@ static int get_insts_count(ulist_vps_dfgp* dfgs,ustring* name)
 }
 
 static int inst2inst(vgc_array* consts,
-		     ulist_vps_dfgp* dfgs,
-		     vdfg_block* blk,
+		     ulist_vps_cfgp* cfgs,
+		     vcfg_block* blk,
 		     vmod* mod,
 		     ulist_vinstp* insts)
 {
@@ -205,15 +205,15 @@ static int inst2inst(vgc_array* consts,
       break;
     case vinstk_locdt:
       {
-	vps_t* dfg = blk->parent;
-	vdfg_graph* grp;
+	vps_t* cfg = blk->parent;
+	vcfg_graph* grp;
 	vps_data* data;
 	
-	if(!dfg || dfg->t != vdfgk_grp){
-	  uabort("vdfg_block have no parent!");
+	if(!cfg || cfg->t != vcfgk_grp){
+	  uabort("vcfg_block have no parent!");
 	}
-	grp = (vdfg_graph*)dfg;
-	data = vdfg_grp_dtget(grp,src_inst->label);
+	grp = (vcfg_graph*)cfg;
+	data = vcfg_grp_dtget(grp,src_inst->label);
 	if(!data){
 	  uabort("local variable: %s not find",src_inst->label->value);
 	}
@@ -243,7 +243,7 @@ static int inst2inst(vgc_array* consts,
 	int insts_count;
 
 	inst = &src_inst->inst;
-	insts_count = get_insts_count(dfgs,src_inst->label);
+	insts_count = get_insts_count(cfgs,src_inst->label);
 	inst->operand = insts_count;
 	ulist_vinstp_append(insts,inst);
 	ulog("inst code");
@@ -310,11 +310,11 @@ static vslot data2data(vgc_heap* heap,vps_data* data)
   return slot;
 }
 
-vgc_subr* vcontext_graph_load(vcontext* ctx,vmod* mod,vdfg_graph* grp){
+vgc_subr* vcontext_graph_load(vcontext* ctx,vmod* mod,vcfg_graph* grp){
   vgc_heap* heap;
   vgc_array* consts;
   ulist_vps_datap* imms;
-  ulist_vps_dfgp* dfgs;
+  ulist_vps_cfgp* cfgs;
   ulist_vinstp* insts;
   vgc_string* bytecode;
   vgc_subr* subr;
@@ -328,21 +328,21 @@ vgc_subr* vcontext_graph_load(vcontext* ctx,vmod* mod,vdfg_graph* grp){
     uabort("subr consts new error!");
   }
   /* load code */
-  dfgs = grp->dfgs;
+  cfgs = grp->cfgs;
   insts = ulist_vinstp_alloc(&ctx->mp.allocator);
   
-  dfgs->iterate(&cursor);
+  cfgs->iterate(&cursor);
   while(1){
-    vps_dfgp* dfgp = dfgs->next((uset*)dfgs,&cursor);
-    vdfg_block* blk;
-    if(!dfgp){
+    vps_cfgp* cfgp = cfgs->next((uset*)cfgs,&cursor);
+    vcfg_block* blk;
+    if(!cfgp){
       break;
     }
-    if((*dfgp)->t != vdfgk_blk){
-      uabort("vps_dfg not a block!");
+    if((*cfgp)->t != vcfgk_blk){
+      uabort("vps_cfg not a block!");
     }
-    blk = (vdfg_block*)(*dfgp);
-    if(inst2inst(consts,dfgs,blk,mod,insts)){
+    blk = (vcfg_block*)(*cfgp);
+    if(inst2inst(consts,cfgs,blk,mod,insts)){
       uabort("inst2inst error!");
     }
   }
@@ -405,7 +405,7 @@ int vcontext_mod2mod(vcontext* ctx,vmod* dest_mod,vps_mod* src_mod)
 {
   ucursor cursor;
   uhstb_vps_datap* data = src_mod->data;
-  uhstb_vdfg_graphp* code = src_mod->code;
+  uhstb_vcfg_graphp* code = src_mod->code;
     
   if (vps_mod_isload(src_mod)) {
     vmod_loaded(dest_mod);
@@ -425,8 +425,8 @@ int vcontext_mod2mod(vcontext* ctx,vmod* dest_mod,vps_mod* src_mod)
 
   (code->iterate)(&cursor);
   while(1){
-    vdfg_graphp* gp;
-    vdfg_graph* g;
+    vcfg_graphp* gp;
+    vcfg_graph* g;
     gp = (code->next)((uset*)code,&cursor);
     if(!gp){
       break;

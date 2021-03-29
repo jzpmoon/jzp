@@ -5,11 +5,11 @@
 #include "vpass.h"
 
 uhstb_def_tpl(vps_datap);
-uhstb_def_tpl(vdfg_graphp);
+uhstb_def_tpl(vcfg_graphp);
 uhstb_def_tpl(vps_modp);
 ulist_def_tpl(vpsp);
 ulist_def_tpl(vps_datap);
-ulist_def_tpl(vps_dfgp);
+ulist_def_tpl(vps_cfgp);
 ulist_def_tpl(vps_instp);
 
 vps_inst*
@@ -18,7 +18,7 @@ vps_inst_new(vps_cntr* vps,
 	     usize_t opcode,
 	     ustring* label,
 	     vps_data* data,
-	     vps_dfg* code){
+	     vps_cfg* code){
   vps_inst* inst;
 
   inst = umem_pool_alloc(&vps->mp,sizeof(vps_inst));
@@ -67,7 +67,7 @@ vps_inst* vps_istoredt(vps_cntr* vps,ustring* name){
 }
 
 vps_inst* vps_ipushint(vps_cntr* vps,
-		       vdfg_graph* grp,
+		       vcfg_graph* grp,
 		       ustring* name,
 		       int imm)
 {
@@ -85,7 +85,7 @@ vps_inst* vps_ipushint(vps_cntr* vps,
 }
 
 vps_inst* vps_ipushnum(vps_cntr* vps,
-		       vdfg_graph* grp,
+		       vcfg_graph* grp,
 		       ustring* name,
 		       double dnum)
 {
@@ -102,7 +102,7 @@ vps_inst* vps_ipushnum(vps_cntr* vps,
   return inst;
 }
 
-vps_inst* vps_ipushdt(vps_cntr* vps,vdfg_graph* grp,ustring* name)
+vps_inst* vps_ipushdt(vps_cntr* vps,vcfg_graph* grp,ustring* name)
 {
   vps_inst* inst;
   vps_data* data;
@@ -117,7 +117,7 @@ vps_inst* vps_ipushdt(vps_cntr* vps,vdfg_graph* grp,ustring* name)
   return inst;
 }
 
-vps_inst* vps_ipushstr(vps_cntr* vps,vdfg_graph* grp,ustring* string)
+vps_inst* vps_ipushstr(vps_cntr* vps,vcfg_graph* grp,ustring* string)
 {
   vps_inst* inst;
   vps_data* data;
@@ -141,7 +141,7 @@ vps_inst* vps_itop(vps_cntr* vps,int imm){
   return inst;
 }
 
-vps_inst* vps_ipopdt(vps_cntr* vps,vdfg_graph* grp,ustring* name)
+vps_inst* vps_ipopdt(vps_cntr* vps,vcfg_graph* grp,ustring* name)
 {
   vps_inst* inst;
   vps_data* data;
@@ -374,7 +374,7 @@ vps_data* vps_any_new(vps_cntr* vps,
 
 vps_data* vps_dtcd_new(vps_cntr* vps,
 		       ustring* name,
-		       vps_dfg* code)
+		       vps_cfg* code)
 {
   vps_data* data;
   
@@ -389,12 +389,12 @@ vps_data* vps_dtcd_new(vps_cntr* vps,
   return data;
 }
 
-vdfg_block* vdfg_block_new(vps_cntr* vps){
-  vdfg_block* b;
+vcfg_block* vcfg_block_new(vps_cntr* vps){
+  vcfg_block* b;
 
-  b = umem_pool_alloc(&vps->mp,sizeof(vdfg_block));
+  b = umem_pool_alloc(&vps->mp,sizeof(vcfg_block));
   if(b){
-    b->t = vdfgk_blk;
+    b->t = vcfgk_blk;
     b->parent = NULL;
     b->name = NULL;
     b->insts = ulist_vps_instp_alloc(&vps->mp.allocator);
@@ -402,24 +402,24 @@ vdfg_block* vdfg_block_new(vps_cntr* vps){
   return b;
 }
 
-void vdfg_blk_apd(vdfg_block* blk,vps_inst* inst)
+void vcfg_blk_apd(vcfg_block* blk,vps_inst* inst)
 {
   ulist_vps_instp_append(blk->insts,inst);
 }
 
-vdfg_graph* vdfg_graph_new(vps_cntr* vps){
-  vdfg_graph* g;
+vcfg_graph* vcfg_graph_new(vps_cntr* vps){
+  vcfg_graph* g;
   uallocator* allocator;
 
   allocator = &vps->mp.allocator;
-  g = umem_pool_alloc(&vps->mp,sizeof(vdfg_graph));
+  g = umem_pool_alloc(&vps->mp,sizeof(vcfg_graph));
   if(g){
-    g->t = vdfgk_grp;
+    g->t = vcfgk_grp;
     g->parent = NULL;
     g->name = NULL;
-    g->locals = uhstb_vps_datap_alloc(allocator,VDFG_GRP_DATA_TABLE_SIZE);
+    g->locals = uhstb_vps_datap_alloc(allocator,VCFG_GRP_DATA_TABLE_SIZE);
     g->imms = ulist_vps_datap_alloc(allocator);
-    g->dfgs = ulist_vps_dfgp_alloc(allocator);
+    g->cfgs = ulist_vps_cfgp_alloc(allocator);
     g->entry = NULL;
     g->params_count = 0;
     g->locals_count = 0;
@@ -427,7 +427,7 @@ vdfg_graph* vdfg_graph_new(vps_cntr* vps){
   return g;
 }
 
-static int vdfg_grp_dt_put_comp(vps_datap* data1,vps_datap* data2){
+static int vcfg_grp_dt_put_comp(vps_datap* data1,vps_datap* data2){
   vps_data* d1;
   vps_data* d2;
   ustring* n1;
@@ -440,34 +440,34 @@ static int vdfg_grp_dt_put_comp(vps_datap* data1,vps_datap* data2){
   return ustring_comp(n1,n2);
 }
 
-void vdfg_grp_cdapd(vps_cntr* vps,vdfg_graph* grp,vps_dfg* dfg)
+void vcfg_grp_cdapd(vps_cntr* vps,vcfg_graph* grp,vps_cfg* cfg)
 {
   vps_data* data;
   ustring* name;
   int retval;
 
-  name = dfg->name;
+  name = cfg->name;
   if (name) {
-    data = vps_dtcd_new(vps,name,dfg);
+    data = vps_dtcd_new(vps,name,cfg);
     if (!data) {
-      uabort("vdfg_grp_cdapd: vps_dtcd_new error!");
+      uabort("vcfg_grp_cdapd: vps_dtcd_new error!");
     }
     retval = uhstb_vps_datap_put(grp->locals,
 				 name->hash_code,
 				 &data,
 				 NULL,
 				 NULL,
-				 vdfg_grp_dt_put_comp);
+				 vcfg_grp_dt_put_comp);
     if (retval == 1) {
-      uabort("vdfg_grp_cdapd: name:%s already exists!",name->value);
+      uabort("vcfg_grp_cdapd: name:%s already exists!",name->value);
     } else if (retval == -1) {
-      uabort("vdfg_grp_cdapd: locals put error!");      
+      uabort("vcfg_grp_cdapd: locals put error!");      
     }
   }
-  ulist_vps_dfgp_append(grp->dfgs,dfg);
+  ulist_vps_cfgp_append(grp->cfgs,cfg);
 }
 
-void vdfg_grp_params_apd(vdfg_graph* grp,vps_data* dt){
+void vcfg_grp_params_apd(vcfg_graph* grp,vps_data* dt){
   ustring* name;
   int retval;
 
@@ -480,16 +480,16 @@ void vdfg_grp_params_apd(vdfg_graph* grp,vps_data* dt){
 			       &dt,
 			       NULL,
 			       NULL,
-			       vdfg_grp_dt_put_comp);
+			       vcfg_grp_dt_put_comp);
   if (retval == 1) {
-    uabort("vdfg_grp_params_apd: name:%s already exists!",name->value);
+    uabort("vcfg_grp_params_apd: name:%s already exists!",name->value);
   } else if (retval == -1) {
-    uabort("vdfg_grp_params_apd: locals put error!");
+    uabort("vcfg_grp_params_apd: locals put error!");
   }
   grp->params_count++;
 }
 
-void vdfg_grp_locals_apd(vdfg_graph* grp,vps_data* dt){
+void vcfg_grp_locals_apd(vcfg_graph* grp,vps_data* dt){
   ustring* name;
   int retval;
 
@@ -502,16 +502,16 @@ void vdfg_grp_locals_apd(vdfg_graph* grp,vps_data* dt){
 			       &dt,
 			       NULL,
 			       NULL,
-			       vdfg_grp_dt_put_comp);
+			       vcfg_grp_dt_put_comp);
   if(retval == 1){
-    uabort("vdfg_grp_locals_apd: name:%s already exists!",name->value);
+    uabort("vcfg_grp_locals_apd: name:%s already exists!",name->value);
   } else if(retval == -1){
-    uabort("vdfg_grp_locals_apd: locals put error!");
+    uabort("vcfg_grp_locals_apd: locals put error!");
   }
   grp->locals_count++;
 }
 
-static int vdfg_grp_dt_get_comp(vps_datap* data1,vps_datap* data2){
+static int vcfg_grp_dt_get_comp(vps_datap* data1,vps_datap* data2){
   vps_data* d1;
   vps_data* d2;
   ustring* n1;
@@ -524,7 +524,7 @@ static int vdfg_grp_dt_get_comp(vps_datap* data1,vps_datap* data2){
   return ustring_comp(n1,n2);
 }
 
-vps_data* vdfg_grp_dtget(vdfg_graph* grp,ustring* name){
+vps_data* vcfg_grp_dtget(vcfg_graph* grp,ustring* name){
   vps_data dt_in;
   vps_datap dt_ink = &dt_in;
   vps_datap* dt_outk;
@@ -534,7 +534,7 @@ vps_data* vdfg_grp_dtget(vdfg_graph* grp,ustring* name){
 		      name->hash_code,
 		      &dt_ink,
 		      &dt_outk,
-		      vdfg_grp_dt_get_comp);
+		      vcfg_grp_dt_get_comp);
   if(dt_outk){
     return *dt_outk;
   }else{
@@ -556,7 +556,7 @@ vps_mod* vps_mod_new(vps_cntr* vps,ustring* name){
     if(!mod->data){
       uabort("new hash table data error!");
     }
-    mod->code = uhstb_vdfg_graphp_alloc(allocator,
+    mod->code = uhstb_vcfg_graphp_alloc(allocator,
 					VPS_MOD_CODE_TABLE_SIZE);
     if(!mod->code){
       uabort("new hash table code error!");
@@ -580,9 +580,9 @@ static int vps_mod_data_comp(vps_datap* data1,vps_datap* data2){
   }
 }
 
-static int vps_mod_code_comp(vdfg_graphp* data1,vdfg_graphp* data2){
-  vdfg_graph* g1 = *data1;
-  vdfg_graph* g2 = *data2;
+static int vps_mod_code_comp(vcfg_graphp* data1,vcfg_graphp* data2){
+  vcfg_graph* g1 = *data1;
+  vcfg_graph* g2 = *data2;
   if(g1 > g2){
     return 1;
   }else if(g1 < g2){
@@ -608,7 +608,7 @@ void vps_mod_data_put(vps_mod* mod,vps_data* data){
   }
 }
 
-int vps_graph_const_put(vdfg_graph* grp,vps_data* data)
+int vps_graph_const_put(vcfg_graph* grp,vps_data* data)
 {
   int retval;
   
@@ -619,13 +619,13 @@ int vps_graph_const_put(vdfg_graph* grp,vps_data* data)
   return grp->imms->len - 1;
 }
 
-void vps_mod_code_put(vps_mod* mod,vdfg_graph* code){
+void vps_mod_code_put(vps_mod* mod,vcfg_graph* code){
   ustring* name = code->name;
   unsigned int hscd = 0;
   if(name){
     hscd = name->hash_code;
   }
-  if(uhstb_vdfg_graphp_put(mod->code,
+  if(uhstb_vcfg_graphp_put(mod->code,
 			   hscd,
 			   &code,
 			   NULL,

@@ -97,9 +97,22 @@
     list1->len += list2->len;					\
   }
 
-#define ulist_del_tpl(t)					\
-  void ulist_##t##_del(ulist_##t* list,ulist_##t##_del_ft del){	\
-								\
+#define ulist_dest_tpl(t)						\
+  void ulist_##t##_dest(ulist_##t* list,ulist_##t##_dest_ft dest){	\
+    uallocator* allocator = list->allocator;				\
+    ulsnd_##t* header = list->header;					\
+    ulsnd_##t* nd = list->header;					\
+    if (nd) {								\
+      do {								\
+	ulsnd_##t* temp = nd;						\
+	nd = nd->next;							\
+	if (dest) {							\
+	  dest(temp->value);						\
+	}								\
+	allocator->free(allocator,temp);				\
+      }	while (nd->next != header);					\
+    }									\
+    allocator->free(allocator,list);					\
   }
 
 #define ulist_def_tpl(t)			\
@@ -109,4 +122,4 @@
   ulist_alloc_tpl(t);				\
   ulist_append_tpl(t);				\
   ulist_concat_tpl(t);				\
-  ulist_del_tpl(t)
+  ulist_dest_tpl(t)

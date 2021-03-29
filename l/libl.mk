@@ -11,7 +11,7 @@ u_sobj=u
 u_somk=libu.mk
 CFLAGS=-std=c89 -Wall $(DEBUG_MODE)
 
-ATTR=base mod
+ATTR=base mod proc
 CFUN=base
 
 define gen_attr_file

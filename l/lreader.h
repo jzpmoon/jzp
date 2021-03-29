@@ -31,7 +31,7 @@ enum{
 typedef struct _last_attr_req{
   vps_cntr* vps;
   vps_mod* top;
-  vps_dfg* parent;
+  vps_cfg* parent;
   struct _lreader* reader;
   last_obj* ast_obj;
 } last_attr_req;

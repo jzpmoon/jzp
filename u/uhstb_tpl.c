@@ -68,19 +68,22 @@
     return hstb;						\
   }
 
-#define uhstb_dest_tpl(t)					\
-  void uhstb_##t##_dest(uhstb_##t* hstb,uhstb_##t##_ft dest)	\
-  {								\
-    int i;							\
-    for (i = 0;i < hstb->len;i++) {				\
-      uhsnd_##t* nd = hstb->ndar[i];				\
-      while (nd) {						\
-	dest(nd->k);						\
-	nd = nd->next;						\
-      }								\
-      hstb->allocator->free(hstb->allocator,nd);		\
-    }								\
-    hstb->allocator->free(hstb->allocator,hstb);		\
+#define uhstb_dest_tpl(t)						\
+  void uhstb_##t##_dest(uhstb_##t* hstb,uhstb_##t##_dest_ft dest)	\
+  {									\
+    int i;								\
+    for (i = 0;i < hstb->len;i++) {					\
+      uhsnd_##t* nd = hstb->ndar[i];					\
+      while (nd) {							\
+	uhsnd_##t* temp = nd;						\
+	nd = nd->next;							\
+	if (dest) {							\
+	  dest(temp->k);						\
+	}								\
+	hstb->allocator->free(hstb->allocator,temp);			\
+      }									\
+    }									\
+    hstb->allocator->free(hstb->allocator,hstb);			\
   }
 
 #define uhstb_put_tpl(t)						\

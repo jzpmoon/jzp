@@ -139,7 +139,7 @@ int vcontext_vps_load(vcontext* ctx,vps_cntr* vps);
 
 int vcontext_mod_load(vcontext* ctx,vps_mod* mod);
 
-vgc_subr* vcontext_graph_load(vcontext* ctx,vmod* mod,vdfg_graph* grp);
+vgc_subr* vcontext_graph_load(vcontext* ctx,vmod* mod,vcfg_graph* grp);
 
 void vcontext_execute(vcontext* ctx);
 

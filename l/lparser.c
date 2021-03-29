@@ -255,9 +255,9 @@ static int symcall_action(last_attr_req* req,
 {
   last_obj* ast_obj;
   vps_cntr* vps;
-  vps_dfg* parent;
-  vdfg_block* blk;
-  vdfg_graph* grp;
+  vps_cfg* parent;
+  vcfg_block* blk;
+  vcfg_graph* grp;
   vps_inst* inst;
   last_obj* obj;
   last_obj* next;
@@ -266,13 +266,13 @@ static int symcall_action(last_attr_req* req,
   ast_obj = req->ast_obj;
   vps = req->vps;
   parent = req->parent;
-  if (parent->t != vdfgk_grp) {
+  if (parent->t != vcfgk_grp) {
     uabort("parent not a graph!");
   }
-  grp = (vdfg_graph*)parent;
+  grp = (vcfg_graph*)parent;
   obj = last_car(ast_obj);
   symbol = (last_symbol*)obj;
-  blk = vdfg_block_new(vps);
+  blk = vcfg_block_new(vps);
   if(!blk){
     uabort("new blk error!");
   }
@@ -296,13 +296,13 @@ static int symcall_action(last_attr_req* req,
       uabort("push inst error!");
       inst = NULL;
     }
-    vdfg_blk_apd(blk,inst);
+    vcfg_blk_apd(blk,inst);
     next = last_cdr(next);
   }
   inst = vps_ipushdt(vps,grp,symbol->name);
-  vdfg_blk_apd(blk,inst);
+  vcfg_blk_apd(blk,inst);
   inst = vps_icall(vps);
-  vdfg_blk_apd(blk,inst);
+  vcfg_blk_apd(blk,inst);
 
   ulog("symcall");
   LATTR_RETURN(lar_vps_apd,blk);
@@ -657,8 +657,8 @@ vps_mod* lfile2vps(lreader* reader,char* file_path,vps_cntr* vps)
   vps_mod* mod;
   last_obj* ast_obj;
   ustring* mod_name;
-  vdfg_graph* grp;
-  vdfg_block* blk;
+  vcfg_graph* grp;
+  vcfg_block* blk;
   last_attr_req req;
   last_attr_res res;
   int retval;
@@ -684,7 +684,7 @@ vps_mod* lfile2vps(lreader* reader,char* file_path,vps_cntr* vps)
   if (!mod) {
     uabort("new mod error!");
   }
-  grp = vdfg_graph_new(vps);
+  grp = vcfg_graph_new(vps);
   if(!grp){
     uabort("new grp error!");
   }
@@ -693,7 +693,7 @@ vps_mod* lfile2vps(lreader* reader,char* file_path,vps_cntr* vps)
   mod->entry = grp;
   req.vps = vps;
   req.top = mod;
-  req.parent = (vps_dfg*)grp;
+  req.parent = (vps_cfg*)grp;
   req.reader = reader;
   blk = NULL;
   while(1){
@@ -709,11 +709,11 @@ vps_mod* lfile2vps(lreader* reader,char* file_path,vps_cntr* vps)
 	if (!res_vps) {
 	  uabort("res_vps can not be null!");
 	}
-	if(res_vps->t != vdfgk_blk){
+	if(res_vps->t != vcfgk_blk){
 	  uabort("not a blk!");
 	}
-	blk = (vdfg_block*)res_vps;
-	vdfg_grp_cdapd(vps,grp,(vps_dfg*)res_vps);
+	blk = (vcfg_block*)res_vps;
+	vcfg_grp_cdapd(vps,grp,(vps_cfg*)res_vps);
       } else {
 	uabort("res_type error!");
       }
@@ -721,15 +721,15 @@ vps_mod* lfile2vps(lreader* reader,char* file_path,vps_cntr* vps)
   }
   ltoken_state_close(ts);
   if (!blk) {
-    blk = vdfg_block_new(vps);
+    blk = vcfg_block_new(vps);
     if(!blk){
       uabort("new blk error!");
     }
     blk->parent = (vps_t*)grp;
-    vdfg_grp_cdapd(vps,grp,(vps_dfg*)blk);
+    vcfg_grp_cdapd(vps,grp,(vps_cfg*)blk);
   }
   vps_inst* inst = vps_iretvoid(vps);
-  vdfg_blk_apd(blk,inst);
+  vcfg_blk_apd(blk,inst);
   vps_mod_loaded(mod);
 
   return mod;
