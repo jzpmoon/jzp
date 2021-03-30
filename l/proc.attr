@@ -1,7 +1,15 @@
 
 /*
+ * define attribute struct
+ */
+LDEFATTR(struct,"struct",{
+    ulog("attr struct");
+    LATTR_RETURN_VOID;
+  })
+
+/*
  * declare attribute
  */
 LATTRONLOAD(proc,{
-    
+    LDECLATTR(struct);    
 })

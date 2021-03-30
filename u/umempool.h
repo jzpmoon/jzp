@@ -4,7 +4,7 @@
 #include "ualloc.h"
 
 #define UMEM_NODE_SIZE 4*1024
-#define UMEM_POOL_MAX_SIZE 3*4*1024
+#define UMEM_POOL_MAX_SIZE 4*1024
 
 typedef struct _umem_node{
   struct _umem_node* next;

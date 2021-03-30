@@ -357,7 +357,7 @@ vgc_subr* vcontext_graph_load(vcontext* ctx,vmod* mod,vcfg_graph* grp){
   if (!subr) {
     uabort("new subr error!");
   }
-  if (grp->name) {
+  if (grp->scope != VPS_SCOPE_ENTRY) {
     /*
      * add to local symbol table
      */

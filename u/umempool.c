@@ -84,18 +84,21 @@ void umem_pool_clean(umem_pool* pool){
   umem_node* node;
   
   node = pool->node;
-  ulog1("umem pool clean before size:%d",pool->now_size);
+  ulog("umem pool clean before count:%d,size:%d",
+       pool->now_count,pool->now_size);
   while (node) {
-    node->remain_size = node->total_size;
-    node->index = node->mem;
+    umem_node* temp = node;
+    node = node->next;
     if (pool->now_size > pool->max_size) {
-      pool->node = node->next;
+      pool->node = temp;
       pool->now_count--;
-      pool->now_size -= node->total_size;
-      ufree(node);
+      pool->now_size -= temp->total_size;
+      ufree(temp);
     } else {
-      node = node->next;
+      temp->remain_size = temp->total_size;
+      temp->index = temp->mem;
     }
   }
-  ulog1("umem pool clean after size:%d",pool->now_size);
+  ulog1("umem pool clean after count:%d,size:%d",
+	pool->now_count,pool->now_size);
 }

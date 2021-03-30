@@ -689,7 +689,7 @@ vps_mod* lfile2vps(lreader* reader,char* file_path,vps_cntr* vps)
     uabort("new grp error!");
   }
   grp->parent = (vps_t*)mod;
-  grp->scope = VPS_SCOPE_LOCAL;
+  grp->scope = VPS_SCOPE_ENTRY;
   mod->entry = grp;
   req.vps = vps;
   req.top = mod;

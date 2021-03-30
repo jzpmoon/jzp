@@ -8,6 +8,10 @@ LDEFATTR(src_load,"src-load",{
     last_symbol* src_name;
     vps_mod* mod;
 
+    if (!LATTR_CONTEXT_FILE(req->parent)) {
+      uabort("src-load inst can not use here!");
+    }
+
     next = last_cdr(req->ast_obj);
     if(next == NULL || next->t != lastk_cons){
       uabort("src load error because have no src name!");
@@ -39,6 +43,10 @@ LDEFATTR(mod_load,"mod-load",{
     last_obj* obj;
     last_symbol* mod_name;
     vps_mod* mod;
+
+    if (!LATTR_CONTEXT_FILE(req->parent)) {
+      uabort("subr inst can not use here!");
+    }
 
     next = last_cdr(req->ast_obj);
     if(next == NULL || next->t != lastk_cons){

@@ -144,8 +144,8 @@ static vcfg_graph* subr(last_attr_req* subreq){
 LDEFATTR(g_subr,"g-subr",{
     vcfg_graph* grp;
 
-    if (req->parent != (vps_cfg*)req->top->entry) {
-      uabort("subr inst can not use here!");
+    if (!LATTR_CONTEXT_FILE(req->parent)) {
+      uabort("g-subr inst can not use here!");
     }
     grp = subr(req);
     grp->scope = VPS_SCOPE_GLOBAL;
@@ -159,7 +159,7 @@ LDEFATTR(g_subr,"g-subr",{
 LDEFATTR(subr,"subr",{
     vcfg_graph* grp;
 
-    if (req->parent != (vps_cfg*)req->top->entry) {
+    if (!LATTR_CONTEXT_FILE(req->parent)) {
       uabort("subr inst can not use here!");
     }
     grp = subr(req);
@@ -175,7 +175,7 @@ LDEFATTR(g_var,"g-var",{
     last_obj* obj;
     last_obj* next;
 
-    if(req->parent != (vps_cfg*)req->top->entry){
+    if (!LATTR_CONTEXT_FILE(req->parent)) {
       uabort("g-var inst can not use here!");
     }
     next = last_cdr(req->ast_obj);
@@ -216,7 +216,7 @@ LDEFATTR(var,"var",{
     parent = req->parent;
     vps = req->vps;
     
-    if(parent){
+    if(LATTR_CONTEXT_BLOCK(parent)){
       vcfg_graph* grp;
       vcfg_block* blk;
       if(parent->t != vcfgk_blk){
@@ -256,7 +256,7 @@ LDEFATTR(var,"var",{
       }
       ulog("subr var");
       LATTR_RETURN(lar_vps_apd,inst);
-    }else if(parent == (vps_cfg*)req->top->entry){
+    }else if(LATTR_CONTEXT_FILE(parent)){
       next = last_cdr(ast_obj);
       if(!next){
 	uabort("var inst have no operand!");
@@ -297,7 +297,7 @@ LDEFATTR(load,"load",{
     top = req->top;
     parent = req->parent;
     
-    if(!parent || parent->t != vcfgk_blk){
+    if(!LATTR_CONTEXT_BLOCK(parent)){
       uabort("load inst can not use here!");
     }
     next = last_cdr(req->ast_obj);
@@ -333,7 +333,7 @@ LDEFATTR(store,"store",{
 
     parent = req->parent;
     
-    if(!parent || parent->t != vcfgk_blk){
+    if(!LATTR_CONTEXT_BLOCK(parent)){
       uabort("store inst can not use here!");
     }
     next = last_cdr(req->ast_obj);
@@ -371,7 +371,7 @@ LDEFATTR(push,"push",{
 
     parent = req->parent;
     
-    if(!parent || parent->t != vcfgk_blk){
+    if(!LATTR_CONTEXT_BLOCK(parent)){
       uabort("push inst can not use here!");
     }
     cfg = (vps_cfg*)parent;
@@ -417,7 +417,7 @@ LDEFATTR(top,"top",{
 
     parent = req->parent;
     
-    if(!parent || parent->t != vcfgk_blk){
+    if(!LATTR_CONTEXT_BLOCK(parent)){
       uabort("top inst can not use here!");
     }
     next = last_cdr(req->ast_obj);
@@ -452,7 +452,7 @@ LDEFATTR(pop,"pop",{
 
     parent = req->parent;
     
-    if(!parent || parent->t != vcfgk_blk){
+    if(!LATTR_CONTEXT_BLOCK(parent)){
       uabort("pop inst can not use here!");
     }
     cfg = (vps_cfg*)parent;
@@ -490,7 +490,7 @@ LDEFATTR(add,"add",{
 
     parent = req->parent;
     
-    if(!parent || parent->t != vcfgk_blk){
+    if(!LATTR_CONTEXT_BLOCK(parent)){
       uabort("add inst can not use here!");
     }
     inst = vps_iadd(req->vps);
@@ -507,7 +507,7 @@ LDEFATTR(sub,"sub",{
 
     parent = req->parent;
     
-    if(!parent || parent->t != vcfgk_blk){
+    if(!LATTR_CONTEXT_BLOCK(parent)){
       uabort("sub inst can not use here!");
     }
     inst = vps_isub(req->vps);
@@ -524,7 +524,7 @@ LDEFATTR(mul,"mul",{
     
     parent = req->parent;
 
-    if(!parent || parent->t != vcfgk_blk){
+    if(!LATTR_CONTEXT_BLOCK(parent)){
       uabort("mul inst can not use here!");
     }
     inst = vps_imul(req->vps);
@@ -541,7 +541,7 @@ LDEFATTR(div,"div",{
 
     parent = req->parent;
     
-    if(!parent || parent->t != vcfgk_blk){
+    if(!LATTR_CONTEXT_BLOCK(parent)){
       uabort("div inst can not use here!");
     }
     inst = vps_idiv(req->vps);
@@ -560,7 +560,7 @@ LDEFATTR(jmpi,"jmpi",{
 
     parent = req->parent;
     
-    if(!parent || parent->t != vcfgk_blk){
+    if(!LATTR_CONTEXT_BLOCK(parent)){
       uabort("jmpi inst can not use here!");
     }
     next = last_cdr(req->ast_obj);
@@ -596,7 +596,7 @@ LDEFATTR(jmp,"jmp",{
 
     parent = req->parent;
     
-    if(!parent || parent->t != vcfgk_blk){
+    if(!LATTR_CONTEXT_BLOCK(parent)){
       uabort("jmp inst can not use here!");
     }
     next = last_cdr(req->ast_obj);
@@ -630,7 +630,7 @@ LDEFATTR(eq,"eq",{
 
     parent = req->parent;
     
-    if(!parent || parent->t != vcfgk_blk){
+    if(!LATTR_CONTEXT_BLOCK(parent)){
       uabort("eq inst can not use here!");
     }
     inst = vps_ieq(req->vps);
@@ -647,7 +647,7 @@ LDEFATTR(gt,"gt",{
 
     parent = req->parent;
     
-    if(!parent || parent->t != vcfgk_blk){
+    if(!LATTR_CONTEXT_BLOCK(parent)){
       uabort("gt inst can not use here!");
     }
     inst = vps_igt(req->vps);
@@ -664,7 +664,7 @@ LDEFATTR(lt,"lt",{
 
     parent = req->parent;
 	
-    if(!parent || parent->t != vcfgk_blk){
+    if(!LATTR_CONTEXT_BLOCK(parent)){
       uabort("lt inst can not use here!");
     }
     inst = vps_ilt(req->vps);
@@ -681,7 +681,7 @@ LDEFATTR(and,"and",{
 
     parent = req->parent;
     
-    if(!parent || parent->t != vcfgk_blk){
+    if(!LATTR_CONTEXT_BLOCK(parent)){
       uabort("and inst can not use here!");
     }
     inst = vps_iand(req->vps);
@@ -698,7 +698,7 @@ LDEFATTR(or,"or",{
 
     parent = req->parent;
     
-    if(!parent || parent->t != vcfgk_blk){
+    if(!LATTR_CONTEXT_BLOCK(parent)){
       uabort("or inst can not use here!");
     }
     inst = vps_ior(req->vps);
@@ -715,7 +715,7 @@ LDEFATTR(not,"not",{
 
     parent = req->parent;
     
-    if(!parent || parent->t != vcfgk_blk){
+    if(!LATTR_CONTEXT_BLOCK(parent)){
       uabort("not inst can not use here!");
     }
     inst = vps_inot(req->vps);
@@ -732,7 +732,7 @@ LDEFATTR(call,"call",{
 
     parent = req->parent;
     
-    if(!parent || parent->t != vcfgk_blk){
+    if(!LATTR_CONTEXT_BLOCK(parent)){
       uabort("call inst can not use here!");
     }
     inst = vps_icall(req->vps);
@@ -749,7 +749,7 @@ LDEFATTR(return,"return",{
 
     parent = req->parent;
     
-    if(!parent || parent->t != vcfgk_blk){
+    if(!LATTR_CONTEXT_BLOCK(parent)){
       uabort("return inst can not use here!");
     }
     inst = vps_ireturn(req->vps);
@@ -766,7 +766,7 @@ LDEFATTR(retvoid,"retvoid",{
 
     parent = req->parent;
     
-    if(!parent || parent->t != vcfgk_blk){
+    if(!LATTR_CONTEXT_BLOCK(parent)){
       uabort("retvoid inst can not use here!");
     }
     inst = vps_iretvoid(req->vps);
@@ -785,7 +785,7 @@ LDEFATTR(ref,"ref",{
 
     parent = req->parent;
     
-    if(!parent || parent->t != vcfgk_blk){
+    if(!LATTR_CONTEXT_BLOCK(parent)){
       uabort("ref inst can not use here!");
     }
     next = last_cdr(req->ast_obj);
@@ -821,7 +821,7 @@ LDEFATTR(set,"set",{
 
     parent = req->parent;
     
-    if(!parent || parent->t != vcfgk_blk){
+    if(!LATTR_CONTEXT_BLOCK(parent)){
       uabort("set inst can not use here!");
     }
     next = last_cdr(req->ast_obj);
@@ -857,7 +857,7 @@ LDEFATTR(label,"label",{
 
     parent = req->parent;
     
-    if(!parent || parent->t != vcfgk_blk){
+    if(!LATTR_CONTEXT_BLOCK(parent)){
       uabort("label inst can not use here!");
     }
     next = last_cdr(req->ast_obj);
@@ -892,7 +892,7 @@ LDEFATTR(nop,"nop",{
 
     parent = req->parent;
     
-    if(!parent || parent->t != vcfgk_blk){
+    if (!LATTR_CONTEXT_BLOCK(parent)) {
       uabort("nop inst can not use here!");
     }
     inst = vps_inop(req->vps);

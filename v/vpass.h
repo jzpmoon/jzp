@@ -41,9 +41,6 @@ typedef struct _vps_t{
 
 ulist_decl_tpl(vpsp);
 
-#define VPS_SCOPE_GLOBAL 1
-#define VPS_SCOPE_LOCAL 2
-
 typedef struct _vps_data{
   VPSHEADER;
   int dtk;
@@ -88,6 +85,10 @@ typedef struct _vcfg_block{
   VCFGHEADER;
   ulist_vps_instp* insts;
 } vcfg_block;
+
+#define VPS_SCOPE_GLOBAL 1
+#define VPS_SCOPE_LOCAL 2
+#define VPS_SCOPE_ENTRY 3
 
 typedef struct _vcfg_graph{
   VCFGHEADER;

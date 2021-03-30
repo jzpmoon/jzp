@@ -69,6 +69,13 @@ void last_obj_log(last_obj* ast_obj);
     body						\
       }
 
+#define LATTR_CONTEXT_FILE(parent)					\
+  (parent->t == vcfgk_grp ||						\
+   ((vcfg_graph*)parent)->scope == VPS_SCOPE_ENTRY)
+
+#define LATTR_CONTEXT_BLOCK(parent)		\
+  (parent->t == vcfgk_blk)
+
 #define LATTR_RETURN(type,vps)			\
   do {						\
     res->res_type = type;			\
