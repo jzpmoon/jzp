@@ -5,6 +5,14 @@
 #include <stdlib.h>
 #include "udef.h"
 
+typedef struct _ulog_infor{
+  FILE* log_fd;
+  char* log_fn;
+  int power;
+} ulog_infor;
+
+extern ulog_infor _uli;
+
 int ulog_init(char* log_fn,int power);
 
 void ulog_enable(int power);
@@ -13,13 +21,66 @@ void uabort(char* msg,...);
 
 void ulog(char* msg,...);
 
-#define ulog1 ulog
-
 #if NDEBUG
+
+# define ulog0(msg)
+# define ulog1(msg,a1)
+# define ulog2(msg,a1,a2)
+# define ulog3(msg,a1,a2,a3)
+# define ulog4(msg,a1,a2,a3,a4)
 # define ulog_stack_trace(fname)
+
 #else
+
+# define __ulog(fd,body)			\
+  do {						\
+    if (!_uli.power) {				\
+      break;					\
+    }						\
+    if (fd) {					\
+      fprintf(fd,"["__DATE__" "__TIME__"]");	\
+      body;					\
+      fprintf(fd,"\n");				\
+      fflush(fd);				\
+    } else {					\
+      fprintf(stdout,"ulog not init");		\
+      fflush(stdout);				\
+    }						\
+  } while(0)
+
+# define ulog0(msg)				\
+  do {						\
+    __ulog(_uli.log_fd,				\
+	   {fprintf(_uli.log_fd,msg);});	\
+  } while(0)
+
+# define ulog1(msg,a1)				\
+  do {						\
+    __ulog(_uli.log_fd,				\
+	   {fprintf(_uli.log_fd,msg,a1);});	\
+  } while(0)
+
+# define ulog2(msg,a1,a2)			\
+  do {						\
+    __ulog(_uli.log_fd,				\
+	   {fprintf(_uli.log_fd,msg,a1,a2);});	\
+  } while(0)
+
+# define ulog3(msg,a1,a2,a3)				\
+  do {							\
+    __ulog(_uli.log_fd,					\
+	   {fprintf(_uli.log_fd,msg,a1,a2,a3);});	\
+  } while(0)
+
+# define ulog4(msg,a1,a2,a3,a4)				\
+  do {							\
+    __ulog(_uli.log_fd,					\
+	   {fprintf(_uli.log_fd,msg,a1,a2,a3,a4);});	\
+  } while(0)
+
 # define ulog_stack_trace(fname)		\
-  ulog("@"__FILE__"*"#fname"@");
+  ulog0("@"__FILE__"*"#fname"@");
+
 #endif
 
 #define UDEFUN(fname,args,retval,declare)	\

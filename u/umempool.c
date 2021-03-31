@@ -99,6 +99,6 @@ void umem_pool_clean(umem_pool* pool){
       temp->index = temp->mem;
     }
   }
-  ulog1("umem pool clean after count:%d,size:%d",
+  ulog("umem pool clean after count:%d,size:%d",
 	pool->now_count,pool->now_size);
 }

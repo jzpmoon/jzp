@@ -101,6 +101,9 @@ static vcfg_graph* subr(last_attr_req* subreq){
 
       req.ast_obj = obj;
       attr = inst_name->attr;
+      if (attr == &last_attr_symcall) {
+	uabort("not a inst!");
+      }
       retval = (attr->action)(&req,&res);
       if (retval != 0) {
 	if (res.res_type == lar_vps_apd) {
@@ -131,6 +134,8 @@ static vcfg_graph* subr(last_attr_req* subreq){
 	  uabort("unknow res_type!");
 	}
       }
+    } else {
+      uabort("symbol not define attribute!");
     }
     next = last_cdr(next);
   }
@@ -207,7 +212,48 @@ LDEFATTR(var,"var",{
     vps_cntr* vps;
     vps_mod* top;
     vps_cfg* parent;
-    vps_inst* inst;
+    last_obj* obj;
+    last_obj* next;
+
+    ast_obj = req->ast_obj;
+    top = req->top;
+    parent = req->parent;
+    vps = req->vps;
+
+    if (LATTR_CONTEXT_FILE(parent)) {
+      next = last_cdr(ast_obj);
+      if (!next) {
+	uabort("var inst have no operand!");
+      }
+      if (next->t != lastk_cons) {
+	uabort("var inst error!");
+      }
+      obj = last_car(next);
+      if (obj->t == lastk_symbol) {
+	last_symbol* sym = (last_symbol*)obj;
+	vps_data* data;
+	data = vps_any_new(vps,sym->name,vstk_heap);
+	data->scope = VPS_SCOPE_LOCAL;
+	vps_mod_data_put(top,data);
+      } else {
+	uabort("var inst error!");
+      }
+      ulog("local var");
+      LATTR_RETURN_VOID;
+    } else {
+      uabort("var inst can not use here!");
+    }
+    LATTR_RETURN_VOID;
+  })
+
+/*
+ * define attribute local
+ */
+LDEFATTR(local,"local",{
+    last_obj* ast_obj;
+    vps_cntr* vps;
+    vps_mod* top;
+    vps_cfg* parent;
     last_obj* obj;
     last_obj* next;
 
@@ -219,65 +265,43 @@ LDEFATTR(var,"var",{
     if(LATTR_CONTEXT_BLOCK(parent)){
       vcfg_graph* grp;
       vcfg_block* blk;
-      if(parent->t != vcfgk_blk){
-	uabort("var inst can not use here!");
-      }
+
       blk = (vcfg_block*)parent;
       if(!blk->parent){
-	uabort("var inst can not use here!");
+	uabort("local inst can not use here!");
+      }
+      if (blk->insts->len > 0) {
+	uabort("local only allow use in front of inst!");
       }
       if(blk->parent->t != vcfgk_grp){
-	uabort("var inst can not use here!");
+	uabort("local inst can not use here!");
       }
       grp = (vcfg_graph*)blk->parent;
       
       next = last_cdr(ast_obj);
       if(!next){
-	uabort("var inst have no operand!");
+	uabort("local inst have no operand!");
       }
       if(next->t != lastk_cons){
-	uabort("var inst error!");
+	uabort("local inst error!");
       }
       obj = last_car(next);
       if(obj->t == lastk_symbol){
 	last_symbol* sym = (last_symbol*)obj;
 	vps_data* data;
 	if(vcfg_grp_dtget(grp,sym->name)){
-	  uabort("var name:%s already exists!",sym->name->value);
+	  uabort("local name:%s already exists!",sym->name->value);
 	}
 	data = vps_any_new(vps,sym->name,vstk_stack);
 	data->idx = grp->locals->count;
 	data->scope = VPS_SCOPE_LOCAL;
 	vcfg_grp_locals_apd(grp,data);
-	inst = vps_inop(vps);
       }else{
-	uabort("var inst error!");
-	inst = NULL;
+	uabort("local inst error!");
       }
-      ulog("subr var");
-      LATTR_RETURN(lar_vps_apd,inst);
-    }else if(LATTR_CONTEXT_FILE(parent)){
-      next = last_cdr(ast_obj);
-      if(!next){
-	uabort("var inst have no operand!");
-      }
-      if(next->t != lastk_cons){
-	uabort("var inst error!");
-      }
-      obj = last_car(next);
-      if(obj->t == lastk_symbol){
-	last_symbol* sym = (last_symbol*)obj;
-	vps_data* data;
-	data = vps_any_new(vps,sym->name,vstk_heap);
-	data->scope = VPS_SCOPE_LOCAL;
-	vps_mod_data_put(top,data);
-      }else{
-	uabort("var inst error!");
-      }
-      ulog("local var");
-      LATTR_RETURN_VOID;
-    }else{
-      uabort("var inst can not use here!");
+      ulog("local");
+    } else {
+      uabort("local inst can not use here!");
     }
     LATTR_RETURN_VOID;
   })
@@ -908,6 +932,7 @@ LATTRONLOAD(base,{
     LDECLATTR(subr);
     LDECLATTR(g_var);
     LDECLATTR(var);
+    LDECLATTR(local);
     LDECLATTR(nop);
     LDECLATTR(load);
     LDECLATTR(store);

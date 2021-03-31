@@ -112,7 +112,7 @@ typedef struct _vslot{
   ulog1("slot num:%f",slot.u.num);		\
   ulog1("slot int:%d",slot.u.inte);		\
   ulog1("slot bool:%d",slot.u.bool);		\
-  ulog1("slot ref:%p",(long long)slot.u.ref);
+  ulog1("slot ref:%p",slot.u.ref);
 
 vslot vslot_num_eq(vslot slot1,vslot slot2);
 vslot vslot_int_eq(vslot slot1,vslot slot2);

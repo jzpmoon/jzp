@@ -7,7 +7,7 @@
 )
 
 (subr test-make-array ()
-  (var array)
+  (local array)
   (push 1)
   (push make-array)
   (call)
@@ -54,7 +54,7 @@
 )
 
 (subr test-count (x)
-  (var tmp)
+  (local tmp)
   (load x)
   (store tmp)
   (label l1)
@@ -79,8 +79,8 @@
 )
 
 (subr test-string ()
-  (var char)
-  (var tmp)
+  (local char)
+  (local tmp)
   (push 0)
   (store tmp)
   (label continue)

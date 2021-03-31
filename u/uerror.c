@@ -8,19 +8,13 @@ URI_ERR_DEFINE(UERR_EOF, "U003", "end of file");
 URI_ERR_DEFINE(UERR_IOT, "U004", "unknow IO type");
 URI_ERR_DEFINE(UERR_DST, "U005", "unknow data source type");
 
-typedef struct _ulog_infor{
-  FILE* log_fd;
-  char* log_fn;
-  int power;
-} ulog_infor;
-
-static ulog_infor _uli = {NULL,NULL,UTRUE};
+ulog_infor _uli = {NULL,NULL,UTRUE};
 
 int ulog_init(char* log_fn,int power)
 {
   int retval = 0;
   FILE* log_fd = fopen(log_fn,"w");
-  
+
   if (!log_fd) {
     log_fd = stdout;
     retval = -1;

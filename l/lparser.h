@@ -3,6 +3,8 @@
 
 #include "lreader.h"
 
+extern last_attr last_attr_symcall;
+
 last_obj* lparser_parse(ltoken_state* ts);
 
 typedef struct _last_cons{

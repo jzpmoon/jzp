@@ -308,7 +308,7 @@ static int symcall_action(last_attr_req* req,
   LATTR_RETURN(lar_vps_apd,blk);
 }
 
-static last_attr last_attr_symcall = {NULL,NULL,symcall_action};
+last_attr last_attr_symcall = {NULL,NULL,symcall_action};
 
 last_obj* lparser_atom_parse(ltoken_state* ts){
   int tk = ts->token;
