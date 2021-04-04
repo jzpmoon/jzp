@@ -7,6 +7,7 @@
 uhstb_def_tpl(vps_datap);
 uhstb_def_tpl(vcfg_graphp);
 uhstb_def_tpl(vps_modp);
+uhstb_def_tpl(vps_typep);
 ulist_def_tpl(vpsp);
 ulist_def_tpl(vps_datap);
 ulist_def_tpl(vps_cfgp);
@@ -561,6 +562,10 @@ vps_mod* vps_mod_new(vps_cntr* vps,ustring* name){
     if(!mod->code){
       uabort("new hash table code error!");
     }
+    mod->types = uhstb_vps_typep_alloc(allocator,-1);
+    if (!mod->types) {
+      uabort("new hash table type error!");
+    }
     mod->entry = NULL;
     mod->name = name;
     mod->status = VPS_MOD_STATUS_UNLOAD;
@@ -639,6 +644,13 @@ void vps_cntr_init(vps_cntr* cntr) {
   umem_pool_init(&cntr->mp,-1);
   cntr->mods = uhstb_vps_modp_alloc(&cntr->mp.allocator,
 				    VPS_CNTR_MOD_TABLE_SIZE);
+  if (!cntr->mods) {
+    uabort("new hash table mod error!");
+  }
+  cntr->types = uhstb_vps_typep_alloc(&cntr->mp.allocator,-1);
+  if (!cntr->types) {
+    uabort("new hash table type error!");
+  }
 }
 
 static int vps_cntr_mod_comp(vps_modp* mod1,vps_modp* mod2){
@@ -671,4 +683,102 @@ int vps_cntr_load(vps_cntr* vps,vps_mod* mod)
 void vps_cntr_clean(vps_cntr* vps)
 {
   umem_pool_clean(&vps->mp);
+}
+
+static vps_type_comp(vps_typep* type1,vps_typep* type2)
+{
+  vps_type* t1;
+  vps_type* t2;
+
+  t1 = *type1;
+  t2 = *type2;
+  return ustring_comp(t1->type_name,t2->type_name);
+}
+
+vps_type* vps_type_new(vps_cntr* vps,
+		       ustring* type_name,
+		       int type_size,
+		       int type_index)
+{
+  vps_type* type;
+  uallocator* allocator;
+
+  allocator = &vps->mp.allocator;
+  type = allocator->alloc(allocator,sizeof(vps_type));
+  if (type){
+    type->t = vpsk_type;
+    type->type_name = type_name;
+    type->type_size = type_size;
+    type->type_index = type_index;
+  }
+
+  return type;
+}
+
+void vps_ltype_put(vps_mod* mod,vps_type* type)
+{
+  ustring* type_name;
+  int retval;
+
+  type_name = type->type_name;
+  retval = uhstb_vps_typep_put(mod->types,
+			       type_name->hash_code,
+			       &type,
+			       NULL,
+			       NULL,
+			       vps_type_comp);
+  if (retval == 1) {
+    uabort("vps_type already exists!");
+  } else if (retval == -1){
+    uabort("vps_type put error!");
+  }
+}
+
+void vps_gtype_put(vps_cntr* vps, vps_type* type)
+{
+  ustring* type_name;
+  int retval;
+
+  type_name = type->type_name;
+  retval = uhstb_vps_typep_put(vps->types,
+			       type_name->hash_code,
+			       &type,
+			       NULL,
+			       NULL,
+			       vps_type_comp);
+  if (retval == 1) {
+    uabort("vps_type already exists!");
+  } else if (retval == -1){
+    uabort("vps_type put error!");
+  }
+}
+
+vps_type* vps_type_get(vps_mod* mod,ustring* type_name)
+{
+  vps_type type;
+  vps_typep type_in;
+  vps_typep* type_out;
+  vps_cntr* vps;
+
+  type.type_name = type_name;
+  type_in = &type;
+  uhstb_vps_typep_get(mod->types,
+		      type_name->hash_code,
+		      &type_in,
+		      &type_out,
+		      vps_type_comp);
+  if (type_out) {
+    return *type_out;
+  }
+  vps = mod->vps;
+  uhstb_vps_typep_get(vps->types,
+		      type_name->hash_code,
+		      &type_in,
+		      &type_out,
+		      vps_type_comp);
+  if (type_out) {
+    return *type_out;
+  } else {
+    return NULL;
+  }
 }

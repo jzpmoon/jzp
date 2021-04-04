@@ -11,8 +11,8 @@ u_sobj=u
 u_somk=libu.mk
 CFLAGS=-std=c89 -Wall $(DEBUG_MODE)
 
-ATTR=base mod proc
-CFUN=base
+ATTR = mod proc base
+CFUN = base
 
 define gen_attr_file
 	cat $(shell echo ${ATTR}.attr | sed 's: :.attr :g') > $(temp_attr_file)

@@ -4,6 +4,8 @@
 #include "uset.h"
 #include "ualloc.h"
 
+#define UHSTB_LENGTH 31
+
 #define uhstb_tpl(t)				\
   typedef struct _uhsnd_##t{			\
     struct _uhsnd_##t* next;			\

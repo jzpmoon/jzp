@@ -18,6 +18,8 @@ unsigned int ucharp_hscd(char* v);
 void ustring_dest(ustring* str);
 int ustring_to_integer(ustring* str);
 double ustring_to_number(ustring* str);
+ustring* ustring_concat(ustring* str1,ustring* str2);
+ustring* ustring_concatx(ustring* str1,ustring* str2,char* separator);
 void ustring_log(ustring* str);
 
 #endif

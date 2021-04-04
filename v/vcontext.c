@@ -274,7 +274,6 @@ static void ldata_load(vgc_heap* heap,vgc_array* consts,vps_data* data)
     uabort("vcontext_load consts overflow!");
   }
   data->idx = top;
-  ulog("vcontext_load data:%s,idx:%d",data->name->value,top);
 }
 
 static vslot data2data(vgc_heap* heap,vps_data* data)

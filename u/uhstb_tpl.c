@@ -31,37 +31,33 @@
 
 #define uhstb_new_tpl(t)				\
   uhstb_##t* uhstb_##t##_new(int len){			\
-    uhstb_##t* hstb;					\
-    uallocator* allocator = &u_global_allocator;	\
-    int size = TYPE_SIZE_OF(uhstb_##t,uhsnd_##t,len);	\
-    int i;						\
-    hstb = allocator->alloc(allocator,size);		\
-    if (hstb) {						\
-      hstb->iterate = uhstb_##t##_cursor_init;		\
-      hstb->next = uhstb_##t##_cursor_next;		\
-      hstb->len = len;					\
-      hstb->count = 0;					\
-      hstb->allocator = allocator;			\
-      for(i = 0;i < len;i++){				\
-	hstb->ndar[i] = NULL;				\
-      }							\
-    }							\
-    return hstb;					\
+    uallocator* allocator;				\
+    							\
+    allocator = &u_global_allocator;			\
+    return uhstb_##t##_alloc(allocator,len);		\
   }
 
 #define uhstb_alloc_tpl(t)					\
   uhstb_##t* uhstb_##t##_alloc(uallocator* allocator,int len){	\
     uhstb_##t* hstb;						\
-    int size = TYPE_SIZE_OF(uhstb_##t,uhsnd_##t,len);		\
+    int rlen;							\
+    int size;							\
     int i;							\
+    								\
+    if (len > 0) {						\
+      rlen = len;						\
+    } else {							\
+      rlen = UHSTB_LENGTH;					\
+    }								\
+    size = TYPE_SIZE_OF(uhstb_##t,uhsnd_##t,rlen);		\
     hstb = allocator->alloc(allocator,size);			\
     if (hstb) {							\
       hstb->iterate = uhstb_##t##_cursor_init;			\
       hstb->next = uhstb_##t##_cursor_next;			\
-      hstb->len = len;						\
+      hstb->len = rlen;						\
       hstb->count = 0;						\
       hstb->allocator = allocator;				\
-      for(i = 0;i < len;i++){					\
+      for(i = 0;i < rlen;i++){					\
 	hstb->ndar[i] = NULL;					\
       }								\
     }								\

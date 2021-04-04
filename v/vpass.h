@@ -12,6 +12,7 @@ enum{
   vpsk_dt,
   vpsk_mod,
   vpsk_inst,
+  vpsk_type,
   vcfgk_blk,
   vcfgk_grp,
 };
@@ -67,6 +68,13 @@ typedef struct _vps_inst{
   } u;
 } vps_inst,*vps_instp;
 
+typedef struct _vps_type{
+  VPSHEADER;
+  ustring* type_name;
+  int type_size;
+  int type_index;
+} vps_type,*vps_typep;
+
 #define VCFGHEADER				\
   VPSHEADER;					\
   struct _vps_t* parent;			\
@@ -104,6 +112,7 @@ typedef struct _vcfg_graph{
 #define VCFG_GRP_DATA_TABLE_SIZE 17
 
 uhstb_decl_tpl(vcfg_graphp);
+uhstb_decl_tpl(vps_typep);
 
 #define VPS_MOD_STATUS_LOADED 1
 #define VPS_MOD_STATUS_UNLOAD 0
@@ -113,6 +122,7 @@ typedef struct _vps_mod{
   struct _vps_cntr* vps;
   uhstb_vps_datap* data;
   uhstb_vcfg_graphp* code;
+  uhstb_vps_typep* types;
   vcfg_graph* entry;
   ustring* name;
   int status;
@@ -126,6 +136,7 @@ uhstb_decl_tpl(vps_modp);
 typedef struct _vps_cntr{
   umem_pool mp;
   uhstb_vps_modp* mods;
+  uhstb_vps_typep* types;
 } vps_cntr;
 
 #define VPS_CNTR_MOD_TABLE_SIZE 17
@@ -231,5 +242,16 @@ void vps_cntr_init(vps_cntr* cntr);
 int vps_cntr_load(vps_cntr* vps,vps_mod* mod);
 
 void vps_cntr_clean(vps_cntr* vps);
+
+vps_type* vps_type_new(vps_cntr* vps,
+		       ustring* type_name,
+		       int type_size,
+		       int type_index);
+
+void vps_ltype_put(vps_mod* mod,vps_type* type);
+
+void vps_gtype_put(vps_cntr* vps, vps_type* type);
+
+vps_type* vps_type_get(vps_mod* mod,ustring* type_name);
 
 #endif

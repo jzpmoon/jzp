@@ -19,18 +19,18 @@ static vcfg_graph* subr(last_attr_req* subreq){
   req.reader = subreq->reader;
 
   next = last_cdr(subreq->ast_obj);
-  if(next->t != lastk_cons){
+  if(!next || next->t != lastk_cons){
     uabort("subr error!");
   }
 
   obj = last_car(next);
-  if(obj->t != lastk_symbol){
+  if(!obj || obj->t != lastk_symbol){
     uabort("subr name invalid!");
   }
   subr_name = (last_symbol*)obj;
 
   next = last_cdr(next);
-  if(next->t != lastk_cons){
+  if(!next || next->t != lastk_cons){
     uabort("subr error!");
   }
 
@@ -423,6 +423,32 @@ LDEFATTR(push,"push",{
     }else if(obj->t == lastk_string){
       last_string* str = (last_string*)obj;
       inst = vps_ipushstr(req->vps,grp,str->value);
+    } else if (obj->t == lastk_cons) {
+      last_attr_req new_req;
+      last_obj* next;
+      last_symbol* sym;
+      last_attr* attr;
+      vps_type* type;
+
+      next = obj;
+      obj = last_car(next);
+      if (!obj || obj->t != lastk_symbol) {
+	uabort("push arg error!");
+      }
+      new_req = *req;
+      sym = (last_symbol*)obj;
+      attr = sym->attr;
+      new_req.ast_obj = next;
+      attr->action(&new_req,res);
+      if (res->res_type != lar_vps_apd) {
+	uabort("push arg error!");
+      }
+      if (!res->res_vps || res->res_vps->t != vpsk_type) {
+	uabort("push arg not a sizeof");
+      }
+      type = (vps_type*)res->res_vps;
+
+      inst = vps_ipushint(req->vps,grp,NULL,type->type_size);
     }else{
       uabort("push inst error!");
       inst = NULL;
@@ -803,6 +829,8 @@ LDEFATTR(retvoid,"retvoid",{
  */
 LDEFATTR(ref,"ref",{
     vps_cfg* parent;
+    vps_cfg* cfg;
+    vcfg_graph* grp;
     vps_inst* inst;
     last_obj* obj;
     last_obj* next;
@@ -812,6 +840,11 @@ LDEFATTR(ref,"ref",{
     if(!LATTR_CONTEXT_BLOCK(parent)){
       uabort("ref inst can not use here!");
     }
+    cfg = (vps_cfg*)parent;
+    if (cfg->parent->t != vcfgk_grp) {
+      uabort("ref inst must be use at subr!");
+    }
+    grp = (vcfg_graph*)cfg->parent;
     next = last_cdr(req->ast_obj);
     if(!next){
       uabort("ref inst have no operand!");
@@ -826,6 +859,32 @@ LDEFATTR(ref,"ref",{
     }else if(obj->t == lastk_integer){
       last_integer* inte = (last_integer*)obj;
       inst = vps_irefimm(req->vps,inte->value);
+    } else if (obj->t == lastk_cons) {
+      last_attr_req new_req;
+      last_obj* next;
+      last_symbol* sym;
+      last_attr* attr;
+      vps_type* type;
+
+      next = obj;
+      obj = last_car(next);
+      if (!obj || obj->t != lastk_symbol) {
+	uabort("ref arg error!");
+      }
+      new_req = *req;
+      sym = (last_symbol*)obj;
+      attr = sym->attr;
+      new_req.ast_obj = next;
+      attr->action(&new_req,res);
+      if (res->res_type != lar_vps_apd) {
+	uabort("ref arg error!");
+      }
+      if (!res->res_vps || res->res_vps->t != vpsk_type) {
+	uabort("ref arg not a indexof");
+      }
+      type = (vps_type*)res->res_vps;
+
+      inst = vps_irefimm(req->vps,type->type_index);
     }else{
       uabort("ref inst error!");
       inst = NULL;
@@ -839,6 +898,8 @@ LDEFATTR(ref,"ref",{
  */
 LDEFATTR(set,"set",{
     vps_cfg* parent;
+    vps_cfg* cfg;
+    vcfg_graph* grp;
     vps_inst* inst;
     last_obj* obj;
     last_obj* next;
@@ -848,6 +909,11 @@ LDEFATTR(set,"set",{
     if(!LATTR_CONTEXT_BLOCK(parent)){
       uabort("set inst can not use here!");
     }
+    cfg = (vps_cfg*)parent;
+    if (cfg->parent->t != vcfgk_grp) {
+      uabort("set inst must be use at subr!");
+    }
+    grp = (vcfg_graph*)cfg->parent;
     next = last_cdr(req->ast_obj);
     if(!next){
       uabort("set inst have no operand!");
@@ -862,6 +928,32 @@ LDEFATTR(set,"set",{
     }else if(obj->t == lastk_integer){
       last_integer* inte = (last_integer*)obj;
       inst = vps_isetimm(req->vps,inte->value);
+    } else if (obj->t == lastk_cons) {
+      last_attr_req new_req;
+      last_obj* next;
+      last_symbol* sym;
+      last_attr* attr;
+      vps_type* type;
+
+      next = obj;
+      obj = last_car(next);
+      if (!obj || obj->t != lastk_symbol) {
+	uabort("set arg error!");
+      }
+      new_req = *req;
+      sym = (last_symbol*)obj;
+      attr = sym->attr;
+      new_req.ast_obj = next;
+      attr->action(&new_req,res);
+      if (res->res_type != lar_vps_apd) {
+	uabort("set arg error!");
+      }
+      if (!res->res_vps || res->res_vps->t != vpsk_type) {
+	uabort("set arg not a indexof");
+      }
+      type = (vps_type*)res->res_vps;
+
+      inst = vps_isetimm(req->vps,type->type_index);
     }else{
       uabort("set inst error!");
       inst = NULL;

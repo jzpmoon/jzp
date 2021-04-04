@@ -81,6 +81,61 @@ double ustring_to_number(ustring* str){
   return atof(str->value);
 }
 
+ustring* ustring_concat(ustring* str1,ustring* str2)
+{
+  int len;
+  char* charp;
+  ustring* str;
+
+  str = ualloc(sizeof(ustring));
+  if (!str) {
+    return NULL;
+  }
+  len = str1->len + str2->len;
+  charp = ualloc(len + 1);
+  if(!charp) {
+    ufree(str);
+    return NULL;
+  }
+  memcpy(charp,str1->value,str1->len);
+  memcpy(charp + str1->len,str2->value,str2->len);
+  charp[len] = '\0';
+  str->value = charp;
+  str->len = len;
+  str->hash_code = ucharp_hscd(charp);
+  
+  return str;
+}
+
+ustring* ustring_concatx(ustring* str1,ustring* str2,char* sep)
+{
+  int len;
+  int sep_len;
+  char* charp;
+  ustring* str;
+
+  str = ualloc(sizeof(ustring));
+  if (!str) {
+    return NULL;
+  }
+  sep_len = strlen(sep);
+  len = str1->len + str2->len + sep_len;
+  charp = ualloc(len + 1);
+  if(!charp) {
+    ufree(str);
+    return NULL;
+  }
+  memcpy(charp,str1->value,str1->len);
+  memcpy(charp + str1->len,sep,sep_len);
+  memcpy(charp + sep_len + str1->len,str2->value,str2->len);
+  charp[len] = '\0';
+  str->value = charp;
+  str->len = len;
+  str->hash_code = ucharp_hscd(charp);
+  
+  return str;  
+}
+
 void ustring_log(ustring* str){
   ulog1("value:%s",str->value);
   ulog1("len  :%d",str->len);
