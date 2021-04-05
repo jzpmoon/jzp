@@ -30,7 +30,6 @@ LDEFATTR(src_load,"src-load",{
     
     mod = lfile2vps(req->reader,src_name->name->value,req->vps);
     
-    vps_cntr_load(req->vps,mod);
     ulog("src-load");
     LATTR_RETURN_VOID;
   })
@@ -64,7 +63,6 @@ LDEFATTR(mod_load,"mod-load",{
       uabort("vps mod new error");
     }
     
-    vps_cntr_load(req->vps,mod);
     ulog("mod-load");
     LATTR_RETURN_VOID;
   })

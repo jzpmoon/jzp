@@ -104,4 +104,4 @@
   (return)
 )
 
-(test-make-array)
+(entry-subr)

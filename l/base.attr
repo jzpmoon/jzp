@@ -90,7 +90,7 @@ static vcfg_graph* subr(last_attr_req* subreq){
       uabort("subr error!");
     }
     car = last_car(obj);
-    if(car->t != lastk_symbol){
+    if(!car || car->t != lastk_symbol){
       uabort("subr inst invalid!");
     }
     inst_name = (last_symbol*)car;
@@ -191,6 +191,9 @@ LDEFATTR(g_var,"g-var",{
       uabort("g-var inst error!");
     }
     obj = last_car(next);
+    if (!obj) {
+      uabort("g-var has no declare variable name!");
+    }
     if(obj->t == lastk_symbol){
       last_symbol* sym = (last_symbol*)obj;
       vps_data* data;
@@ -229,6 +232,9 @@ LDEFATTR(var,"var",{
 	uabort("var inst error!");
       }
       obj = last_car(next);
+      if (!obj) {
+	uabort("g-var has no declare variable name!");
+      }
       if (obj->t == lastk_symbol) {
 	last_symbol* sym = (last_symbol*)obj;
 	vps_data* data;
@@ -286,6 +292,9 @@ LDEFATTR(local,"local",{
 	uabort("local inst error!");
       }
       obj = last_car(next);
+      if (!obj) {
+	uabort("local has no declare variable name!");
+      }
       if(obj->t == lastk_symbol){
 	last_symbol* sym = (last_symbol*)obj;
 	vps_data* data;
@@ -332,6 +341,9 @@ LDEFATTR(load,"load",{
       uabort("load inst error!");
     }
     obj = last_car(next);
+    if (!obj) {
+      uabort("load has no operand!");
+    }
     if(obj->t == lastk_symbol){
       last_symbol* sym = (last_symbol*)obj;
       inst = vps_iloaddt(vps,sym->name);
@@ -368,6 +380,9 @@ LDEFATTR(store,"store",{
       uabort("store inst error!");
     }
     obj = last_car(next);
+    if (!obj) {
+      uabort("store has no operand!");
+    }
     if(obj->t == lastk_symbol){
       last_symbol* sym = (last_symbol*)obj;
       inst = vps_istoredt(req->vps,sym->name);
@@ -411,6 +426,9 @@ LDEFATTR(push,"push",{
       uabort("push inst error!");
     }
     obj = last_car(next);
+    if (!obj) {
+      uabort("push has no operand!");
+    }
     if(obj->t == lastk_symbol){
       last_symbol* sym = (last_symbol*)obj;
       inst = vps_ipushdt(req->vps,grp,sym->name);
@@ -478,6 +496,9 @@ LDEFATTR(top,"top",{
       uabort("top inst error!");
     }
     obj = last_car(next);
+    if (!obj) {
+      uabort("top has no operand!");
+    }
     if(obj->t == lastk_integer){
       last_integer* inte = (last_integer*)obj;
       inst = vps_itop(req->vps,inte->value);
@@ -516,6 +537,9 @@ LDEFATTR(pop,"pop",{
 	uabort("top inst error!");
       }
       obj = last_car(next);
+      if (!obj) {
+	uabort("top has no operand!");
+      }
       if (obj->t == lastk_symbol) {
 	last_symbol* sym = (last_symbol*)obj;
 	inst = vps_ipopdt(req->vps,grp,sym->name);
@@ -621,6 +645,9 @@ LDEFATTR(jmpi,"jmpi",{
       uabort("jmpi inst error!");
     }
     obj = last_car(next);
+    if (!obj) {
+      uabort("jmpi has no operand!");
+    }
     if(obj->t == lastk_symbol){
       last_symbol* symbol = (last_symbol*)obj;
       inst = vps_ijmpilb(req->vps,symbol->name);
@@ -657,6 +684,9 @@ LDEFATTR(jmp,"jmp",{
       uabort("jmp inst error!");
     }
     obj = last_car(next);
+    if (!obj) {
+      uabort("jmp has no operand!");
+    }
     if(obj->t == lastk_symbol){
       last_symbol* symbol = (last_symbol*)obj;
       inst = vps_ijmplb(req->vps,symbol->name);
@@ -853,6 +883,9 @@ LDEFATTR(ref,"ref",{
       uabort("ref inst error!");
     }
     obj = last_car(next);
+    if (!obj) {
+      uabort("ref has no operand!");
+    }
     if(obj->t == lastk_symbol){
       last_symbol* sym = (last_symbol*)obj;
       inst = vps_irefdt(req->vps,sym->name);
@@ -922,6 +955,9 @@ LDEFATTR(set,"set",{
       uabort("set inst error!");
     }
     obj = last_car(next);
+    if (!obj) {
+      uabort("set has no operand!");
+    }
     if(obj->t == lastk_symbol){
       last_symbol* sym = (last_symbol*)obj;
       inst = vps_isetdt(req->vps,sym->name);
@@ -984,6 +1020,9 @@ LDEFATTR(label,"label",{
       uabort("label inst error!");
     }
     obj = last_car(next);
+    if (!obj) {
+      uabort("label has no operand!");
+    }
     if (obj->t == lastk_symbol) {
       last_symbol* symbol = (last_symbol*)obj;
       blk = vcfg_block_new(req->vps);

@@ -662,19 +662,11 @@ vps_mod* lfile2vps(lreader* reader,char* file_path,vps_cntr* vps)
   last_attr_req req;
   last_attr_res res;
   int retval;
-  
-  file = fopen(file_path,"r");
-  if(!file){
-    uabort("open file error!");
-  }
-  
+
   ts = lreader_from(reader);
   if (!ts) {
     uabort("reader from error!");
   }
-
-  ltoken_state_reset(ts,file);
-
   mod_name = ustring_table_put(ts->symtb,file_path,-1);
   if (!mod_name) {
     uabort("mod name put symtb error!");
@@ -684,6 +676,15 @@ vps_mod* lfile2vps(lreader* reader,char* file_path,vps_cntr* vps)
   if (!mod) {
     uabort("new mod error!");
   }
+  vps_cntr_load(vps,mod);
+  
+  file = fopen(file_path,"r");
+  if(!file){
+    uabort("open file error!");
+  }
+  
+  ltoken_state_reset(ts,file);
+
   grp = vcfg_graph_new(vps);
   if(!grp){
     uabort("new grp error!");

@@ -18,7 +18,6 @@ int leval_load(leval* eval,char* file_path)
   
   mod = leval_vps_load(eval,file_path);
   vps = &eval->vps;
-  vps_cntr_load(vps,mod);
   vcontext_vps_load(eval->ctx,vps);
   return 0;
 }
