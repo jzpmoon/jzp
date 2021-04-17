@@ -92,7 +92,7 @@
   (push stream-output)
   (call)
   (load char)
-  (push 101)
+  (push '!')
   (eq)
   (jmpi exit)
   (load tmp)
@@ -104,4 +104,4 @@
   (return)
 )
 
-(entry-subr)
+(test-string)

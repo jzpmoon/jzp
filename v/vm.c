@@ -289,6 +289,8 @@ void bc_eq(vcontext* ctx){
       num1 = vslot_num_get(slot1);
     } else if(vslot_is_int(slot1)){
       num1 = vslot_int_get(slot1);
+    } else if(vslot_is_char(slot1)){
+      num1 = vslot_char_get(slot1);
     } else {
       vslot_bool_set(bool,vbool_false);
       vcontext_stack_push(ctx,bool);
@@ -298,6 +300,8 @@ void bc_eq(vcontext* ctx){
       num2 = vslot_num_get(slot2);
     } else if(vslot_is_int(slot2)){
       num2 = vslot_int_get(slot2);
+    } else if(vslot_is_char(slot2)){
+      num2 = vslot_char_get(slot2);
     } else {
       vslot_bool_set(bool,vbool_false);
       vcontext_stack_push(ctx,bool);
@@ -575,7 +579,7 @@ void bc_ref(vcontext* ctx,
       if (!vgc_str_bound_check(str,index)) {
 	uabort("vm:ref string out of bounds!");	
       }
-      vslot_int_set(slot,str->u.b[index]);
+      vslot_char_set(slot,str->u.b[index]);
     } else {
       if(vgc_obj_ref_check(obj,index)) {
 	uabort("vm:ref object or array out of bounds!");

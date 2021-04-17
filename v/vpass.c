@@ -85,6 +85,23 @@ vps_inst* vps_ipushint(vps_cntr* vps,
   return inst;
 }
 
+vps_inst* vps_ipushchar(vps_cntr* vps,
+			vcfg_graph* grp,
+			int imm)
+{
+  vps_inst* inst;
+  vps_data* data;
+
+  data = vps_char_new(vps,imm);
+  if (!data) {
+    uabort("vps char new error!");
+  }
+  data->scope = VPS_SCOPE_LOCAL;
+  data->idx = vps_graph_const_put(grp,data);
+  inst = vps_inst_new(vps,vinstk_imm,Bpush,NULL,data,NULL);
+  return inst;
+}
+
 vps_inst* vps_ipushnum(vps_cntr* vps,
 		       vcfg_graph* grp,
 		       ustring* name,
@@ -337,6 +354,20 @@ vps_data* vps_int_new(vps_cntr* vps,
     data->stk = vstk_heap;
     data->name = name;
     data->u.integer = inte;
+  }
+  return data;
+}
+
+vps_data* vps_char_new(vps_cntr* vps,
+		       int chara){
+  vps_data* data;
+
+  data = umem_pool_alloc(&vps->mp,sizeof(vps_data));
+  if(data){
+    data->t = vpsk_dt;
+    data->dtk = vdtk_char;
+    data->stk = vstk_heap;
+    data->u.character = chara;
   }
   return data;
 }

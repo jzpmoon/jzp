@@ -144,6 +144,34 @@ int ltoken_lex_string(ltoken_state* ts){
   return ts->token = ltk_string;
 }
 
+int ltoken_lex_character(ltoken_state* ts)
+{
+  int c;
+  int v;
+  c = ltoken_next_char(ts);
+  if (c == '\\') {
+    c = ltoken_next_char(ts);
+    if (c == '\\') {
+      v = '\\';
+    } else if (c == '\'') {
+      v = '\'';
+    } else {
+      return ts->token = ltk_bad;
+    }
+    ts->chara = v;
+    return ts->token = ltk_character;
+  } else {
+    v = c;
+    c = ltoken_next_char(ts);
+    if (c == '\'') {
+      ts->chara = v;
+      return ts->token = ltk_character;
+    } else {
+      return ts->token = ltk_bad;
+    }
+  }
+}
+
 int ltoken_lex_number(ltoken_state* ts){
   ustring* str;
   int      dot = 0;
@@ -216,10 +244,10 @@ int ltoken_next(ltoken_state* ts){
     return ts->token = ltk_left;
   case ')':
     return ts->token = ltk_right;
-  case '\'':
-    return ts->token = ltk_quote;
   case '"':
     return ltoken_lex_string(ts);
+  case '\'':
+    return ltoken_lex_character(ts);
   case '+':
   case '-':
     ltoken_mark(ts,c);
@@ -317,9 +345,17 @@ last_obj* lparser_atom_parse(ltoken_state* ts){
     {
       last_string* str = last_string_new(ts,ts->str);
       if(!str){
-	uabort("lparser_atom_parse error!");
+	uabort("lparser_atom_parse error:new string!");
       }
       return (last_obj*)str;
+    }
+  case ltk_character:
+    {
+      last_character* chara = last_character_new(ts,ts->chara);
+      if(!chara){
+	uabort("lparser_atom_parse error:new last_character!");
+      }
+      return (last_obj*)chara;
     }
   case ltk_identify:
     {
@@ -336,7 +372,7 @@ last_obj* lparser_atom_parse(ltoken_state* ts){
       }
       sym = last_symbol_new(ts,ts->id,attr);
       if(!sym){
-	uabort("lparser_atom_parse error!");
+	uabort("lparser_atom_parse error:new last_symbol!");
       }
       return (last_obj*)sym;
     }
@@ -344,7 +380,7 @@ last_obj* lparser_atom_parse(ltoken_state* ts){
     {
       last_integer* integer = last_integer_new(ts,ts->id,ts->inte);
       if(!integer){
-	uabort("lparser_atom_parse error!");
+	uabort("lparser_atom_parse error:new last_integer!");
       }
       return (last_obj*)integer;
     }
@@ -352,7 +388,7 @@ last_obj* lparser_atom_parse(ltoken_state* ts){
     {
       last_number* number = last_number_new(ts,ts->id,ts->dnum);
       if(!number){
-	uabort("lparser_atom_parse error!");
+	uabort("lparser_atom_parse error:new last_number!");
       }
       return (last_obj*)number;
     }
@@ -541,6 +577,20 @@ last_string* last_string_new(ltoken_state* ts,ustring* string){
     str->value = string;
   }
   return str;
+}
+
+last_character* last_character_new(ltoken_state* ts,int character)
+{
+  uallocator* allocator;
+  last_character* chara;
+  
+  allocator = ts->allocator;
+  chara = allocator->alloc(allocator,sizeof(last_character));
+  if(chara){
+    chara->t = lastk_character;
+    chara->value = character;
+  }
+  return chara;
 }
 
 void ltoken_state_init(ltoken_state* ts)

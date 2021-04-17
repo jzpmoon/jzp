@@ -441,6 +441,9 @@ LDEFATTR(push,"push",{
     }else if(obj->t == lastk_string){
       last_string* str = (last_string*)obj;
       inst = vps_ipushstr(req->vps,grp,str->value);
+    }else if(obj->t == lastk_character){
+      last_character* chara = (last_character*)obj;
+      inst = vps_ipushchar(req->vps,grp,chara->value);
     } else if (obj->t == lastk_cons) {
       last_attr_req new_req;
       last_obj* next;

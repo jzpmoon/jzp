@@ -8,14 +8,6 @@
 #include "vgc_obj.h"
 #include "vpass.h"
 
-enum {
-  lastk_cons,
-  lastk_symbol,
-  lastk_integer,
-  lastk_number,
-  lastk_string,
-};
-
 #define LASTHEADER \
   int t
 
@@ -58,18 +50,6 @@ typedef struct _last_attr{
 
 uhstb_decl_tpl(last_attr);
 
-enum ltoken{
-  ltk_bad,
-  ltk_identify,
-  ltk_left,
-  ltk_right,
-  ltk_string,
-  ltk_integer,
-  ltk_number,
-  ltk_quote,
-  ltk_eof,
-};
-
 typedef struct _ltoken_state{
   umem_pool mp;
   uallocator* allocator;
@@ -78,8 +58,9 @@ typedef struct _ltoken_state{
   int token;
   ustring* str;
   ustring* id;
-  int inte;
   double dnum;
+  int inte;
+  int chara;
   int bool;
   ustring_table* symtb;
   ustring_table* strtb;

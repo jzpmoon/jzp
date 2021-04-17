@@ -209,6 +209,24 @@ int ustream_write_int(ustream* stream, int inte,URI_DECL)
   URI_RETVAL(UERR_SUCC,0);
 }
 
+int ustream_write_char(ustream* stream, int chara,URI_DECL)
+{
+  if(stream->iot != USTREAM_OUTPUT){
+    URI_RETVAL(UERR_IOT,-1);
+  }
+  if(stream->dst == USTREAM_BUFF){
+
+  }else if(stream->dst == USTREAM_FILE){
+    FILE* file = USTREAM_FILE_GET(stream);
+    if(fprintf(file,"%c",chara) < 0){
+      URI_RETVAL(UERR_ERR,-1);
+    }
+  }else{
+    URI_RETVAL(UERR_DST,-1);
+  }
+  URI_RETVAL(UERR_SUCC,0);
+}
+
 int ustream_write_string(ustream* stream,char* charp,URI_DECL)
 {
   if(stream->iot != USTREAM_OUTPUT){

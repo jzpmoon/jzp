@@ -86,7 +86,12 @@ LDEFUN(stream_output,"stream-output",LSCOPE_GLOBAL,2,LRETVAL_NO,{
     } else if (vslot_is_int(slot)) {
       int inte = vslot_int_get(slot);
       if(ustream_write_int(lstream->stream,inte,URI_REF)){
-	uabort("stream-output:stream write number error!");	
+	uabort("stream-output:stream write integer error!");	
+      }
+    } else if (vslot_is_char(slot)) {
+      int chara = vslot_char_get(slot);
+      if(ustream_write_char(lstream->stream,chara,URI_REF)){
+	uabort("stream-output:stream write character error!");	
       }
     } else if (vslot_is_ref(slot)) {
       vgc_obj* obj = vslot_ref_get(slot,vgc_obj);

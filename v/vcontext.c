@@ -297,9 +297,8 @@ static vslot data2data(vgc_heap* heap,vps_data* data)
     }
     vgc_ustr2vstr(vstr,ustr);
     vslot_ref_set(slot,vstr);
-  }else if(data->dtk == vdtk_arr){
-    /* todo */
-    vslot_null_set(slot);
+  }else if(data->dtk == vdtk_char){
+    vslot_char_set(slot,data->u.character);
   }else if(data->dtk == vdtk_any){
     vslot_null_set(slot);
   }else{

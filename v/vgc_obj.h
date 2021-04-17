@@ -54,16 +54,18 @@ enum{
   vslot_type_ref,
   vslot_type_num,
   vslot_type_int,
+  vslot_type_char,
   vslot_type_bool,
 };
 
 typedef struct _vslot{
   int t;
   union {
-    double   num;
-    int      inte;
-    int      bool;
+    double num;
     vgc_obj* ref;
+    int inte;
+    int bool;
+    int chara;
   } u;
 } vslot;
 
@@ -80,6 +82,8 @@ typedef struct _vslot{
   ((slot).t == vslot_type_num)
 #define vslot_is_int(slot)			\
   ((slot).t == vslot_type_int)
+#define vslot_is_char(slot)			\
+  ((slot).t == vslot_type_char)
 #define vslot_is_bool(slot)			\
   ((slot).t == vslot_type_bool)
 #define vslot_is_ref(slot)			\
@@ -96,6 +100,10 @@ typedef struct _vslot{
   ((slot).u.inte)
 #define vslot_int_set(slot,val)			\
   (slot.t = vslot_type_int,slot.u.inte = val)
+#define vslot_char_get(slot)			\
+  ((slot).u.chara)
+#define vslot_char_set(slot,val)		\
+  (slot.t = vslot_type_char,slot.u.chara = val)
 #define vslot_ref_get(slot,obj_type)		\
   ((obj_type*)(slot).u.ref)
 #define vslot_ref_set(slot,obj)			\
@@ -104,13 +112,14 @@ typedef struct _vslot{
 #define vslot_null_set(slot)			\
   ((slot).t = vslot_type_ref,			\
    (slot).u.ref = NULL)
-#define vslot_is_true(SLOT)			\
-  (vslot_is_bool(SLOT) && (SLOT).u.bool)
+#define vslot_is_true(slot)			\
+  (vslot_is_bool(slot) && (slot).u.bool)
 
 #define vslot_log(slot)				\
   ulog1("slot type:%d",slot.t);			\
   ulog1("slot num:%f",slot.u.num);		\
   ulog1("slot int:%d",slot.u.inte);		\
+  ulog1("slot char:%c",slot.u.chara);		\
   ulog1("slot bool:%d",slot.u.bool);		\
   ulog1("slot ref:%p",slot.u.ref);
 

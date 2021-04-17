@@ -3,6 +3,27 @@
 
 #include "lreader.h"
 
+enum lastk{
+  lastk_cons,
+  lastk_symbol,
+  lastk_integer,
+  lastk_number,
+  lastk_string,
+  lastk_character,
+};
+
+enum ltk{
+  ltk_bad,
+  ltk_identify,
+  ltk_left,
+  ltk_right,
+  ltk_string,
+  ltk_character,
+  ltk_integer,
+  ltk_number,
+  ltk_eof,
+};
+
 extern last_attr last_attr_symcall;
 
 last_obj* lparser_parse(ltoken_state* ts);
@@ -36,6 +57,11 @@ typedef struct _last_string{
   ustring* value;
 } last_string;
 
+typedef struct _last_character{
+  LASTHEADER;
+  int value;
+} last_character;
+
 last_cons* last_cons_new(ltoken_state* ts,last_obj* car,last_obj* cdr);
 
 last_symbol* last_symbol_new(ltoken_state* ts,ustring* name,last_attr* attr);
@@ -45,6 +71,8 @@ last_integer* last_integer_new(ltoken_state* ts,ustring* name,int inte);
 last_number* last_number_new(ltoken_state* ts,ustring* name,double dnum);
 
 last_string* last_string_new(ltoken_state* ts,ustring* string);
+
+last_character* last_character_new(ltoken_state* ts,int character);
 
 void last_obj_log(last_obj* ast_obj);
 

@@ -29,6 +29,7 @@ enum{
   vdtk_arr,
   vdtk_num,
   vdtk_int,
+  vdtk_char,
   vdtk_str,
   vdtk_any,
   vdtk_code,
@@ -52,6 +53,7 @@ typedef struct _vps_data{
   union {
     double number;
     int integer;
+    int character;
     ustring* string;
     struct _vps_cfg* code;
   } u;
@@ -158,6 +160,9 @@ vps_inst* vps_ipushint(vps_cntr* vps,
 		       vcfg_graph* grp,
 		       ustring* name,
 		       int imm);
+vps_inst* vps_ipushchar(vps_cntr* vps,
+			vcfg_graph* grp,
+			int imm);
 vps_inst* vps_ipushnum(vps_cntr* vps,
 		       vcfg_graph* grp,
 		       ustring* name,
@@ -196,6 +201,9 @@ vps_data* vps_num_new(vps_cntr* vps,
 vps_data* vps_int_new(vps_cntr* vps,
 		      ustring* name,
 		      int inte);
+
+vps_data* vps_char_new(vps_cntr* vps,
+		       int chara);
 
 vps_data* vps_str_new(vps_cntr* vps,
 		      ustring* name,
