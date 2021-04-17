@@ -18,11 +18,15 @@ vslot bc_constant_get(vcontext* ctx,
   if(vgc_obj_ref_check(consts,index))
     uabort("vm:constant error!");
   slot = consts->objs[index];
+  /* whether vslot is ref and not null */
   if (vslot_is_ref(slot)) {
-    obj = vslot_ref_get(slot,vgc_obj);
-    if (vgc_obj_typeof(obj,vgc_obj_type_ref)) {
-      ref = (vgc_ref*)obj;
-      slot = vgc_slot_get(ref,ref);
+    if (!vslot_is_null(slot)) {
+      /* strip the vgc_ref */
+      obj = vslot_ref_get(slot,vgc_obj);
+      if (vgc_obj_typeof(obj,vgc_obj_type_ref)) {
+	ref = (vgc_ref*)obj;
+	slot = vgc_slot_get(ref,ref);
+      }      
     }
   }
   return slot;
@@ -45,12 +49,16 @@ void bc_constant_set(vcontext* ctx,
   if(vgc_obj_ref_check(consts,index))
     uabort("vm:constant error!");
   slot = consts->objs[index];
+  /* whether vslot is ref and not null */
   if (vslot_is_ref(slot)) {
-    obj = vslot_ref_get(slot,vgc_obj);
-    if (vgc_obj_typeof(obj,vgc_obj_type_ref)) {
-      ref = (vgc_ref*)obj;      
-      vgc_slot_set(ref,ref,value);
-      return;
+    if (!vslot_is_null(slot)) {
+      /* strip the vgc_ref */
+      obj = vslot_ref_get(slot,vgc_obj);
+      if (vgc_obj_typeof(obj,vgc_obj_type_ref)) {
+	ref = (vgc_ref*)obj;      
+	vgc_slot_set(ref,ref,value);
+	return;
+      }
     }
   }
   consts->objs[index] = value;

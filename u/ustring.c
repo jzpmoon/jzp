@@ -73,6 +73,14 @@ int ustring_comp(ustring* s1,ustring* s2){
   }
 }
 
+int ustring_charp_comp(ustring* str,char* charp)
+{
+  char* str_val;
+  
+  str_val = str->value;
+  return strcmp(str_val,charp);
+}
+
 int ustring_to_integer(ustring* str){
   return atoi(str->value);
 }

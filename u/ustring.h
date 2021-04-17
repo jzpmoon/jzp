@@ -7,7 +7,8 @@ typedef struct _ustring{
 	unsigned int hash_code;
 } ustring,* ustringp;
 
-int ustring_comp(ustring*s1,ustring* s2);
+int ustring_comp(ustring* s1,ustring* s2);
+int ustring_charp_comp(ustring* str,char* charp);
 char* ucharp_new(void* data,int len);
 ustring* ustring_new(
 	void* value,int len,int hscd);

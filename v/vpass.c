@@ -77,7 +77,7 @@ vps_inst* vps_ipushint(vps_cntr* vps,
 
   data = vps_int_new(vps,name,imm);
   if (!data) {
-    uabort("vps num new error!");
+    uabort("vps int new error!");
   }
   data->scope = VPS_SCOPE_LOCAL;
   data->idx = vps_graph_const_put(grp,data);
@@ -127,7 +127,7 @@ vps_inst* vps_ipushdt(vps_cntr* vps,vcfg_graph* grp,ustring* name)
   
   data = vps_any_new(vps,name,vstk_heap);
   if (!data) {
-    uabort("vps num new error!");
+    uabort("vps any new error!");
   }
   data->scope = VPS_SCOPE_LOCAL;
   data->idx = vps_graph_const_put(grp,data);
@@ -142,7 +142,22 @@ vps_inst* vps_ipushstr(vps_cntr* vps,vcfg_graph* grp,ustring* string)
   
   data = vps_str_new(vps,string,string);
   if (!data) {
-    uabort("vps num new error!");
+    uabort("vps str new error!");
+  }
+  data->scope = VPS_SCOPE_LOCAL;
+  data->idx = vps_graph_const_put(grp,data);
+  inst = vps_inst_new(vps,vinstk_imm,Bpush,NULL,data,NULL);
+  return inst;
+}
+
+vps_inst* vps_ipushnil(vps_cntr* vps,vcfg_graph* grp)
+{
+  vps_inst* inst;
+  vps_data* data;
+  
+  data = vps_any_new(vps,NULL,vstk_heap);
+  if (!data) {
+    uabort("vps any new error!");
   }
   data->scope = VPS_SCOPE_LOCAL;
   data->idx = vps_graph_const_put(grp,data);

@@ -10,6 +10,7 @@ enum lastk{
   lastk_number,
   lastk_string,
   lastk_character,
+  lastk_nil,
 };
 
 enum ltk{
@@ -21,6 +22,7 @@ enum ltk{
   ltk_character,
   ltk_integer,
   ltk_number,
+  ltk_nil,
   ltk_eof,
 };
 
@@ -62,6 +64,10 @@ typedef struct _last_character{
   int value;
 } last_character;
 
+typedef struct _last_nil{
+  LASTHEADER;
+} last_nil;
+
 last_cons* last_cons_new(ltoken_state* ts,last_obj* car,last_obj* cdr);
 
 last_symbol* last_symbol_new(ltoken_state* ts,ustring* name,last_attr* attr);
@@ -73,6 +79,8 @@ last_number* last_number_new(ltoken_state* ts,ustring* name,double dnum);
 last_string* last_string_new(ltoken_state* ts,ustring* string);
 
 last_character* last_character_new(ltoken_state* ts,int character);
+
+last_nil* last_nil_new(ltoken_state* ts);
 
 void last_obj_log(last_obj* ast_obj);
 

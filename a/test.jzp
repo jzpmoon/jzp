@@ -12,7 +12,7 @@
   (push make-array)
   (call)
   (store array)
-  (push 10)
+  (push nil)
   (load array)
   (set (indexof list.header))
   (load array)
@@ -104,4 +104,4 @@
   (return)
 )
 
-(test-string)
+(test-fibonacci)

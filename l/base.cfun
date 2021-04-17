@@ -94,7 +94,11 @@ LDEFUN(stream_output,"stream-output",LSCOPE_GLOBAL,2,LRETVAL_NO,{
 	uabort("stream-output:stream write character error!");	
       }
     } else if (vslot_is_ref(slot)) {
-      vgc_obj* obj = vslot_ref_get(slot,vgc_obj);
+      vgc_obj* obj;
+      if (vslot_is_null(slot)) {
+	uabort("stream-output:nil object!");
+      }
+      obj = vslot_ref_get(slot,vgc_obj);
       if (vgc_obj_typeof(obj,vgc_obj_type_string)) {
 	vgc_string* str = (vgc_string*)obj;
 	if(ustream_write_string(lstream->stream,str->u.c,URI_REF)){

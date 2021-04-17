@@ -55,6 +55,7 @@ typedef struct _ltoken_state{
   uallocator* allocator;
   ustream* stream;
   ubuffer* buff;
+  int c;
   int token;
   ustring* str;
   ustring* id;

@@ -169,6 +169,7 @@ vps_inst* vps_ipushnum(vps_cntr* vps,
 		       double dnum);
 vps_inst* vps_ipushdt(vps_cntr* vps,vcfg_graph* graph,ustring* name);
 vps_inst* vps_ipushstr(vps_cntr* vps,vcfg_graph* graph,ustring* string);
+vps_inst* vps_ipushnil(vps_cntr* vps,vcfg_graph* grp);
 vps_inst* vps_itop(vps_cntr* vps,int imm);
 vps_inst* vps_ipopdt(vps_cntr* vps,vcfg_graph* graph,ustring* name);
 vps_inst* vps_ipopv(vps_cntr* vps);

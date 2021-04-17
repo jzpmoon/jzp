@@ -28,39 +28,42 @@ static ustring* ltoken_state_string_finish(ltoken_state* ts){
 
 int ltoken_next_char(ltoken_state* ts){
   URI_DEFINE;
-  int c;
-  c = ustream_read_next(ts->stream,URI_REF);
+
+  ts->c = ustream_read_next(ts->stream,URI_REF);
   URI_ERROR;
     URI_CASE(UERR_EOF);
-      return c;
+      return ts->c;
     URI_END;
     uabort(URI_DESC);
   URI_END;
   ts->coord.x++;
-  return c;
+  return ts->c;
 }
 
 int ltoken_look_ahead(ltoken_state* ts){
   URI_DEFINE;
-  int c;
-  c = ustream_look_ahead(ts->stream,URI_REF);
+
+  ts->c = ustream_look_ahead(ts->stream,URI_REF);
   URI_ERROR;
     URI_CASE(UERR_EOF);
-      return c;
+      return ts->c;
     URI_END;
     uabort(URI_DESC);
   URI_END;
-  return c;
+  return ts->c;
 }
 
 #define ltoken_new_line(ts)			\
   ((ts)->coord.x=0,(ts)->coord.y++)
 
-#define ltoken_mark(ts,c)			\
-  if(ubuffer_write_next((ts)->buff,c) == -1){	\
-    ubuffer_empty((ts)->buff);			\
-    return (ts)->token = ltk_bad;		\
+#define ltoken_mark(ts)					\
+  if(ubuffer_write_next((ts)->buff,(ts)->c) == -1){	\
+    ubuffer_empty((ts)->buff);				\
+    return (ts)->token = ltk_bad;			\
   }
+
+#define ltoken_unmark(ts)			\
+  ubuffer_ready_write((ts)->buff);
 
 void ltoken_skip_blank(ltoken_state* ts){
   int c;
@@ -134,7 +137,7 @@ int ltoken_lex_string(ltoken_state* ts){
     if(c == LEOF){
       return ts->token = ltk_bad;
     }
-    ltoken_mark(ts,c);
+    ltoken_mark(ts);
   }
   str = ltoken_state_string_finish(ts);
   if(!str){
@@ -176,6 +179,8 @@ int ltoken_lex_number(ltoken_state* ts){
   ustring* str;
   int      dot = 0;
   int      c;
+
+  ltoken_mark(ts);
   while(1){
     c = ltoken_look_ahead(ts);
     if(c == '.'){
@@ -187,7 +192,7 @@ int ltoken_lex_number(ltoken_state* ts){
     if(c < '0' || c > '9'){
       break;
     }
-    ltoken_mark(ts,c);
+    ltoken_mark(ts);
     ltoken_next_char(ts);
   }
   str = ltoken_state_symbol_finish(ts);
@@ -204,9 +209,23 @@ int ltoken_lex_number(ltoken_state* ts){
   }
 }
 
+int ltoken_lex_keyword(ltoken_state* ts)
+{
+  int retval;
+
+  retval = ustring_charp_comp(ts->id,"nil");
+  if (!retval) {
+    return ts->token = ltk_nil;
+  } else {
+    return ts->token = ltk_identify;
+  }
+}
+
 int ltoken_lex_identify(ltoken_state* ts){
   ustring* str;
   int      c;
+
+  ltoken_mark(ts);
   while(1){
     c = ltoken_look_ahead(ts);
     switch(c){
@@ -224,9 +243,9 @@ int ltoken_lex_identify(ltoken_state* ts){
 	uabort("lparse: symtb put error!");
       }
       ts->id = str;
-      return ts->token = ltk_identify;
+      return ltoken_lex_keyword(ts);
     default:
-      ltoken_mark(ts,c);
+      ltoken_mark(ts);
       ltoken_next_char(ts);
       continue;
     }
@@ -237,7 +256,6 @@ int ltoken_next(ltoken_state* ts){
   int c;
   
   ltoken_skip(ts);
-  
   c = ltoken_next_char(ts);
   switch(c){
   case '(':
@@ -250,7 +268,6 @@ int ltoken_next(ltoken_state* ts){
     return ltoken_lex_character(ts);
   case '+':
   case '-':
-    ltoken_mark(ts,c);
     c = ltoken_look_ahead(ts);
     if(c < '0' || c > '9'){
       return ltoken_lex_identify(ts);
@@ -267,13 +284,11 @@ int ltoken_next(ltoken_state* ts){
   case '7':
   case '8':
   case '9':
-    ltoken_mark(ts,c);
   lab_num:
     return ltoken_lex_number(ts);
   case LEOF:
     return ts->token = ltk_eof;
   default:
-    ltoken_mark(ts,c);
     return ltoken_lex_identify(ts);
   }
 }
@@ -332,7 +347,7 @@ static int symcall_action(last_attr_req* req,
   inst = vps_icall(vps);
   vcfg_blk_apd(blk,inst);
 
-  ulog("symcall");
+  ulog0("symcall");
   LATTR_RETURN(lar_vps_apd,blk);
 }
 
@@ -391,6 +406,14 @@ last_obj* lparser_atom_parse(ltoken_state* ts){
 	uabort("lparser_atom_parse error:new last_number!");
       }
       return (last_obj*)number;
+    }
+  case ltk_nil:
+    {
+      last_nil* nil = last_nil_new(ts);
+      if(!nil){
+	uabort("lparser_atom_parse error:new last_nil!");
+      }
+      return (last_obj*)nil;
     }
   default:
     ltoken_log(ts);
@@ -456,12 +479,12 @@ void ltoken_log(ltoken_state* ts){
   char* str;
   sym = ts->id->value;
   str = ts->str->value;
-  ulog ("********token state begin");
+  ulog0("********token state begin");
   ulog1("token  :%d",ts->token);
   ulog1("symbol :%s",sym);
   ulog1("string :%s",str);
   ulog1("number :%f",ts->dnum);
-  ulog ("********token state   end");
+  ulog0("********token state   end");
 }
 
 void lparser_atom_log(last_obj* s_exp){
@@ -473,10 +496,10 @@ void lparser_atom_log(last_obj* s_exp){
     }else if(s_exp->t == lastk_number){
       ulog1("  %f",((last_number*)s_exp)->value);
     }else{
-      ulog(" [unkonw]");
+      ulog0(" [unkonw]");
     }
   }else{
-    ulog(" ()");
+    ulog0(" ()");
   }
 }
 
@@ -486,7 +509,7 @@ void last_obj_log(last_obj* ast_obj){
   if(s_exp){
     if(s_exp->t == lastk_cons){
       cons = (last_cons*)s_exp;
-      ulog("(");
+      ulog0("(");
       while(1){
 	last_obj* cdr;
 	last_obj_log(cons->car);
@@ -500,7 +523,7 @@ void last_obj_log(last_obj* ast_obj){
 	    break;
 	  }
 	}else{
-	  ulog(")");
+	  ulog0(")");
 	  break;
 	}
       }
@@ -593,6 +616,19 @@ last_character* last_character_new(ltoken_state* ts,int character)
   return chara;
 }
 
+last_nil* last_nil_new(ltoken_state* ts)
+{
+  uallocator* allocator;
+  last_nil* nil;
+  
+  allocator = ts->allocator;
+  nil = allocator->alloc(allocator,sizeof(last_nil));
+  if(nil){
+    nil->t = lastk_nil;
+  }
+  return nil;
+}
+
 void ltoken_state_init(ltoken_state* ts)
 {
   ubuffer_ready_write(ts->buff);
@@ -653,17 +689,17 @@ void ltoken_state_close(ltoken_state* ts)
 {
   ustream* stream = ts->stream;
   ustream_close(stream);
-  ulog("stream close");
+  ulog0("stream close");
 }
 
 void ltoken_state_reset(ltoken_state* ts,FILE* file){
   ustream* stream = ts->stream;
   ustream_close(stream);
-  ulog("stream close");
+  ulog0("stream close");
   if(ustream_open_by_file(stream,file)){
     uabort("token state file stream open error!");
   }
-  ulog("stream open");
+  ulog0("stream open");
   ltoken_state_init(ts);
 }
 
@@ -752,6 +788,7 @@ vps_mod* lfile2vps(lreader* reader,char* file_path,vps_cntr* vps)
     if (ast_obj == NULL){
       break;
     }
+    last_obj_log(ast_obj);
     req.ast_obj =ast_obj;
     retval = last2vps(&req,&res);
     if (retval != 0) {

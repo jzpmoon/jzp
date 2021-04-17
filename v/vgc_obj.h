@@ -88,6 +88,8 @@ typedef struct _vslot{
   ((slot).t == vslot_type_bool)
 #define vslot_is_ref(slot)			\
   ((slot).t == vslot_type_ref)
+#define vslot_is_null(slot)			\
+  ((slot).u.ref == NULL)
 #define vslot_bool_get(slot)			\
   ((slot).u.bool)
 #define vslot_bool_set(slot,val)		\
