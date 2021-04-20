@@ -9,24 +9,28 @@ libl_path = ../l/
 libv_path = ../v/
 libu_path = ../u/
 
-l_somk   = $(libl_path)libl.mk
-v_somk   = $(libv_path)libv.mk
-u_somk   = $(libu_path)libu.mk
+l_somk   = $(libl_path)makefile
+v_somk   = $(libv_path)makefile
+u_somk   = $(libu_path)makefile
 CFLAGS   = -std=c89 -Wall $(DEBUG_MODE)
 
 &(bin_name):$(obj_list) $(l_lib)
-	$(CC) $(obj_list) -L$(libl_path) -l$(l_lib) -L$(libv_path) -l$(v_lib) -L$(libu_path) -l$(u_lib) -Wl,-rpath='$$ORIGIN/$(libl_path):$$ORIGIN/$(libv_path):$$ORIGIN/$(libu_path)' -o $(bin_name)
+	$(CC) $(obj_list) -L$(libl_path) -l$(l_lib) -L$(libv_path) -l$(v_lib) -L$(libu_path) -l$(u_lib) -o $(bin_name)
 .c.o:
 	$(CC) -c -o $@ $< -I $(libl_path) -I $(libv_path) -I $(libu_path) $(CFLAGS)
 $(l_lib):
+	cd $(libl_path); \
+	./configure.sh --prefix=$(prefix); \
+	cd $(currdir); \
 	make -C $(libl_path) -f $(l_somk)
 install:
-	cp $(bin_name) ~/../usr/bin/; \
+	cp $(bin_name) $(prefix)/; \
+	cp jzpl.sh $(prefix)/; \
 	make -C $(libl_path) -f $(l_somk) install; \
 	make -C $(libv_path) -f $(v_somk) install; \
 	make -C $(libu_path) -f $(u_somk) install
 uninstall:
-	rm ~/../usr/bin/$(bin_name); \
+	rm $(prefix)/$(bin_name); \
 	make -C $(libl_path) -f $(l_somk) uninstall; \
 	make -C $(libv_path) -f $(v_somk) uninstall; \
 	make -C $(libu_path) -f $(u_somk) uninstall

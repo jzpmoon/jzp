@@ -1,0 +1,14 @@
+*
+
+!*/
+
+!*.c
+!*.h
+!*.attr
+!*.cfun
+!*.jzp
+!*.n
+!*.mk
+!configure.sh
+!readme.txt
+!.gitignore

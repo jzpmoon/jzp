@@ -4,7 +4,7 @@
 UDEFUN(UFNAME jzpl,UARGS (int argc,char** args),URET int,
 UDECLARE
   leval* eval;
-  ulog_init("log.txt",UTRUE);
+  ulog_init("jzpl.log",UTRUE);
 )
 UBEGIN
 ({
