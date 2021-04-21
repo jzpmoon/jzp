@@ -15,6 +15,16 @@ do
     IFS=$old_ifs
 done
 
-echo "prefix=$prefix" > makefile
-echo "currdir=$(pwd)" >> makefile
-cat jzpl.mk >> makefile
+entry_exec=jzpl.sh
+echo '#!/usr/bin/bash' > $entry_exec
+echo "prefix=$prefix" >> $entry_exec
+echo 'export PATH=$PATH:$prefix' >> $entry_exec
+echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$prefix' >> $entry_exec
+echo '$prefix/jzpl $*' >> $entry_exec
+chmod 700 $entry_exec
+
+entry_mk=makefile
+echo "prefix=$prefix" > $entry_mk
+echo "currdir=$(pwd)" >> $entry_mk
+echo "entry_exec=$entry_exec" >> $entry_mk
+cat jzpl.mk >> $entry_mk

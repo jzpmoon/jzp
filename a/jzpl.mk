@@ -25,12 +25,13 @@ $(l_lib):
 	make -C $(libl_path) -f $(l_somk)
 install:
 	cp $(bin_name) $(prefix)/; \
-	cp jzpl.sh $(prefix)/; \
 	make -C $(libl_path) -f $(l_somk) install; \
 	make -C $(libv_path) -f $(v_somk) install; \
-	make -C $(libu_path) -f $(u_somk) install
+	make -C $(libu_path) -f $(u_somk) install; \
+	cp $(entry_exec) ~/../usr/bin/
 uninstall:
 	rm $(prefix)/$(bin_name); \
+	rm ~/../usr/bin/$(entry_exec); \
 	make -C $(libl_path) -f $(l_somk) uninstall; \
 	make -C $(libv_path) -f $(v_somk) uninstall; \
 	make -C $(libu_path) -f $(u_somk) uninstall
