@@ -1,17 +1,6 @@
 ;; global data
 (g-var flag)
 
-(g-struct list
-  (header
-   length)
-)
-
-(struct lsnd
-  (prev
-   next
-   value)
-)
-
 ;; factorial n!
 (g-subr factorial (n)
   (load n)

@@ -1,0 +1,67 @@
+;;;link list
+
+(g-struct list
+  (header
+   length)
+)
+
+(struct lsnd
+  (prev
+   next
+   value)
+)
+
+;;append to the end of list
+(g-subr list-append (list value)
+  (local node)
+  (local head)
+  (local tail)
+
+  (push (sizeof lsnd))
+  (push make-array)
+  (call)
+  (store node)
+  (load value)
+  (load node)
+  (set (indexof lsnd.value))
+  
+  (load list)
+  (ref (indexof list.header))
+  (push nil)
+  (eq)
+  (jmpi has-no)
+
+  (load list)
+  (ref (indexof list.header))
+  (store head)
+  (load head)
+  (ref (indexof lsnd.prev))
+  (store tail)
+  (load head)
+  (load node)
+  (set (indexof lsnd.next))
+  (load tail)
+  (load node)
+  (set (indexof lsnd.prev))
+  (load node)
+  (load head)
+  (set (indexof lsnd.prev))
+  (load node)
+  (load tail)
+  (set (indexof lsnd.next))
+  (jmp exit)
+
+  (label has-no)
+  (load node)
+  (load list)
+  (set (indexof list.header))
+  (push nil)
+  (load node)
+  (set (indexof lsnd.prev))
+  (push nil)
+  (load node)
+  (set (indexof lsnd.next))
+
+  (label exit)
+  (return)
+)

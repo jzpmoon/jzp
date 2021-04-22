@@ -103,6 +103,7 @@ typedef struct _vcfg_block{
 typedef struct _vcfg_graph{
   VCFGHEADER;
   uhstb_vps_datap* locals;
+  ulist_vps_instp* insts;
   ulist_vps_datap* imms;
   ulist_vps_cfgp* cfgs;
   vps_cfg* entry;
@@ -223,6 +224,8 @@ vcfg_block* vcfg_block_new(vps_cntr* vps);
 void vcfg_blk_apd(vcfg_block* blk,vps_inst* inst);
 
 vcfg_graph* vcfg_graph_new(vps_cntr* vps);
+
+void vcfg_grp_inst_apd(vcfg_graph* grp,vps_inst* inst);
 
 void vcfg_grp_cdapd(vps_cntr* vps,vcfg_graph* grp,vps_cfg* cfg);
 

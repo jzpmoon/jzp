@@ -465,6 +465,7 @@ vcfg_graph* vcfg_graph_new(vps_cntr* vps){
     g->parent = NULL;
     g->name = NULL;
     g->locals = uhstb_vps_datap_alloc(allocator,VCFG_GRP_DATA_TABLE_SIZE);
+    g->insts = ulist_vps_instp_alloc(allocator);
     g->imms = ulist_vps_datap_alloc(allocator);
     g->cfgs = ulist_vps_cfgp_alloc(allocator);
     g->entry = NULL;
@@ -485,6 +486,15 @@ static int vcfg_grp_dt_put_comp(vps_datap* data1,vps_datap* data2){
   n1 = d1->name;
   n2 = d2->name;
   return ustring_comp(n1,n2);
+}
+
+void vcfg_grp_inst_apd(vcfg_graph* grp,vps_inst* inst)
+{
+  int retval;
+  retval = ulist_vps_instp_append(grp->insts,inst);
+  if (retval) {
+    uabort("vcfg_grp_inst_apd error!");
+  }
 }
 
 void vcfg_grp_cdapd(vps_cntr* vps,vcfg_graph* grp,vps_cfg* cfg)
@@ -511,7 +521,10 @@ void vcfg_grp_cdapd(vps_cntr* vps,vcfg_graph* grp,vps_cfg* cfg)
       uabort("vcfg_grp_cdapd: locals put error!");      
     }
   }
-  ulist_vps_cfgp_append(grp->cfgs,cfg);
+  retval = ulist_vps_cfgp_append(grp->cfgs,cfg);
+  if (retval) {
+    uabort("vcfg_grp_cdapd: append error!");
+  }
 }
 
 void vcfg_grp_params_apd(vcfg_graph* grp,vps_data* dt){

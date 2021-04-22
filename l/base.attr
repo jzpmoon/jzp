@@ -95,9 +95,11 @@ static vcfg_graph* subr(last_attr_req* subreq){
     }
     inst_name = (last_symbol*)car;
     if(inst_name->attr){
-      last_attr* attr;
       last_attr_res res;
+      last_attr* attr;
       int retval;
+      vps_t* res_vps;
+      vps_inst* inst;
 
       req.ast_obj = obj;
       attr = inst_name->attr;
@@ -108,17 +110,20 @@ static vcfg_graph* subr(last_attr_req* subreq){
       if (retval != 0) {
 	if (res.res_type == lar_vps_apd) {
 	  /* append instruction */
-	  vps_t* res_vps = res.res_vps;
+	  res_vps = res.res_vps;
 	  if (!res_vps) {
 	    uabort("res_vps can not be null!");
 	  }
-	  if(res_vps->t != vpsk_inst){
+	  if(res_vps->t == vpsk_inst) {
+	    inst = (vps_inst*)res_vps;
+	    vcfg_blk_apd(blk,inst);
+	    vcfg_grp_inst_apd(grp,inst);
+	  } else {
 	    uabort("not a inst!");
 	  }
-	  vcfg_blk_apd(blk,(vps_inst*)res_vps);
 	} else if (res.res_type == lar_blk_new) {
 	  /* append a new block */
-	  vps_t* res_vps = res.res_vps;
+	  res_vps = res.res_vps;
 	  if (!res_vps) {
 	    uabort("res_vps can not be null!");
 	  }

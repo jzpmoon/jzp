@@ -1,4 +1,5 @@
 (src-load code.jzp)
+(src-load list.jzp)
 
 (subr entry-subr ()
   (push test-fibonacci)
