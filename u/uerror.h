@@ -83,11 +83,11 @@ void ulog(char* msg,...);
 
 #endif
 
-#define UDEFUN(fname,args,retval,declare)	\
+#define UDEFUN(fname,args,retval)		\
   retval fname args				\
   {						\
-    declare;					\
-    ulog_stack_trace(fname);
+  ulog_stack_trace(fname);			\
+  {
 
 #define UFNAME
 
@@ -97,9 +97,9 @@ void ulog(char* msg,...);
 
 #define UDECLARE
 
-#define UBEGIN(body)				\
-    body;					\
-  }
+#define UBEGIN
+
+#define UEND }}
 
 #define UDECLFUN(fname,args,retval)		\
   retval fname args;

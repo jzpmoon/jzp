@@ -69,6 +69,7 @@ vgc_string* vinst_to_str(vgc_heap* heap,ulist_vinstp* insts){
       case (ocode):{							\
 	int i = 0;							\
 	usize_t operand;						\
+	if (len < 1) break;						\
 	if(ocode == Bjmp || ocode == Bjmpi){				\
 	  operand = vinst_byte_length(insts,				\
 				      inst->operand);			\

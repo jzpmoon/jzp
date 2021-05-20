@@ -2,13 +2,14 @@
 #define _VPASS_H_
 
 #include "ulist_tpl.h"
+#include "ugraph.h"
 #include "vgc_obj.h"
 #include "vgenbc.h"
 
 #define VPSHEADER				\
   int t
 
-enum{
+enum vpsk{
   vpsk_dt,
   vpsk_mod,
   vpsk_inst,
@@ -17,15 +18,7 @@ enum{
   vcfgk_grp,
 };
 
-enum{
-  vinstk_imm,
-  vinstk_glodt,
-  vinstk_locdt,
-  vinstk_code,
-  vinstk_non,
-};
-
-enum{
+enum vdtk{
   vdtk_arr,
   vdtk_num,
   vdtk_int,
@@ -33,8 +26,6 @@ enum{
   vdtk_str,
   vdtk_any,
   vdtk_code,
-  vstk_heap,
-  vstk_stack,
 };
 
 typedef struct _vps_t{
@@ -46,7 +37,6 @@ ulist_decl_tpl(vpsp);
 typedef struct _vps_data{
   VPSHEADER;
   int dtk;
-  int stk;
   int idx;
   int scope;
   ustring* name;
@@ -59,16 +49,44 @@ typedef struct _vps_data{
   } u;
 } vps_data,*vps_datap;
 
+/*
+ * instruction opcode kind
+ */
+enum viopck{
+  viopck_branch,
+  viopck_entry,
+  viopck_non,
+};
+
+/*
+ * instruction operand kind
+ */
+enum viopek{
+  vinstk_imm,
+  vinstk_glodt,
+  vinstk_locdt,
+  vinstk_code,
+  vinstk_non,
+};
+
 typedef struct _vps_inst{
   VPSHEADER;
-  int instk;
+  struct {
+    unsigned char iopck : 4;
+    unsigned char iopek : 4;
+  } _instk;
   vinst inst;
   ustring* label;
-  union {
-    vps_data* data;
-    struct _vps_cfg* code;
-  } u;
+  vps_data* data;
 } vps_inst,*vps_instp;
+
+#define vps_inst_opck_get(inst) (inst)->_instk.iopck
+
+#define vps_inst_opck_set(inst,k) (inst)->_instk.iopck = k
+
+#define vps_inst_opek_get(inst) (inst)->_instk.iopek
+
+#define vps_inst_opek_set(inst,k) (inst)->_instk.iopek = k
 
 typedef struct _vps_type{
   VPSHEADER;
@@ -80,7 +98,14 @@ typedef struct _vps_type{
 #define VCFGHEADER				\
   VPSHEADER;					\
   struct _vps_t* parent;			\
-  ustring* name
+  vps_id id
+
+typedef struct _vps_id{
+  ustring* name;
+  int num;
+} vps_id;
+
+int vps_id_comp(vps_id id1,vps_id id2);
 
 typedef struct _vps_cfg{
   VCFGHEADER;
@@ -93,6 +118,7 @@ ulist_decl_tpl(vps_cfgp);
 
 typedef struct _vcfg_block{
   VCFGHEADER;
+  ugnode node;
   ulist_vps_instp* insts;
 } vcfg_block;
 
@@ -140,17 +166,18 @@ typedef struct _vps_cntr{
   umem_pool mp;
   uhstb_vps_modp* mods;
   uhstb_vps_typep* types;
+  int seqnum;
 } vps_cntr;
 
 #define VPS_CNTR_MOD_TABLE_SIZE 17
 
 vps_inst*
 vps_inst_new(vps_cntr* vps,
-	     int instk,
+	     int iopck,
+	     int iopek,
 	     usize_t opcode,
 	     ustring* label,
-	     vps_data* data,
-	     vps_cfg* code);
+	     vps_data* data);
 
 vps_inst* vps_inop(vps_cntr* vps);
 vps_inst* vps_iloadimm(vps_cntr* vps,int imm);
@@ -195,6 +222,7 @@ vps_inst* vps_irefimm(vps_cntr* vps,int imm);
 vps_inst* vps_irefdt(vps_cntr* vps,ustring* name);
 vps_inst* vps_isetimm(vps_cntr* vps,int imm);
 vps_inst* vps_isetdt(vps_cntr* vps,ustring* name);
+vps_inst* vps_ilabel(vps_cntr* vps,ustring* name);
 
 vps_data* vps_num_new(vps_cntr* vps,
 		      ustring* name,
@@ -212,22 +240,33 @@ vps_data* vps_str_new(vps_cntr* vps,
 		      ustring* string);
 
 vps_data* vps_any_new(vps_cntr* vps,
-		      ustring* name,
-		      int stk);
+		      ustring* name);
 
 vps_data* vps_dtcd_new(vps_cntr* vps,
 		       ustring* name,
 		       vps_cfg* code);
 
-vcfg_block* vcfg_block_new(vps_cntr* vps);
+vcfg_block* vcfg_block_new(vps_cntr* vps,ustring* name);
 
 void vcfg_blk_apd(vcfg_block* blk,vps_inst* inst);
 
-vcfg_graph* vcfg_graph_new(vps_cntr* vps);
+vps_inst* vcfg_blk_linst_get(vcfg_block* blk);
+
+vcfg_graph* vcfg_graph_new(vps_cntr* vps,ustring* name);
 
 void vcfg_grp_inst_apd(vcfg_graph* grp,vps_inst* inst);
 
-void vcfg_grp_cdapd(vps_cntr* vps,vcfg_graph* grp,vps_cfg* cfg);
+UDECLFUN(UFNAME vcfg_grp_cdapd,
+	 UARGS (vps_cntr* vps,vcfg_graph* grp,vps_cfg* cfg),
+	 URET void);
+
+UDECLFUN(UFNAME vcfg_grp_build,
+	 UARGS (vps_cntr* vps,vcfg_graph* grp),
+	 URET void);
+
+UDECLFUN(UFNAME vcfg_grp_connect,
+	 UARGS (vps_cntr* vps,vcfg_graph* grp),
+	 URET void);
 
 void vcfg_grp_params_apd(vcfg_graph* grp,vps_data* dt);
 

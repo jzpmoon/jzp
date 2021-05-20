@@ -34,7 +34,7 @@ static vcfg_graph* subr(last_attr_req* subreq){
     uabort("subr error!");
   }
 
-  grp = vcfg_graph_new(vps);
+  grp = vcfg_graph_new(vps,subr_name->name);
   if(!grp){
     uabort("subr new cfg error!");
   }
@@ -57,7 +57,7 @@ static vcfg_graph* subr(last_attr_req* subreq){
 	uabort("arg not a symbol!");
       }
       sym = (last_symbol*)arg;
-      data = vps_any_new(vps,sym->name,vstk_stack);
+      data = vps_any_new(vps,sym->name);
       if(!data){
 	uabort("vps_any_new error!");
       }
@@ -69,8 +69,7 @@ static vcfg_graph* subr(last_attr_req* subreq){
     }
   }
 
-  grp->name = subr_name->name;
-  blk = vcfg_block_new(vps);
+  blk = vcfg_block_new(vps,NULL);
   if(!blk){
     uabort("subr new blk error!");
   }
@@ -202,7 +201,7 @@ LDEFATTR(g_var,"g-var",{
     if(obj->t == lastk_symbol){
       last_symbol* sym = (last_symbol*)obj;
       vps_data* data;
-      data = vps_any_new(req->vps,sym->name,vstk_heap);
+      data = vps_any_new(req->vps,sym->name);
       data->scope = VPS_SCOPE_GLOBAL;
       vps_mod_data_put(req->top,data);
     }else{
@@ -243,7 +242,7 @@ LDEFATTR(var,"var",{
       if (obj->t == lastk_symbol) {
 	last_symbol* sym = (last_symbol*)obj;
 	vps_data* data;
-	data = vps_any_new(vps,sym->name,vstk_heap);
+	data = vps_any_new(vps,sym->name);
 	data->scope = VPS_SCOPE_LOCAL;
 	vps_mod_data_put(top,data);
       } else {
@@ -306,7 +305,7 @@ LDEFATTR(local,"local",{
 	if(vcfg_grp_dtget(grp,sym->name)){
 	  uabort("local name:%s already exists!",sym->name->value);
 	}
-	data = vps_any_new(vps,sym->name,vstk_stack);
+	data = vps_any_new(vps,sym->name);
 	data->idx = grp->locals->count;
 	data->scope = VPS_SCOPE_LOCAL;
 	vcfg_grp_locals_apd(grp,data);
@@ -1035,11 +1034,10 @@ LDEFATTR(label,"label",{
     }
     if (obj->t == lastk_symbol) {
       last_symbol* symbol = (last_symbol*)obj;
-      blk = vcfg_block_new(req->vps);
+      blk = vcfg_block_new(req->vps,symbol->name);
       if (!blk) {
 	uabort("label new blk error!");
       }
-      blk->name = symbol->name;
     } else {
       uabort("label inst error!");
       blk = NULL;

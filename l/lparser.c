@@ -315,7 +315,7 @@ static int symcall_action(last_attr_req* req,
   grp = (vcfg_graph*)parent;
   obj = last_car(ast_obj);
   symbol = (last_symbol*)obj;
-  blk = vcfg_block_new(vps);
+  blk = vcfg_block_new(vps,NULL);
   if(!blk){
     uabort("new blk error!");
   }
@@ -771,7 +771,7 @@ vps_mod* lfile2vps(lreader* reader,char* file_path,vps_cntr* vps)
   
   ltoken_state_reset(ts,file);
 
-  grp = vcfg_graph_new(vps);
+  grp = vcfg_graph_new(vps,NULL);
   if(!grp){
     uabort("new grp error!");
   }
@@ -809,7 +809,7 @@ vps_mod* lfile2vps(lreader* reader,char* file_path,vps_cntr* vps)
   }
   ltoken_state_close(ts);
   if (!blk) {
-    blk = vcfg_block_new(vps);
+    blk = vcfg_block_new(vps,NULL);
     if(!blk){
       uabort("new blk error!");
     }

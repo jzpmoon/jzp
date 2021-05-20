@@ -97,6 +97,29 @@
     list1->len += list2->len;					\
   }
 
+#define ulist_first_get_tpl(t)					\
+  void ulist_##t##_first_get(ulist_##t* list,t** outval)	\
+  {								\
+    ulsnd_##t* header = list->header;				\
+    if (list->len > 0) {					\
+      *outval = &header->next->value;				\
+    } else {							\
+      *outval = NULL;						\
+    }								\
+  }
+
+#define ulist_last_get_tpl(t)				\
+  void ulist_##t##_last_get(ulist_##t* list,t** outval)	\
+  {							\
+    ulsnd_##t* header = list->header;			\
+    if (list->len > 0) {				\
+      *outval = &header->prev->value;			\
+    } else {						\
+      *outval = NULL;					\
+    }							\
+  }
+
+
 #define ulist_dest_tpl(t)						\
   void ulist_##t##_dest(ulist_##t* list,ulist_##t##_dest_ft dest){	\
     uallocator* allocator = list->allocator;				\
@@ -122,4 +145,6 @@
   ulist_alloc_tpl(t);				\
   ulist_append_tpl(t);				\
   ulist_concat_tpl(t);				\
+  ulist_first_get_tpl(t);			\
+  ulist_last_get_tpl(t);			\
   ulist_dest_tpl(t)

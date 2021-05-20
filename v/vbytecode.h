@@ -27,5 +27,7 @@
   DF(Bcall,"call",0374,1)						\
   DF(Breturn,"return",0375,1)						\
   DF(Bretvoid,"retvoid",0376,1)						\
-  DF(Bnop,"nop",0377,1)
+  DF(Bnop,"nop",0377,1)							\
+  									\
+  DF(Vlabel,"label",0400,0)
 #endif

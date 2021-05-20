@@ -20,15 +20,13 @@ static int inst2inst(vgc_array* consts,
 #define VCONTEXT_SYMTB_SIZE 17
 #define VCONTEXT_STRTB_SIZE 17
 
-UDEFUN(UFNAME vcontext_new,UARGS (vgc_heap* heap),URET vcontext*,
+UDEFUN(UFNAME vcontext_new,UARGS (vgc_heap* heap),URET vcontext*)
 UDECLARE
   vcontext* ctx;
   uhstb_vmod* mods;
   ustring_table* symtb;
   ustring_table* strtb;
-)
 UBEGIN
-({
   ctx = vgc_heap_obj_new(heap,
 			 vcontext,
 			 vgc_obj_type_ctx,
@@ -64,7 +62,7 @@ UBEGIN
   vgc_obj_null_set(ctx,calling);
 
   return ctx;
-})
+UEND
 
 vgc_subr* vgc_subr_new(vcontext* ctx,
 		       usize_t params_count,
@@ -142,7 +140,10 @@ static int vobjtb_key_comp(vsymbol* sym1,vsymbol* sym2){
   return ustring_comp(sym1->name, sym2->name);
 }
 
-static int get_insts_count(ulist_vps_cfgp* cfgs,ustring* name)
+#define get_insts_count_by_name(cfgs,name)	\
+  get_insts_count(cfgs,(vps_id){name,-1})
+
+static int get_insts_count(ulist_vps_cfgp* cfgs,vps_id id)
 {
   ucursor cursor;
   int find_flag = 0;
@@ -161,14 +162,14 @@ static int get_insts_count(ulist_vps_cfgp* cfgs,ustring* name)
       uabort("vps_cfg not a block!");
     }
     blk = (vcfg_block*)cfg;
-    if (blk->name == name) {
+    if (!vps_id_comp(blk->id,id)) {
       find_flag = 1;
       break;
     }
     insts_count += blk->insts->len;
   }
   if (!find_flag) {
-    uabort("can not find label:%s!",name->value);
+    uabort("can not find label!");
   }
   return insts_count;
 }
@@ -190,15 +191,15 @@ static int inst2inst(vgc_array* consts,
     vps_inst* src_inst;
     vinst* inst;
 
-    if(!instp){
+    if (!instp) {
       break;
     }
     src_inst = *instp;
-    switch(src_inst->instk){
+    switch (vps_inst_opek_get(src_inst)) {
     case vinstk_imm:
       inst = &src_inst->inst;
-      if(src_inst->u.data){
-	inst->operand = src_inst->u.data->idx;
+      if(src_inst->data){
+	inst->operand = src_inst->data->idx;
       }
       ulist_vinstp_append(insts,inst);
       ulog("inst imm");
@@ -225,7 +226,7 @@ static int inst2inst(vgc_array* consts,
       break;
     case vinstk_glodt:
       {
-	vps_data* data = src_inst->u.data;
+	vps_data* data = src_inst->data;
 	vreloc reloc;
 
 	reloc.ref_name = data->name;
@@ -243,7 +244,7 @@ static int inst2inst(vgc_array* consts,
 	int insts_count;
 
 	inst = &src_inst->inst;
-	insts_count = get_insts_count(cfgs,src_inst->label);
+	insts_count = get_insts_count_by_name(cfgs,src_inst->label);
 	inst->operand = insts_count;
 	ulist_vinstp_append(insts,inst);
 	ulog("inst code");
@@ -359,12 +360,12 @@ vgc_subr* vcontext_graph_load(vcontext* ctx,vmod* mod,vcfg_graph* grp){
     /*
      * add to local symbol table
      */
-    vmod_lobj_put(heap,mod,grp->name,(vgc_obj*)subr);
+    vmod_lobj_put(heap,mod,grp->id.name,(vgc_obj*)subr);
     /*
      * if scope is global then also add to global symbol table
      */
     if (grp->scope == VPS_SCOPE_GLOBAL) {
-      vmod_gobj_put(heap,mod,grp->name,(vgc_obj*)subr);
+      vmod_gobj_put(heap,mod,grp->id.name,(vgc_obj*)subr);
     }
   }
   umem_pool_clean(&ctx->mp);
@@ -430,7 +431,7 @@ int vcontext_mod2mod(vcontext* ctx,vmod* dest_mod,vps_mod* src_mod)
       break;
     }
     g = *gp;
-    ulog("load vps graph name:%s",g->name->value);
+    ulog("load vps graph name:%s",g->id.name->value);
     vcontext_graph_load(ctx,dest_mod,g);
   }
 

@@ -13,33 +13,54 @@ ulist_def_tpl(vps_datap);
 ulist_def_tpl(vps_cfgp);
 ulist_def_tpl(vps_instp);
 
+#define vps_cntr_nextnum(vps) \
+  (vps)->seqnum++
+
+#define vps_id_hscd(id)				\
+  ((id).name)?(id).name->hash_code:(id).num
+
+int vps_id_comp(vps_id id1,vps_id id2)
+{
+  if (id1.name) {
+    if (!id2.name) {
+      return -1;
+    } else {
+      return ustring_comp(id1.name,id2.name);
+    }
+  } else {
+    if (id2.name) {
+      return 1;
+    } else {
+      return id1.num - id2.num;
+    }
+  }
+}
+
 vps_inst*
 vps_inst_new(vps_cntr* vps,
-	     int instk,
+	     int iopck,
+	     int iopek,
 	     usize_t opcode,
 	     ustring* label,
-	     vps_data* data,
-	     vps_cfg* code){
+	     vps_data* data)
+{
   vps_inst* inst;
 
   inst = umem_pool_alloc(&vps->mp,sizeof(vps_inst));
   if(inst){
     inst->t = vpsk_inst;
-    inst->instk = instk;
+    vps_inst_opck_set(inst,iopck);
+    vps_inst_opek_set(inst,iopek);
     inst->inst.opcode = opcode;
     inst->label = label;
-    if(data){
-      inst->u.data = data;
-    }else{
-      inst->u.code = code;
-    }
+    inst->data = data;
   }
   return inst;
 }
 
 vps_inst* vps_iloadimm(vps_cntr* vps,int imm){
   vps_inst* inst;
-  inst = vps_inst_new(vps,vinstk_imm,Bload,NULL,NULL,NULL);
+  inst = vps_inst_new(vps,viopck_non,vinstk_imm,Bload,NULL,NULL);
   if(inst){
     inst->inst.operand = imm;
   }
@@ -48,13 +69,13 @@ vps_inst* vps_iloadimm(vps_cntr* vps,int imm){
 
 vps_inst* vps_iloaddt(vps_cntr* vps,ustring* name){
   vps_inst* inst;
-  inst = vps_inst_new(vps,vinstk_locdt,Bload,name,NULL,NULL);
+  inst = vps_inst_new(vps,viopck_non,vinstk_locdt,Bload,name,NULL);
   return inst;
 }
 
 vps_inst* vps_istoreimm(vps_cntr* vps,int imm){
   vps_inst* inst;
-  inst = vps_inst_new(vps,vinstk_imm,Bstore,NULL,NULL,NULL);
+  inst = vps_inst_new(vps,viopck_non,vinstk_imm,Bstore,NULL,NULL);
   if(inst){
     inst->inst.operand = imm;
   }
@@ -63,7 +84,7 @@ vps_inst* vps_istoreimm(vps_cntr* vps,int imm){
 
 vps_inst* vps_istoredt(vps_cntr* vps,ustring* name){
   vps_inst* inst;
-  inst = vps_inst_new(vps,vinstk_locdt,Bstore,name,NULL,NULL);
+  inst = vps_inst_new(vps,viopck_non,vinstk_locdt,Bstore,name,NULL);
   return inst;
 }
 
@@ -81,7 +102,7 @@ vps_inst* vps_ipushint(vps_cntr* vps,
   }
   data->scope = VPS_SCOPE_LOCAL;
   data->idx = vps_graph_const_put(grp,data);
-  inst = vps_inst_new(vps,vinstk_imm,Bpush,NULL,data,NULL);
+  inst = vps_inst_new(vps,viopck_non,vinstk_imm,Bpush,NULL,data);
   return inst;
 }
 
@@ -98,7 +119,7 @@ vps_inst* vps_ipushchar(vps_cntr* vps,
   }
   data->scope = VPS_SCOPE_LOCAL;
   data->idx = vps_graph_const_put(grp,data);
-  inst = vps_inst_new(vps,vinstk_imm,Bpush,NULL,data,NULL);
+  inst = vps_inst_new(vps,viopck_non,vinstk_imm,Bpush,NULL,data);
   return inst;
 }
 
@@ -116,7 +137,7 @@ vps_inst* vps_ipushnum(vps_cntr* vps,
   }
   data->scope = VPS_SCOPE_LOCAL;
   data->idx = vps_graph_const_put(grp,data);
-  inst = vps_inst_new(vps,vinstk_imm,Bpush,NULL,data,NULL);
+  inst = vps_inst_new(vps,viopck_non,vinstk_imm,Bpush,NULL,data);
   return inst;
 }
 
@@ -125,13 +146,13 @@ vps_inst* vps_ipushdt(vps_cntr* vps,vcfg_graph* grp,ustring* name)
   vps_inst* inst;
   vps_data* data;
   
-  data = vps_any_new(vps,name,vstk_heap);
+  data = vps_any_new(vps,name);
   if (!data) {
     uabort("vps any new error!");
   }
   data->scope = VPS_SCOPE_LOCAL;
   data->idx = vps_graph_const_put(grp,data);
-  inst = vps_inst_new(vps,vinstk_glodt,Bpush,NULL,data,NULL);
+  inst = vps_inst_new(vps,viopck_non,vinstk_glodt,Bpush,NULL,data);
   return inst;
 }
 
@@ -146,7 +167,7 @@ vps_inst* vps_ipushstr(vps_cntr* vps,vcfg_graph* grp,ustring* string)
   }
   data->scope = VPS_SCOPE_LOCAL;
   data->idx = vps_graph_const_put(grp,data);
-  inst = vps_inst_new(vps,vinstk_imm,Bpush,NULL,data,NULL);
+  inst = vps_inst_new(vps,viopck_non,vinstk_imm,Bpush,NULL,data);
   return inst;
 }
 
@@ -155,19 +176,19 @@ vps_inst* vps_ipushnil(vps_cntr* vps,vcfg_graph* grp)
   vps_inst* inst;
   vps_data* data;
   
-  data = vps_any_new(vps,NULL,vstk_heap);
+  data = vps_any_new(vps,NULL);
   if (!data) {
     uabort("vps any new error!");
   }
   data->scope = VPS_SCOPE_LOCAL;
   data->idx = vps_graph_const_put(grp,data);
-  inst = vps_inst_new(vps,vinstk_imm,Bpush,NULL,data,NULL);
+  inst = vps_inst_new(vps,viopck_non,vinstk_imm,Bpush,NULL,data);
   return inst;
 }
 
 vps_inst* vps_itop(vps_cntr* vps,int imm){
   vps_inst* inst;
-  inst = vps_inst_new(vps,vinstk_imm,Btop,NULL,NULL,NULL);
+  inst = vps_inst_new(vps,viopck_non,vinstk_imm,Btop,NULL,NULL);
   if(inst){
     inst->inst.operand = imm;
   }
@@ -179,49 +200,49 @@ vps_inst* vps_ipopdt(vps_cntr* vps,vcfg_graph* grp,ustring* name)
   vps_inst* inst;
   vps_data* data;
   
-  data = vps_any_new(vps,name,vstk_heap);
+  data = vps_any_new(vps,name);
   if (!data) {
     uabort("vps num new error!");
   }
   data->scope = VPS_SCOPE_LOCAL;
   data->idx = vps_graph_const_put(grp,data);
-  inst = vps_inst_new(vps,vinstk_glodt,Bpop,NULL,data,NULL);
+  inst = vps_inst_new(vps,viopck_non,vinstk_glodt,Bpop,NULL,data);
   return inst;
 }
 
 vps_inst* vps_ipopv(vps_cntr* vps){
   vps_inst* inst;
-  inst = vps_inst_new(vps,vinstk_non,Bpopv,NULL,NULL,NULL);
+  inst = vps_inst_new(vps,viopck_non,vinstk_non,Bpopv,NULL,NULL);
   return inst;
 }
 
 vps_inst* vps_iadd(vps_cntr* vps){
   vps_inst* inst;
-  inst = vps_inst_new(vps,vinstk_non,Badd,NULL,NULL,NULL);
+  inst = vps_inst_new(vps,viopck_non,vinstk_non,Badd,NULL,NULL);
   return inst;
 }
 
 vps_inst* vps_isub(vps_cntr* vps){
   vps_inst* inst;
-  inst = vps_inst_new(vps,vinstk_non,Bsub,NULL,NULL,NULL);
+  inst = vps_inst_new(vps,viopck_non,vinstk_non,Bsub,NULL,NULL);
   return inst;
 }
 
 vps_inst* vps_imul(vps_cntr* vps){
   vps_inst* inst;
-  inst = vps_inst_new(vps,vinstk_non,Bmul,NULL,NULL,NULL);
+  inst = vps_inst_new(vps,viopck_non,vinstk_non,Bmul,NULL,NULL);
   return inst;
 }
 
 vps_inst* vps_idiv(vps_cntr* vps){
   vps_inst* inst;
-  inst = vps_inst_new(vps,vinstk_non,Bdiv,NULL,NULL,NULL);
+  inst = vps_inst_new(vps,viopck_non,vinstk_non,Bdiv,NULL,NULL);
   return inst;
 }
 
 vps_inst* vps_ijmpiimm(vps_cntr* vps,int imm){
   vps_inst* inst;
-  inst = vps_inst_new(vps,vinstk_imm,Bjmpi,NULL,NULL,NULL);
+  inst = vps_inst_new(vps,viopck_branch,vinstk_imm,Bjmpi,NULL,NULL);
   if(inst){
     inst->inst.operand = imm;
   }
@@ -230,13 +251,13 @@ vps_inst* vps_ijmpiimm(vps_cntr* vps,int imm){
 
 vps_inst* vps_ijmpilb(vps_cntr* vps,ustring* label){
   vps_inst* inst;
-  inst = vps_inst_new(vps,vinstk_code,Bjmpi,label,NULL,NULL);
-  return inst;  
+  inst = vps_inst_new(vps,viopck_branch,vinstk_code,Bjmpi,label,NULL);
+  return inst;
 }
 
 vps_inst* vps_ijmpimm(vps_cntr* vps,int imm){
   vps_inst* inst;
-  inst = vps_inst_new(vps,vinstk_imm,Bjmp,NULL,NULL,NULL);
+  inst = vps_inst_new(vps,viopck_branch,vinstk_imm,Bjmp,NULL,NULL);
   if(inst){
     inst->inst.operand = imm;
   }
@@ -245,73 +266,73 @@ vps_inst* vps_ijmpimm(vps_cntr* vps,int imm){
 
 vps_inst* vps_ijmplb(vps_cntr* vps,ustring* label){
   vps_inst* inst;
-  inst = vps_inst_new(vps,vinstk_code,Bjmp,label,NULL,NULL);
+  inst = vps_inst_new(vps,viopck_branch,vinstk_code,Bjmp,label,NULL);
   return inst;  
 }
 
 vps_inst* vps_ieq(vps_cntr* vps){
   vps_inst* inst;
-  inst = vps_inst_new(vps,vinstk_non,Beq,NULL,NULL,NULL);
+  inst = vps_inst_new(vps,viopck_non,vinstk_non,Beq,NULL,NULL);
   return inst;
 }
 
 vps_inst* vps_igt(vps_cntr* vps){
   vps_inst* inst;
-  inst = vps_inst_new(vps,vinstk_non,Bgt,NULL,NULL,NULL);
+  inst = vps_inst_new(vps,viopck_non,vinstk_non,Bgt,NULL,NULL);
   return inst;
 }
 
 vps_inst* vps_ilt(vps_cntr* vps){
   vps_inst* inst;
-  inst = vps_inst_new(vps,vinstk_non,Blt,NULL,NULL,NULL);
+  inst = vps_inst_new(vps,viopck_non,vinstk_non,Blt,NULL,NULL);
   return inst;
 }
 
 vps_inst* vps_iand(vps_cntr* vps){
   vps_inst* inst;
-  inst = vps_inst_new(vps,vinstk_non,Band,NULL,NULL,NULL);
+  inst = vps_inst_new(vps,viopck_non,vinstk_non,Band,NULL,NULL);
   return inst;
 }
 
 vps_inst* vps_ior(vps_cntr* vps){
   vps_inst* inst;
-  inst = vps_inst_new(vps,vinstk_non,Bor,NULL,NULL,NULL);
+  inst = vps_inst_new(vps,viopck_non,vinstk_non,Bor,NULL,NULL);
   return inst;
 }
 
 vps_inst* vps_inot(vps_cntr* vps){
   vps_inst* inst;
-  inst = vps_inst_new(vps,vinstk_non,Bnot,NULL,NULL,NULL);
+  inst = vps_inst_new(vps,viopck_non,vinstk_non,Bnot,NULL,NULL);
   return inst;
 }
 
 vps_inst* vps_icall(vps_cntr* vps){
   vps_inst* inst;
-  inst = vps_inst_new(vps,vinstk_non,Bcall,NULL,NULL,NULL);
+  inst = vps_inst_new(vps,viopck_non,vinstk_non,Bcall,NULL,NULL);
   return inst;
 }
 
 vps_inst* vps_ireturn(vps_cntr* vps){
   vps_inst* inst;
-  inst = vps_inst_new(vps,vinstk_non,Breturn,NULL,NULL,NULL);
+  inst = vps_inst_new(vps,viopck_non,vinstk_non,Breturn,NULL,NULL);
   return inst;
 }
 
 vps_inst* vps_iretvoid(vps_cntr* vps){
   vps_inst* inst;
-  inst = vps_inst_new(vps,vinstk_non,Bretvoid,NULL,NULL,NULL);
+  inst = vps_inst_new(vps,viopck_non,vinstk_non,Bretvoid,NULL,NULL);
   return inst;
 }
 
 vps_inst* vps_inop(vps_cntr* vps){
   vps_inst* inst;
-  inst = vps_inst_new(vps,vinstk_non,Bnop,NULL,NULL,NULL);
+  inst = vps_inst_new(vps,viopck_non,vinstk_non,Bnop,NULL,NULL);
   return inst;  
 }
 
 vps_inst* vps_irefimm(vps_cntr* vps,int imm){
   vps_inst* inst;
-  inst = vps_inst_new(vps,vinstk_imm,Bref,NULL,NULL,NULL);
+  inst = vps_inst_new(vps,viopck_non,vinstk_imm,Bref,NULL,NULL);
   if(inst){
     inst->inst.operand = imm;
   }
@@ -321,13 +342,13 @@ vps_inst* vps_irefimm(vps_cntr* vps,int imm){
 vps_inst* vps_irefdt(vps_cntr* vps,ustring* name)
 {
   vps_inst* inst;
-  inst = vps_inst_new(vps,vinstk_locdt,Brefl,name,NULL,NULL);
+  inst = vps_inst_new(vps,viopck_non,vinstk_locdt,Brefl,name,NULL);
   return inst;
 }
 
 vps_inst* vps_isetimm(vps_cntr* vps,int imm){
   vps_inst* inst;
-  inst = vps_inst_new(vps,vinstk_imm,Bset,NULL,NULL,NULL);
+  inst = vps_inst_new(vps,viopck_non,vinstk_imm,Bset,NULL,NULL);
   if(inst){
     inst->inst.operand = imm;
   }
@@ -337,7 +358,14 @@ vps_inst* vps_isetimm(vps_cntr* vps,int imm){
 vps_inst* vps_isetdt(vps_cntr* vps,ustring* name)
 {
   vps_inst* inst;
-  inst = vps_inst_new(vps,vinstk_locdt,Bsetl,name,NULL,NULL);
+  inst = vps_inst_new(vps,viopck_non,vinstk_locdt,Bsetl,name,NULL);
+  return inst;
+}
+
+vps_inst* vps_ilabel(vps_cntr* vps,ustring* name)
+{
+  vps_inst* inst;
+  inst = vps_inst_new(vps,viopck_entry,vinstk_locdt,Vlabel,name,NULL);
   return inst;
 }
 
@@ -350,7 +378,6 @@ vps_data* vps_num_new(vps_cntr* vps,
   if(data){
     data->t = vpsk_dt;
     data->dtk = vdtk_num;
-    data->stk = vstk_heap;
     data->name = name;
     data->u.number = num;
   }
@@ -366,7 +393,6 @@ vps_data* vps_int_new(vps_cntr* vps,
   if(data){
     data->t = vpsk_dt;
     data->dtk = vdtk_int;
-    data->stk = vstk_heap;
     data->name = name;
     data->u.integer = inte;
   }
@@ -381,7 +407,6 @@ vps_data* vps_char_new(vps_cntr* vps,
   if(data){
     data->t = vpsk_dt;
     data->dtk = vdtk_char;
-    data->stk = vstk_heap;
     data->u.character = chara;
   }
   return data;
@@ -397,7 +422,6 @@ vps_data* vps_str_new(vps_cntr* vps,
   if(data){
     data->t = vpsk_dt;
     data->dtk = vdtk_str;
-    data->stk = vstk_heap;
     data->name = name;
     data->u.string = string;
   }
@@ -405,15 +429,14 @@ vps_data* vps_str_new(vps_cntr* vps,
 }
 
 vps_data* vps_any_new(vps_cntr* vps,
-		      ustring* name,
-		      int stk){
+		      ustring* name)
+{
   vps_data* data;
   
   data = umem_pool_alloc(&vps->mp,sizeof(vps_data));
   if(data){
     data->t = vpsk_dt;
     data->dtk = vdtk_any;
-    data->stk = stk;
     data->name = name;
   }
   return data;
@@ -429,21 +452,22 @@ vps_data* vps_dtcd_new(vps_cntr* vps,
   if(data){
     data->t = vpsk_dt;
     data->dtk = vdtk_code;
-    data->stk = vstk_stack;
     data->name = name;
     data->u.code = code;
   }
   return data;
 }
 
-vcfg_block* vcfg_block_new(vps_cntr* vps){
+vcfg_block* vcfg_block_new(vps_cntr* vps,ustring* name)
+{
   vcfg_block* b;
 
   b = umem_pool_alloc(&vps->mp,sizeof(vcfg_block));
   if(b){
     b->t = vcfgk_blk;
     b->parent = NULL;
-    b->name = NULL;
+    b->id.name = name;
+    b->id.num = vps_cntr_nextnum(vps);
     b->insts = ulist_vps_instp_alloc(&vps->mp.allocator);
   }
   return b;
@@ -454,7 +478,15 @@ void vcfg_blk_apd(vcfg_block* blk,vps_inst* inst)
   ulist_vps_instp_append(blk->insts,inst);
 }
 
-vcfg_graph* vcfg_graph_new(vps_cntr* vps){
+vps_inst* vcfg_blk_linst_get(vcfg_block* blk)
+{
+  vps_instp* instp;
+  ulist_vps_instp_last_get(blk->insts,&instp);
+  return *instp;
+}
+
+vcfg_graph* vcfg_graph_new(vps_cntr* vps,ustring* name)
+{
   vcfg_graph* g;
   uallocator* allocator;
 
@@ -463,7 +495,8 @@ vcfg_graph* vcfg_graph_new(vps_cntr* vps){
   if(g){
     g->t = vcfgk_grp;
     g->parent = NULL;
-    g->name = NULL;
+    g->id.name = name;
+    g->id.num = vps_cntr_nextnum(vps);
     g->locals = uhstb_vps_datap_alloc(allocator,VCFG_GRP_DATA_TABLE_SIZE);
     g->insts = ulist_vps_instp_alloc(allocator);
     g->imms = ulist_vps_datap_alloc(allocator);
@@ -483,9 +516,28 @@ static int vcfg_grp_dt_put_comp(vps_datap* data1,vps_datap* data2){
 
   d1 = *data1;
   d2 = *data2;
+  if (d2->dtk == vdtk_code) {
+    return 1;
+  }
   n1 = d1->name;
   n2 = d2->name;
   return ustring_comp(n1,n2);
+}
+
+static int vcfg_grp_cd_put_comp(vps_datap* data1,vps_datap* data2){
+  vps_data* d1;
+  vps_data* d2;
+  vps_id id1;
+  vps_id id2;
+  
+  d1 = *data1;
+  d2 = *data2;
+  if (d2->dtk != vdtk_code) {
+    return -1;
+  }
+  id1 = d1->u.code->id;
+  id2 = d2->u.code->id;
+  return vps_id_comp(id1,id2);
 }
 
 void vcfg_grp_inst_apd(vcfg_graph* grp,vps_inst* inst)
@@ -497,35 +549,104 @@ void vcfg_grp_inst_apd(vcfg_graph* grp,vps_inst* inst)
   }
 }
 
-void vcfg_grp_cdapd(vps_cntr* vps,vcfg_graph* grp,vps_cfg* cfg)
-{
+UDEFUN(UFNAME vcfg_grp_cdapd,
+       UARGS (vps_cntr* vps,vcfg_graph* grp,vps_cfg* cfg),
+       URET void)
+UDECLARE
   vps_data* data;
-  ustring* name;
+  vps_id id;
+  int hscd;
   int retval;
-
-  name = cfg->name;
-  if (name) {
-    data = vps_dtcd_new(vps,name,cfg);
-    if (!data) {
-      uabort("vcfg_grp_cdapd: vps_dtcd_new error!");
-    }
-    retval = uhstb_vps_datap_put(grp->locals,
-				 name->hash_code,
-				 &data,
-				 NULL,
-				 NULL,
-				 vcfg_grp_dt_put_comp);
-    if (retval == 1) {
-      uabort("vcfg_grp_cdapd: name:%s already exists!",name->value);
-    } else if (retval == -1) {
-      uabort("vcfg_grp_cdapd: locals put error!");      
-    }
+UBEGIN
+  id = cfg->id;
+  hscd = vps_id_hscd(id);
+  data = vps_dtcd_new(vps,id.name,cfg);
+  if (!data) {
+    uabort("vcfg_grp_cdapd: vps_dtcd_new error!");
+  }
+  retval = uhstb_vps_datap_put(grp->locals,
+			       hscd,
+			       &data,
+			       NULL,
+			       NULL,
+			       vcfg_grp_cd_put_comp);
+  if (retval == 1) {
+    uabort("vcfg_grp_cdapd: already exists!");
+  } else if (retval == -1) {
+    uabort("vcfg_grp_cdapd: locals put error!");      
   }
   retval = ulist_vps_cfgp_append(grp->cfgs,cfg);
   if (retval) {
     uabort("vcfg_grp_cdapd: append error!");
   }
-}
+UEND
+
+UDEFUN(UFNAME vcfg_grp_build,
+       UARGS (vps_cntr* vps,vcfg_graph* grp),
+       URET void)
+UDECLARE
+  ulist_vps_instp* insts;
+  ucursor cursor;
+  uset* set;
+  vcfg_block* blk;
+  int iopck;
+UBEGIN
+  /*
+   * build basic block
+   */
+  blk = vcfg_block_new(vps,NULL);
+  if (!blk) {
+    uabort("new vcfg_block error!");
+  }
+  vcfg_grp_cdapd(vps,grp,(vps_cfg*)blk);
+  insts = grp->insts;
+  set = (uset*)insts;
+  insts->iterate(&cursor);
+  while (1) {
+    vps_instp* instp = insts->next(set,&cursor);
+    vps_inst* inst;
+    if (!instp) {
+      break;
+    }
+    inst = *instp;
+    iopck = vps_inst_opck_get(inst);
+    if (iopck != viopck_non) {
+      if (iopck == viopck_branch) {
+	vcfg_blk_apd(blk,inst);
+      }
+      blk = vcfg_block_new(vps,inst->label);
+      if (!blk) {
+	uabort("new vcfg_block error!");
+      }
+      vcfg_grp_cdapd(vps,grp,(vps_cfg*)blk);
+    } else {
+      vcfg_blk_apd(blk,inst);
+    }   
+  }
+UEND
+
+UDEFUN(UFNAME vcfg_grp_connect,
+       UARGS (vps_cntr* vps,vcfg_graph* grp),
+       URET void)
+UDECLARE
+  ulist_vps_cfgp* cfgs;
+  ucursor cursor;
+  uset* set;
+  vps_inst* inst;
+UBEGIN
+  cfgs = grp->cfgs;
+  set = (uset*)cfgs;
+  cfgs->iterate(&cursor);
+  while (1) {
+    vps_cfgp* cfgp = cfgs->next(set,&cursor);
+    vcfg_block* blk;
+    if (!cfgp) {
+      break;
+    }
+    blk = (vcfg_block*)*cfgp;
+    inst = vcfg_blk_linst_get(blk);
+  }
+UEND
 
 void vcfg_grp_params_apd(vcfg_graph* grp,vps_data* dt){
   ustring* name;
@@ -579,6 +700,9 @@ static int vcfg_grp_dt_get_comp(vps_datap* data1,vps_datap* data2){
   
   d1 = *data1;
   d2 = *data2;
+  if (d2->dtk == vdtk_code) {
+    return 1;
+  }
   n1 = d1->name;
   n2 = d2->name;
   return ustring_comp(n1,n2);
@@ -684,11 +808,11 @@ int vps_graph_const_put(vcfg_graph* grp,vps_data* data)
 }
 
 void vps_mod_code_put(vps_mod* mod,vcfg_graph* code){
-  ustring* name = code->name;
-  unsigned int hscd = 0;
-  if(name){
-    hscd = name->hash_code;
-  }
+  vps_id id;
+  unsigned int hscd;
+
+  id = code->id;
+  hscd = vps_id_hscd(id);
   if(uhstb_vcfg_graphp_put(mod->code,
 			   hscd,
 			   &code,
@@ -710,6 +834,7 @@ void vps_cntr_init(vps_cntr* cntr) {
   if (!cntr->types) {
     uabort("new hash table type error!");
   }
+  cntr->seqnum = 0;
 }
 
 static int vps_cntr_mod_comp(vps_modp* mod1,vps_modp* mod2){
