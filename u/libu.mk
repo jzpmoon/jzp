@@ -9,7 +9,8 @@ obj_list=ulist.o         \
 	 ustream.o       \
 	 uhstb.o         \
 	 umempool.o 	 \
-         ualloc.o
+         ualloc.o        \
+	 ugraph.o
 
 CFLAGS=-std=c89 -Wall $(DEBUG_MODE)
 $(lib_name):$(obj_list)

@@ -736,8 +736,10 @@ int last2vps(last_attr_req* req,last_attr_res* res)
   LATTR_RETURN_VOID;
 }
 
-vps_mod* lfile2vps(lreader* reader,char* file_path,vps_cntr* vps)
-{
+UDEFUN(UFNAME lfile2vps,
+       UARGS (lreader* reader,char* file_path,vps_cntr* vps),
+       URET vps_mod*)
+UDECLARE
   FILE* file;
   ltoken_state* ts;
   vps_mod* mod;
@@ -748,7 +750,7 @@ vps_mod* lfile2vps(lreader* reader,char* file_path,vps_cntr* vps)
   last_attr_req req;
   last_attr_res res;
   int retval;
-
+UBEGIN
   ts = lreader_from(reader);
   if (!ts) {
     uabort("reader from error!");
@@ -821,4 +823,4 @@ vps_mod* lfile2vps(lreader* reader,char* file_path,vps_cntr* vps)
   vps_mod_loaded(mod);
 
   return mod;
-}
+UEND

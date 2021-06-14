@@ -599,6 +599,7 @@ UBEGIN
     uabort("new vcfg_block error!");
   }
   vcfg_grp_cdapd(vps,grp,(vps_cfg*)blk);
+  grp->entry = (vps_cfg*)blk;
   insts = grp->insts;
   set = (uset*)insts;
   insts->iterate(&cursor);
@@ -633,6 +634,7 @@ UDECLARE
   ucursor cursor;
   uset* set;
   vps_inst* inst;
+  vcfg_block* last_blk;
 UBEGIN
   cfgs = grp->cfgs;
   set = (uset*)cfgs;
@@ -645,6 +647,28 @@ UBEGIN
     }
     blk = (vcfg_block*)*cfgp;
     inst = vcfg_blk_linst_get(blk);
+    if (inst) {
+      int iopck = vps_inst_opck_get(inst);
+      if (iopck == viopck_branch) {
+	vps_data* d = vcfg_grp_dtget(grp,inst->label);
+	vps_cfg* code;
+	vcfg_block* jmp_blk;
+	if (d->dtk != vdtk_code) {
+	  uabort("get inst label error!");
+	}
+	code = d->u.code;
+	if (code->t != vcfgk_blk) {
+	  uabort("label not a block!");
+	}
+	jmp_blk = (vcfg_block*)code;
+	ugraph_node_link(&blk->node,&jmp_blk->node);
+      }
+    }
+    if (last_blk) {
+      ugraph_node_link(&last_blk->node,&blk->node);
+    } else {
+      last_blk = blk;
+    }
   }
 UEND
 

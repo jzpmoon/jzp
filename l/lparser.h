@@ -152,6 +152,8 @@ void ltoken_state_attr_init(ltoken_state* ts);
 
 int last2vps(last_attr_req* req,last_attr_res* res);
 
-vps_mod* lfile2vps(lreader* reader,char* file_path,vps_cntr* vps);
+UDECLFUN(UFNAME lfile2vps,
+	 UARGS (lreader* reader,char* file_path,vps_cntr* vps),
+	 URET vps_mod*)
 
 #endif

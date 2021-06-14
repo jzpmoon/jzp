@@ -1,6 +1,8 @@
 #ifndef _UGRAPH_H_
 #define _UGRAPH_H_
 
+#include "ulist_tpl.h"
+
 typedef struct _ugnode ugnode,* ugnodep;
 
 ulist_decl_tpl(ugnodep);
