@@ -100,8 +100,9 @@
 #define ulist_first_get_tpl(t)					\
   void ulist_##t##_first_get(ulist_##t* list,t** outval)	\
   {								\
-    ulsnd_##t* header = list->header;				\
+    ulsnd_##t* header;						\
     if (list->len > 0) {					\
+      header = list->header;					\
       *outval = &header->next->value;				\
     } else {							\
       *outval = NULL;						\
@@ -111,8 +112,9 @@
 #define ulist_last_get_tpl(t)				\
   void ulist_##t##_last_get(ulist_##t* list,t** outval)	\
   {							\
-    ulsnd_##t* header = list->header;			\
+    ulsnd_##t* header;					\
     if (list->len > 0) {				\
+      header = list->header;				\
       *outval = &header->prev->value;			\
     } else {						\
       *outval = NULL;					\

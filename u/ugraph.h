@@ -33,6 +33,10 @@ typedef struct _ugraph{
     ulist_ugnodep_append((graph)->nodes,node);	\
   } while(0);
 
-
+#define ugraph_node_init(node,allocator)			\
+  do{								\
+    (node)->out_degree = ulist_ugnodep_alloc(allocator);	\
+    (node)->in_degree = ulist_ugnodep_alloc(allocator);		\
+  } while(0);
 
 #endif

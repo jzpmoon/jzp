@@ -299,7 +299,6 @@ static int symcall_action(last_attr_req* req,
   last_obj* ast_obj;
   vps_cntr* vps;
   vps_cfg* parent;
-  vcfg_block* blk;
   vcfg_graph* grp;
   vps_inst* inst;
   last_obj* obj;
@@ -315,11 +314,8 @@ static int symcall_action(last_attr_req* req,
   grp = (vcfg_graph*)parent;
   obj = last_car(ast_obj);
   symbol = (last_symbol*)obj;
-  blk = vcfg_block_new(vps,NULL);
-  if(!blk){
-    uabort("new blk error!");
-  }
-  blk->parent = (vps_t*)grp;
+
+  /* push params */
   next = last_cdr(ast_obj);
   while (next) {
     obj = last_car(next);
@@ -339,16 +335,18 @@ static int symcall_action(last_attr_req* req,
       uabort("push inst error!");
       inst = NULL;
     }
-    vcfg_blk_apd(blk,inst);
+    vcfg_grp_inst_apd(grp,inst);
     next = last_cdr(next);
   }
+  /* push subr name */
   inst = vps_ipushdt(vps,grp,symbol->name);
-  vcfg_blk_apd(blk,inst);
+  vcfg_grp_inst_apd(grp,inst);
+  /* call subr */
   inst = vps_icall(vps);
-  vcfg_blk_apd(blk,inst);
+  vcfg_grp_inst_apd(grp,inst);
 
   ulog0("symcall");
-  LATTR_RETURN(lar_vps_apd,blk);
+  LATTR_RETURN_VOID;
 }
 
 last_attr last_attr_symcall = {NULL,NULL,symcall_action};
@@ -746,10 +744,9 @@ UDECLARE
   last_obj* ast_obj;
   ustring* mod_name;
   vcfg_graph* grp;
-  vcfg_block* blk;
+  vps_inst* inst;
   last_attr_req req;
   last_attr_res res;
-  int retval;
 UBEGIN
   ts = lreader_from(reader);
   if (!ts) {
@@ -784,7 +781,6 @@ UBEGIN
   req.top = mod;
   req.parent = (vps_cfg*)grp;
   req.reader = reader;
-  blk = NULL;
   while(1){
     ast_obj = lparser_parse(ts);
     if (ast_obj == NULL){
@@ -792,34 +788,16 @@ UBEGIN
     }
     last_obj_log(ast_obj);
     req.ast_obj =ast_obj;
-    retval = last2vps(&req,&res);
-    if (retval != 0) {
-      if (res.res_type == lar_vps_apd) {
-	vps_t* res_vps = res.res_vps;
-	if (!res_vps) {
-	  uabort("res_vps can not be null!");
-	}
-	if(res_vps->t != vcfgk_blk){
-	  uabort("not a blk!");
-	}
-	blk = (vcfg_block*)res_vps;
-	vcfg_grp_cdapd(vps,grp,(vps_cfg*)res_vps);
-      } else {
-	uabort("res_type error!");
-      }
-    }
+    last2vps(&req,&res);
   }
   ltoken_state_close(ts);
-  if (!blk) {
-    blk = vcfg_block_new(vps,NULL);
-    if(!blk){
-      uabort("new blk error!");
-    }
-    blk->parent = (vps_t*)grp;
-    vcfg_grp_cdapd(vps,grp,(vps_cfg*)blk);
-  }
-  vps_inst* inst = vps_iretvoid(vps);
-  vcfg_blk_apd(blk,inst);
+
+  inst = vps_iretvoid(vps);
+  vcfg_grp_inst_apd(grp,inst);
+
+  vcfg_grp_build(vps,grp);
+  vcfg_grp_connect(vps,grp);
+
   vps_mod_loaded(mod);
 
   return mod;

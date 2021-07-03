@@ -15,10 +15,7 @@ typedef struct _last_obj{
   LASTHEADER;
 } last_obj;
 
-enum{
-  lar_vps_apd,
-  lar_blk_new,
-};
+enum { lar_vps_apd };
 
 typedef struct _last_attr_req{
   vps_cntr* vps;

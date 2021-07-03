@@ -108,11 +108,12 @@ void last_obj_log(last_obj* ast_obj);
       }
 
 #define LATTR_CONTEXT_FILE(parent)					\
-  (parent->t == vcfgk_grp ||						\
+  (parent->t == vcfgk_grp &&						\
    ((vcfg_graph*)parent)->scope == VPS_SCOPE_ENTRY)
 
-#define LATTR_CONTEXT_BLOCK(parent)		\
-  (parent->t == vcfgk_blk)
+#define LATTR_CONTEXT_SUBR(parent)			\
+  (parent->t == vcfgk_grp &&				\
+   ((vcfg_graph*)parent)->scope != VPS_SCOPE_ENTRY)
 
 #define LATTR_RETURN(type,vps)			\
   do {						\
@@ -154,6 +155,6 @@ int last2vps(last_attr_req* req,last_attr_res* res);
 
 UDECLFUN(UFNAME lfile2vps,
 	 UARGS (lreader* reader,char* file_path,vps_cntr* vps),
-	 URET vps_mod*)
+	 URET vps_mod*);
 
 #endif
