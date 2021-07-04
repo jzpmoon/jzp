@@ -1,3 +1,10 @@
+/*
+** test.jzp
+*/
+
+;
+;; load supprot library
+;
 (src-load code.jzp)
 (src-load list.jzp)
 

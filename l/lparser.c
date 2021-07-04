@@ -84,25 +84,48 @@ void ltoken_skip_blank(ltoken_state* ts){
 
 void ltoken_skip_comment(ltoken_state* ts){
   int c;
+  ltoken_next_char(ts);
   while (1) {
     c = ltoken_look_ahead(ts);
-    if (c == ';') {
+    if (c == '\n') {
       ltoken_next_char(ts);
-      while (1) {
+      ltoken_new_line(ts);
+      break;
+    } else if (c == LEOF) {
+      break;
+    } else {
+      ltoken_next_char(ts);
+    }
+  }
+}
+
+void ltoken_skip_block_comment(ltoken_state* ts)
+{
+  int c;
+  ltoken_next_char(ts);
+  c = ltoken_look_ahead(ts);
+  if (c == '*') {
+    ltoken_next_char(ts);
+    while (1) {
+      c = ltoken_look_ahead(ts);
+      if (c == '*') {
+	ltoken_next_char(ts);
 	c = ltoken_look_ahead(ts);
-	if (c == '\n') {
+	if (c == '/') {
 	  ltoken_next_char(ts);
-	  ltoken_new_line(ts);
-	  break;
-	} else if (c == LEOF) {
 	  break;
 	} else {
-	  ltoken_next_char(ts);
+	  continue;
 	}
+      } else if (c == '\n') {
+	ltoken_new_line(ts);
+      } else if (c == LEOF) {
+	break;
       }
-    } else {
-      break;
+      ltoken_next_char(ts);
     }
+  } else {
+    uabort("not a block comment!");
   }
 }
 
@@ -119,6 +142,9 @@ void ltoken_skip(ltoken_state* ts){
       break;
     case ';':
       ltoken_skip_comment(ts);
+      break;
+    case '/':
+      ltoken_skip_block_comment(ts);
       break;
     default:
       return;
