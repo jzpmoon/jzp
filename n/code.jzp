@@ -44,3 +44,37 @@
   (return)
 )
 
+;; find the maximum
+(g-subr find-maximum (array len)
+ (local max)
+ (local index)
+ (load array) ; initialize
+ (ref 0)
+ (store max)
+ (push 1)
+ (store index)
+ (label compare) ; compare array[index] and max
+ (load len)
+ (load index)
+ (eq)
+ (jmpi exit) ; all tested?
+ (load array)
+ (ref index)
+ (load max)
+ (lt)
+ (jmpi change)
+ (jmp increase)
+ (label change) ; change max value
+ (load array)
+ (ref index)
+ (store max)
+ (label increase) ; index + 1
+ (load index)
+ (push 1)
+ (add)
+ (store index)
+ (jmp compare)
+ (label exit) ; exit subr
+ (load max)
+ (return)
+)
