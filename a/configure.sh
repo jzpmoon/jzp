@@ -1,5 +1,6 @@
 #!/usr/bin/bash
 prefix=$(pwd)
+envc="unx"
 
 old_ifs=$IFS
 for arg in $*
@@ -11,6 +12,9 @@ do
     if [ $key = "--prefix" ]
     then
 	prefix=$val
+    elif [ $key = "--envc" ]
+    then
+	envc=$val
     fi
     IFS=$old_ifs
 done
@@ -25,6 +29,16 @@ chmod 700 $entry_exec
 
 entry_mk=makefile
 echo "prefix=$prefix" > $entry_mk
+echo "envc=$envc" >> $entry_mk
 echo "currdir=$(pwd)" >> $entry_mk
 echo "entry_exec=$entry_exec" >> $entry_mk
+
+if [ $envc = "unx" ]
+then
+    echo "include ../u/env/env_unx.mk" >> $entry_mk
+elif [ $envc = "win" ]
+then
+    echo "include ../u/env/env_win.mk" >> $entry_mk
+fi
+
 cat jzpl.mk >> $entry_mk

@@ -1,4 +1,4 @@
-bin = libl.so
+bin = libl.$(suf_so)
 obj = lparser.o lattr.o lcfun.o lobj.o leval.o lreader.o
 temp_attr_file = _ltemp.attr
 temp_cfun_file = _ltemp.cfun
@@ -40,7 +40,7 @@ $(temp_cfun_file):
 	$(call gen_cfun_file)
 $(v_sobj):
 	cd $(libv_path); \
-	./configure.sh --prefix=$(prefix); \
+	./configure.sh --prefix=$(prefix) --envc=$(envc); \
 	cd $(currdir); \
 	make -C $(libv_path) -f $(v_somk) DEBUG_MODE=$(DEBUG_MODE)
 install:

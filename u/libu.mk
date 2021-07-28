@@ -1,18 +1,19 @@
-lib_name=libu.so
-obj_list=ulist.o         \
-         ustack.o      	 \
-         ustring.o       \
-         ustring_table.o \
-	 uerror.o        \
-	 ubuffer.o       \
-	 udbuffer.o	 \
-	 ustream.o       \
-	 uhstb.o         \
-	 umempool.o 	 \
-         ualloc.o        \
-	 ugraph.o
+lib_name := libu.$(suf_so)
+obj_list := ulist.o         \
+            ustack.o        \
+            ustring.o       \
+            ustring_table.o \
+	    uerror.o        \
+	    ubuffer.o       \
+	    udbuffer.o	    \
+	    ustream.o       \
+	    uhstb.o         \
+	    umempool.o 	    \
+            ualloc.o        \
+	    ugraph.o
 
-CFLAGS=-std=c89 -Wall $(DEBUG_MODE)
+CFLAGS := -std=c89 -Wall $(DEBUG_MODE)
+
 $(lib_name):$(obj_list)
 	$(CC) $(obj_list) -o $(lib_name) -shared
 .c.o:

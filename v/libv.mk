@@ -1,4 +1,4 @@
-bin=libv.so
+bin=libv.$(suf_so)
 obj=vm.o vcontext.o vgc.o vgc_obj.o vpass.o vgenbc.o
 lib_path=../u/
 sobj=u
@@ -11,7 +11,7 @@ $(bin):$(obj) $(sobj)
 	$(CC) -c -o $@ $< -I $(lib_path) $(CFLAGS) -fPIC
 $(sobj):
 	cd $(lib_path); \
-	./configure.sh --prefix=$(prefix); \
+	./configure.sh --prefix=$(prefix) --envc=$(envc); \
 	cd $(currdir); \
 	make -C $(lib_path) -f $(somk) DEBUG_MODE=$(DEBUG_MODE)
 install:
