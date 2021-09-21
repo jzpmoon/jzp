@@ -1,6 +1,8 @@
 #ifndef _USTRING_H_
 #define _USTRING_H_
 
+#include "udef.h"
+
 typedef struct _ustring{
 	char* value;
 	int len;
@@ -21,6 +23,7 @@ int ustring_to_integer(ustring* str);
 double ustring_to_number(ustring* str);
 ustring* ustring_concat(ustring* str1,ustring* str2);
 ustring* ustring_concatx(ustring* str1,ustring* str2,char* separator);
+void uarrev(uui8* arr,usize_t len);
 void ustring_log(ustring* str);
 
 #endif

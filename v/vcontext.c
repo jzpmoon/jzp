@@ -755,7 +755,7 @@ void vcontext_stack_set(vcontext* ctx,usize_t index,vslot slot){
   }
 }
 
-int vcontext_stack_top_get(vcontext* ctx){
+usize_t vcontext_stack_top_get(vcontext* ctx){
   return ustack_vslot_top_get(ctx->stack);
 }
 

@@ -1,6 +1,7 @@
 #!/usr/bin/bash
 prefix=$(pwd)
 envc="unx"
+thw="arm64"
 
 old_ifs=$IFS
 for arg in $*
@@ -15,6 +16,9 @@ do
     elif [ $key = "--envc" ]
     then
 	envc=$val
+    elif [ $key = "--thw" ]
+    then
+	thw=$val
     fi
     IFS=$old_ifs
 done
@@ -23,12 +27,8 @@ echo "prefix=$prefix" > makefile
 echo "envc=$envc" >> makefile
 echo "currdir=$(pwd)" >> makefile
 
-if [ $envc = "unx" ]
-then
-    echo "include ../u/env/env_unx.mk" >> makefile
-elif [ $envc = "win" ]
-then
-    echo "include ../u/env/env_win.mk" >> makefile
-fi
+echo "include ../u/env/env_"${envc}".mk" >> makefile
 
 cat libu.mk >> makefile
+
+cat $(echo "./env/thw_"${thw}".h") >> umacro.h

@@ -37,45 +37,65 @@ void ulog(char* msg,...);
     if (!_uli.power) {				\
       break;					\
     }						\
-    if (fd) {					\
-      fprintf(fd,"["__DATE__" "__TIME__"]");	\
-      body;					\
-      fprintf(fd,"\n");				\
-      fflush(fd);				\
-    } else {					\
-      fprintf(stdout,"ulog not init");		\
-      fflush(stdout);				\
-    }						\
+    fprintf(fd,"["__DATE__" "__TIME__"]");	\
+    body;					\
+    fprintf(fd,"\n");				\
+    fflush(fd);					\
   } while(0)
 
 # define ulog0(msg)				\
   do {						\
-    __ulog(_uli.log_fd,				\
-	   {fprintf(_uli.log_fd,msg);});	\
+    if (_uli.log_fd) {				\
+      __ulog(_uli.log_fd,			\
+	     {fprintf(_uli.log_fd,msg);});	\
+    } else {					\
+      __ulog(stdout,				\
+	     {fprintf(stdout,msg);});		\
+    }						\
   } while(0)
 
 # define ulog1(msg,a1)				\
   do {						\
-    __ulog(_uli.log_fd,				\
-	   {fprintf(_uli.log_fd,msg,a1);});	\
+    if (_uli.log_fd) {				\
+      __ulog(_uli.log_fd,			\
+	     {fprintf(_uli.log_fd,msg,a1);});	\
+    } else {					\
+      __ulog(stdout,				\
+	     {fprintf(stdout,msg,a1);});	\
+    }						\
   } while(0)
 
 # define ulog2(msg,a1,a2)			\
   do {						\
-    __ulog(_uli.log_fd,				\
+    if (_uli.log_fd) {				\
+      __ulog(_uli.log_fd,			\
 	   {fprintf(_uli.log_fd,msg,a1,a2);});	\
+    } else {					\
+      __ulog(stdout,				\
+	     {fprintf(stdout,msg,a1,a2);});	\
+    }						\
   } while(0)
 
 # define ulog3(msg,a1,a2,a3)				\
   do {							\
-    __ulog(_uli.log_fd,					\
-	   {fprintf(_uli.log_fd,msg,a1,a2,a3);});	\
+    if (_uli.log_fd) {					\
+      __ulog(_uli.log_fd,				\
+	     {fprintf(_uli.log_fd,msg,a1,a2,a3);});	\
+    } else {						\
+      __ulog(stdout,					\
+	     {fprintf(stdout,msg,a1,a2,a3);});		\
+    }							\
   } while(0)
 
 # define ulog4(msg,a1,a2,a3,a4)				\
   do {							\
-    __ulog(_uli.log_fd,					\
-	   {fprintf(_uli.log_fd,msg,a1,a2,a3,a4);});	\
+    if (_uli.log_fd) {					\
+      __ulog(_uli.log_fd,				\
+	     {fprintf(_uli.log_fd,msg,a1,a2,a3,a4);});	\
+    } else {						\
+      __ulog(stdout,					\
+	     {fprintf(stdout,msg,a1,a2,a3,a4);});	\
+    }							\
   } while(0)
 
 # define ulog_stack_trace(fname)		\

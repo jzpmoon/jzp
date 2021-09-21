@@ -12,7 +12,7 @@ obj_list := ulist.o         \
             ualloc.o        \
 	    ugraph.o
 
-CFLAGS := -std=c89 -Wall $(DEBUG_MODE)
+CFLAGS := -std=c89 -Wall -Wextra -Wno-unused-parameter $(DEBUG_MODE)
 
 $(lib_name):$(obj_list)
 	$(CC) $(obj_list) -o $(lib_name) -shared

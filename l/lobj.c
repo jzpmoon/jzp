@@ -40,3 +40,28 @@ lobj_stream* lobj_ostream_new_by_file(vgc_heap* heap,
   lstream->stream = stream;
   return lstream;
 }
+
+
+lobj_stream* lobj_istream_new(vgc_heap* heap,
+			      vgc_string* fn)
+{
+  FILE* file;
+
+  file = fopen(fn->u.c,"w");
+  if (!file) {
+    uabort("open file error!");
+  }
+  return lobj_istream_new_by_file(heap,file);
+}
+
+lobj_stream* lobj_ostream_new(vgc_heap* heap,
+			      vgc_string* fn)
+{
+  FILE* file;
+
+  file = fopen(fn->u.c,"r");
+  if (!file) {
+    uabort("open file error!");
+  }
+  return lobj_ostream_new_by_file(heap,file);
+}

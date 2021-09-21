@@ -77,7 +77,7 @@ vgc_string* vinst_to_str(vgc_heap* heap,ulist_vinstp* insts){
 	  operand = inst->operand;					\
 	}								\
 	str->u.b[byte_count++] = inst->opcode;				\
-	while(i<len-1&&i<sizeof(usize_t)){				\
+	while (i < len - 1) {						\
 	  str->u.b[byte_count++] = operand>>(8*i);			\
 	  i++;								\
 	}								\

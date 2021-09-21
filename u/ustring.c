@@ -6,11 +6,12 @@
 #include "ustring.h"
 
 unsigned int udata_hscd(void* v,int len){
-	unsigned int code=0,i=0;
-	while(i<len){
-		code=code*31+((char*)v)[i++];
-	}
-	return code;
+  unsigned int code = 0;
+  int i = 0;
+  while (i < len) {
+    code = code * 31 + ((char*)v)[i++];
+  }
+  return code;
 }
 
 unsigned int ucharp_hscd(char* v){
@@ -142,6 +143,17 @@ ustring* ustring_concatx(ustring* str1,ustring* str2,char* sep)
   str->hash_code = ucharp_hscd(charp);
   
   return str;  
+}
+
+void uarrev(uui8* arr,usize_t len)
+{
+  usize_t i = 0;
+  while (i < len / 2) {
+    uui8 tmp = arr[i];
+    arr[i] = arr[len - i - 1];
+    arr[len - i - 1] = tmp;
+    i++;
+  }
 }
 
 void ustring_log(ustring* str){

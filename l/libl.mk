@@ -9,7 +9,7 @@ v_sobj=v
 v_somk=makefile
 u_sobj=u
 u_somk=makefile
-CFLAGS=-std=c89 -Wall $(DEBUG_MODE)
+CFLAGS=-std=c89 -Wall -Wextra -Wno-unused-parameter $(DEBUG_MODE)
 
 ATTR = mod proc base
 CFUN = base
@@ -40,7 +40,7 @@ $(temp_cfun_file):
 	$(call gen_cfun_file)
 $(v_sobj):
 	cd $(libv_path); \
-	./configure.sh --prefix=$(prefix) --envc=$(envc); \
+	./configure.sh --prefix=$(prefix) --envc=$(envc) --thw=$(thw); \
 	cd $(currdir); \
 	make -C $(libv_path) -f $(v_somk) DEBUG_MODE=$(DEBUG_MODE)
 install:

@@ -23,4 +23,10 @@ lobj_stream* lobj_istream_new_by_file(vgc_heap* heap,
 lobj_stream* lobj_ostream_new_by_file(vgc_heap* heap,
 				      FILE* file);
 
+lobj_stream* lobj_istream_new(vgc_heap* heap,
+			      vgc_string* fn);
+
+lobj_stream* lobj_ostream_new(vgc_heap* heap,
+			      vgc_string* fn);
+
 #endif

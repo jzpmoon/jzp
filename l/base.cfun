@@ -50,7 +50,47 @@ LDEFUN(make_string,"make-string",LSCOPE_GLOBAL,1,LRETVAL_YES,{
 /*
  *define cfun make-stream
  */
-LDEFUN(make_stream,"make-stream",LSCOPE_GLOBAL,0,LRETVAL_NO,{
+LDEFUN(make_istream,"make-istream",LSCOPE_GLOBAL,1,LRETVAL_YES,{
+    vslot slot;
+    vgc_obj* obj;
+    vgc_string* string;
+    lobj_stream* lstream;
+    
+    slot = vcontext_params_get(ctx,0);
+    if (!vslot_is_ref(slot)) {
+      uabort("make-stream:not a ref!");
+    }
+    obj = vslot_ref_get(slot,vgc_obj);
+    if (!vgc_obj_typeof(obj,vgc_obj_type_string)) {
+      uabort("make-stream:not a string!");      
+    }
+    string = (vgc_string*)obj;
+    lstream = lobj_istream_new(ctx->heap,string);
+    vcontext_obj_push(ctx,lstream);
+    ulog("call make-stream");
+    return 0;
+  });
+
+/*
+ *define cfun make-stream
+ */
+LDEFUN(make_ostream,"make-ostream",LSCOPE_GLOBAL,1,LRETVAL_YES,{
+    vslot slot;
+    vgc_obj* obj;
+    vgc_string* string;
+    lobj_stream* lstream;
+    
+    slot = vcontext_params_get(ctx,0);
+    if (!vslot_is_ref(slot)) {
+      uabort("make-stream:not a ref!");
+    }
+    obj = vslot_ref_get(slot,vgc_obj);
+    if (!vgc_obj_typeof(obj,vgc_obj_type_string)) {
+      uabort("make-stream:not a string!");      
+    }
+    string = (vgc_string*)obj;
+    lstream = lobj_ostream_new(ctx->heap,string);
+    vcontext_obj_push(ctx,lstream);
     ulog("call make-stream");
     return 0;
   });
@@ -125,7 +165,8 @@ LDEFVAR(system_ostream,"system-ostream",LSCOPE_GLOBAL,{
 LFUNONLOAD(base,{
     LDECLFUN(make_array);
     LDECLFUN(make_string);
-    LDECLFUN(make_stream);
+    LDECLFUN(make_istream);
+    LDECLFUN(make_ostream);
     LDECLFUN(stream_output);
     LDECLVAR(system_istream);
     LDECLVAR(system_ostream);
