@@ -10,7 +10,8 @@ obj_list := ulist.o         \
 	    uhstb.o         \
 	    umempool.o 	    \
             ualloc.o        \
-	    ugraph.o
+	    ugraph.o        \
+	    ulr.0
 
 CFLAGS := -std=c89 -Wall -Wextra -Wno-unused-parameter $(DEBUG_MODE)
 
