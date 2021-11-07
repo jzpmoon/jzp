@@ -79,7 +79,7 @@ void vgc_collect_mark(vgc_heap* heap,vgc_obj* begin_obj){
     mark_count++;
     {
       vslot* obj_slot_list = vgc_obj_slot_list(obj);
-      int i = 0;
+      usize_t i = 0;
       while(i < obj->_len){
 	vslot slot = obj_slot_list[i];
 	if(vslot_is_ref(slot)){
@@ -131,7 +131,7 @@ void vgc_collect_update_addr(vgc_heap* heap,vgc_obj* begin_obj){
     vgc_obj_unmark_addr(obj);
     {
       vslot* obj_slot_list = vgc_obj_slot_list(obj);
-      int i = 0;
+      usize_t i = 0;
       while(i < obj->_len){
 	vslot slot = obj_slot_list[i];
 	if(vslot_is_ref(slot)){

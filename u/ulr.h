@@ -12,7 +12,7 @@ typedef struct _ulrprod{
   int head;
   /*body length*/
   int bdylen;
-  int[1] body;
+  int body[1];
 } ulrprod,*ulrprodp;
 
 ulist_decl_tpl(ulrprodp);
@@ -48,7 +48,7 @@ uhstb_decl_tpl(ulrsetp);
 
 /*item set collection*/
 typedef struct _ulrcoll{
-  UGTAPHHEADER;
+  UGRAPHHEADER;
   uhstb_ulrsetp* sets;
 } ulrcoll;
 

@@ -9,7 +9,7 @@ vgc_array* vgc_array_new(vgc_heap* heap,
   usize_t array_size = TYPE_SIZE_OF(vgc_array,vslot,array_length);
   vgc_array* array;
   vslot* slot_list;
-  int i = 0;
+  usize_t i = 0;
   array = (vgc_array*)vgc_heap_data_new(heap,
 					array_size,
 					array_length,
@@ -42,7 +42,7 @@ vslot vgc_array_pop(vgc_array* array){
   return array->objs[array->top];
 }
 
-void vgc_array_set(vgc_array* array,int idx,vslot slot){
+void vgc_array_set(vgc_array* array,usize_t idx,vslot slot){
   if (idx >= 0 && idx < array->_len) {
     array->objs[idx] = slot;
   }

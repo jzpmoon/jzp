@@ -6,8 +6,8 @@ vps_mod* leval_vps_load(leval* eval,char* file_path)
 {
   vps_mod* mod;
 
-  mod = lfile2vps(eval->reader,file_path,&eval->vps);
-  lreader_clean(eval->reader);
+  mod = vfile2vps(eval->reader,file_path,&eval->vps);
+  vreader_clean(eval->reader);
   return mod;
 }
 
@@ -46,7 +46,7 @@ leval* lstartup(){
   vcontext* ctx;
   vmod* mod;
   ustring* mod_name;
-  lreader* reader;
+  vreader* reader;
   leval_loader loader;
 
   eval = ualloc(sizeof(leval));
@@ -73,7 +73,9 @@ leval* lstartup(){
   
   mod = vcontext_mod_add(ctx,mod_name);
 
-  reader = lreader_new(ctx->symtb,ctx->strtb);
+  reader = vreader_new(ctx->symtb,
+		       ctx->strtb,
+		       ltoken_state_attr_init);
   if (!reader) {
     uabort("new reader error!");
   }

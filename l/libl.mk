@@ -1,5 +1,5 @@
 bin = libl.$(suf_so)
-obj = lparser.o lattr.o lcfun.o lobj.o leval.o lreader.o
+obj = lattr.o lcfun.o lobj.o leval.o
 temp_attr_file = _ltemp.attr
 temp_cfun_file = _ltemp.cfun
 
@@ -16,9 +16,9 @@ CFUN = base
 
 define gen_attr_file
 	cat $(shell echo ${ATTR}.attr | sed 's: :.attr :g') > $(temp_attr_file)
-	echo "void lattr_file_concat_init(ltoken_state* ts){ \
-	_lattr_file_init_$(shell echo ${ATTR} | \
-	sed 's: :(ts);_lattr_file_init_:g')(ts); \
+	echo "void lattr_file_concat_init(vtoken_state* ts){ \
+	_vattr_file_init_$(shell echo ${ATTR} | \
+	sed 's: :(ts);_vattr_file_init_:g')(ts); \
 	}" >> $(temp_attr_file)
 endef
 

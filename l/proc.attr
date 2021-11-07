@@ -1,52 +1,52 @@
 /*
  * define attribute g-struct
  */
-LDEFATTR(g_struct,"g-struct",{
+VDEFATTR(g_struct,"g-struct",{
     vps_cntr* vps;
     vps_mod* top;
-    last_obj* next;
-    last_obj* obj;
-    last_obj* struct_members;
-    last_symbol* struct_name;
+    vast_obj* next;
+    vast_obj* obj;
+    vast_obj* struct_members;
+    vast_symbol* struct_name;
     vps_type* struct_type;
     int count;
 
     vps = req->vps;
     top = req->top;
-    if (!LATTR_CONTEXT_FILE(req->parent)) {
+    if (!VATTR_CONTEXT_FILE(req->parent)) {
       uabort("src-load inst can not use here!");
     }
 
-    next = last_cdr(req->ast_obj);
-    if(!next || next->t != lastk_cons){
+    next = vast_cdr(req->ast_obj);
+    if(!next || next->t != vastk_cons){
       uabort("struct error!");
     }
-    obj = last_car(next);
-    if(!obj || obj->t != lastk_symbol){
+    obj = vast_car(next);
+    if(!obj || obj->t != vastk_symbol){
       uabort("struct name invalid!");
     }
-    struct_name = (last_symbol*)obj;
-    next = last_cdr(next);
-    if(!next || next->t != lastk_cons){
+    struct_name = (vast_symbol*)obj;
+    next = vast_cdr(next);
+    if(!next || next->t != vastk_cons){
       uabort("struct error!");
     }
-    obj = last_car(next);
-    if (!obj || obj->t != lastk_cons) {
+    obj = vast_car(next);
+    if (!obj || obj->t != vastk_cons) {
       uabort("struct member has no declare!");
     }
     struct_members = obj;
     count = 0;
     while (struct_members) {
-      last_obj* member;
-      last_symbol* member_name;
+      vast_obj* member;
+      vast_symbol* member_name;
       ustring* type_name;
       vps_type* type;
       
-      member = last_car(struct_members);
-      if (!member || member->t != lastk_symbol) {
+      member = vast_car(struct_members);
+      if (!member || member->t != vastk_symbol) {
 	uabort("member not a symbol!");
       }
-      member_name = (last_symbol*)member;
+      member_name = (vast_symbol*)member;
       type_name = ustring_concatx(struct_name->name,member_name->name,".");
       if (!type_name) {
 	uabort("string concatx error!");
@@ -58,7 +58,7 @@ LDEFATTR(g_struct,"g-struct",{
 
       vps_ltype_put(top,type);
       vps_gtype_put(vps,type);
-      struct_members = last_cdr(struct_members);
+      struct_members = vast_cdr(struct_members);
       count++;
     }
     struct_type = vps_type_new(vps,struct_name->name,count,-1);
@@ -69,58 +69,58 @@ LDEFATTR(g_struct,"g-struct",{
     vps_gtype_put(vps,struct_type);
     
     ulog("attr struct");
-    LATTR_RETURN_VOID;
+    VATTR_RETURN_VOID;
   })
 
 /*
  * define attribute struct
  */
-LDEFATTR(struct,"struct",{
+VDEFATTR(struct,"struct",{
     vps_cntr* vps;
     vps_mod* top;
-    last_obj* next;
-    last_obj* obj;
-    last_obj* struct_members;
-    last_symbol* struct_name;
+    vast_obj* next;
+    vast_obj* obj;
+    vast_obj* struct_members;
+    vast_symbol* struct_name;
     vps_type* struct_type;
     int count;
 
     vps = req->vps;
     top = req->top;
-    if (!LATTR_CONTEXT_FILE(req->parent)) {
+    if (!VATTR_CONTEXT_FILE(req->parent)) {
       uabort("src-load inst can not use here!");
     }
 
-    next = last_cdr(req->ast_obj);
-    if(!next || next->t != lastk_cons){
+    next = vast_cdr(req->ast_obj);
+    if(!next || next->t != vastk_cons){
       uabort("struct error!");
     }
-    obj = last_car(next);
-    if(!obj || obj->t != lastk_symbol){
+    obj = vast_car(next);
+    if(!obj || obj->t != vastk_symbol){
       uabort("struct name invalid!");
     }
-    struct_name = (last_symbol*)obj;
-    next = last_cdr(next);
-    if(!next || next->t != lastk_cons){
+    struct_name = (vast_symbol*)obj;
+    next = vast_cdr(next);
+    if(!next || next->t != vastk_cons){
       uabort("struct error!");
     }
-    obj = last_car(next);
-    if (!obj || obj->t != lastk_cons) {
+    obj = vast_car(next);
+    if (!obj || obj->t != vastk_cons) {
       uabort("struct member has no declare!");
     }
     struct_members = obj;
     count = 0;
     while (struct_members) {
-      last_obj* member;
-      last_symbol* member_name;
+      vast_obj* member;
+      vast_symbol* member_name;
       ustring* type_name;
       vps_type* type;
       
-      member = last_car(struct_members);
-      if (!member || member->t != lastk_symbol) {
+      member = vast_car(struct_members);
+      if (!member || member->t != vastk_symbol) {
 	uabort("member not a symbol!");
       }
-      member_name = (last_symbol*)member;
+      member_name = (vast_symbol*)member;
       type_name = ustring_concatx(struct_name->name,member_name->name,".");
       if (!type_name) {
 	uabort("string concatx error!");
@@ -131,7 +131,7 @@ LDEFATTR(struct,"struct",{
       }
 
       vps_ltype_put(top,type);
-      struct_members = last_cdr(struct_members);
+      struct_members = vast_cdr(struct_members);
       count++;
     }
     struct_type = vps_type_new(vps,struct_name->name,count,-1);
@@ -141,67 +141,67 @@ LDEFATTR(struct,"struct",{
     vps_ltype_put(top,struct_type);
     
     ulog("attr struct");
-    LATTR_RETURN_VOID;
+    VATTR_RETURN_VOID;
   })
 
 /*
  * define attribute sizeof
  */
-LDEFATTR(sizeof,"sizeof",{
-    last_obj* next;
-    last_obj* obj;
-    last_symbol* type_name;
+VDEFATTR(sizeof,"sizeof",{
+    vast_obj* next;
+    vast_obj* obj;
+    vast_symbol* type_name;
     vps_type* type;
     
-    next = last_cdr(req->ast_obj);
-    if(!next || next->t != lastk_cons){
+    next = vast_cdr(req->ast_obj);
+    if(!next || next->t != vastk_cons){
       uabort("sizeof error!");
     }
-    obj = last_car(next);
-    if (!obj || obj->t != lastk_symbol) {
+    obj = vast_car(next);
+    if (!obj || obj->t != vastk_symbol) {
       uabort("sizeof arg not a symbol!");
     }
-    type_name = (last_symbol*)obj;
+    type_name = (vast_symbol*)obj;
     
     type = vps_type_get(req->top,type_name->name);
     if (!type) {
       uabort("struct undefine!");
     }
-    LATTR_RETURN(lar_vps_apd,type);
+    VATTR_RETURN(var_vps_apd,type);
   })
 
 /*
  * define attribute indexof
  */
-LDEFATTR(indexof,"indexof",{
-    last_obj* next;
-    last_obj* obj;
-    last_symbol* type_name;
+VDEFATTR(indexof,"indexof",{
+    vast_obj* next;
+    vast_obj* obj;
+    vast_symbol* type_name;
     vps_type* type;
     
-    next = last_cdr(req->ast_obj);
-    if(!next || next->t != lastk_cons){
+    next = vast_cdr(req->ast_obj);
+    if(!next || next->t != vastk_cons){
       uabort("indexof error!");
     }
-    obj = last_car(next);
-    if (!obj || obj->t != lastk_symbol) {
+    obj = vast_car(next);
+    if (!obj || obj->t != vastk_symbol) {
       uabort("indexof arg not a symbol!");
     }
-    type_name = (last_symbol*)obj;
+    type_name = (vast_symbol*)obj;
 
     type = vps_type_get(req->top,type_name->name);
     if (!type) {
       uabort("struct member undefine!");
     }
-    LATTR_RETURN(lar_vps_apd,type);    
+    VATTR_RETURN(var_vps_apd,type);    
   })
 
 /*
  * declare attribute
  */
-LATTRONLOAD(proc,{
-    LDECLATTR(g_struct);
-    LDECLATTR(struct);
-    LDECLATTR(sizeof);
-    LDECLATTR(indexof);
+VATTRONLOAD(proc,{
+    VDECLATTR(g_struct);
+    VDECLATTR(struct);
+    VDECLATTR(sizeof);
+    VDECLATTR(indexof);
 })

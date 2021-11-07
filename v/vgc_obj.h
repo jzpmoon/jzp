@@ -190,7 +190,7 @@ vgc_obj* vgc_heap_data_new(vgc_heap* heap,
 
 typedef struct _vgc_array{
   VGCHEADER;
-  int top;
+  usize_t top;
   vslot objs[1];
 } vgc_array;
 
@@ -202,11 +202,11 @@ int vgc_array_push(vgc_array* array,vslot slot);
 
 vslot vgc_array_pop(vgc_array* array);
 
-void vgc_array_set(vgc_array* array,int idx,vslot slot);
+void vgc_array_set(vgc_array* array,usize_t idx,vslot slot);
 
 typedef struct _vgc_string{
   VGCHEADER;
-  int len;
+  usize_t len;
   union{
     char c[1];
     unsigned char b[1];

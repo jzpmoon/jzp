@@ -1,8 +1,13 @@
+#include "ulist_tpl.c"
+#include "uhstb_tpl.c"
+#include "ustack_tpl.c"
 #include "ulr.h"
 
 ulist_def_tpl(ulrprodp);
 ulist_def_tpl(ulritemp);
 uhstb_def_tpl(ulrsetp);
+ustack_decl_tpl(ulrsetp);
+ustack_def_tpl(ulrsetp);
 
 ulrset* ulrset_new(int inpsym)
 {
@@ -10,9 +15,9 @@ ulrset* ulrset_new(int inpsym)
 
   set = ualloc(sizeof(ulrset));
   if (set) {
-    ugraph_node_init((ugnodep*)set,&u_global_allocator);
+    ugraph_node_init((ugnode*)set,&u_global_allocator);
     set->inpsym = inpsym;
-    set->items = ulist_ulritem_alloc(&u_global_allocator);
+    set->items = ulist_ulritemp_alloc(&u_global_allocator);
   }
   return set;
 }
@@ -25,7 +30,7 @@ void ulritem_dest(ulritem* item)
 void ulrset_dest(ulrset* set)
 {
   ugraph_node_clean((ugnode*)set);
-  ulist_ulrset_dest(set->items,ulritem_dest);
+  ulist_ulritemp_dest(set->items,ulritem_dest);
   ufree(set);
 }
 
@@ -56,7 +61,7 @@ ulrset* ulrgram_start_set_get(ulrgram* gram)
   }
   item = ulritem_new(gram->accprod,0);
   if (!item) {
-    return NULL
+    return NULL;
   }
   itemset = ulrset_new(ULRINITSYM);
   if (!itemset) {
@@ -82,9 +87,9 @@ ulrcoll* ulrcoll_new()
 
 int ulritem_comp(ulritem* item1,ulritem* item2)
 {
-  if (item->dot > item->dot) {
+  if (item1->dot > item2->dot) {
     return 1;
-  } else if (item->dot < item->dot) {
+  } else if (item1->dot < item2->dot) {
     return -1;
   } else {
     if (item1->prod > item2->prod) {
@@ -99,10 +104,11 @@ int ulritem_comp(ulritem* item1,ulritem* item2)
 
 int ulrset_comp(ulrsetp* set1,ulrsetp* set2)
 {
-  ulist_ulritemp* items1,items2;
-  uset* s1,s2;
+  ulist_ulritemp* items1,* items2;
+  uset* s1,* s2;
   ucursor c1,c2;
-  ulritemp* item1,item2;
+  ulritemp* item1,* item2;
+  int retval;
 
   items1 = (*set1)->items;
   items2 = (*set2)->items;
@@ -130,7 +136,8 @@ int ulrset_comp(ulrsetp* set1,ulrsetp* set2)
 int ulrcoll_put(ulrcoll* coll,ulrset* set)
 {
   int retval;
-  retval = uhstb_ulrsetp_put(coll,ULRINITSYM,&set,NULL,NULL,ulrset_comp);
+  retval = uhstb_ulrsetp_put(coll->sets,ULRINITSYM,&set,NULL,NULL,
+			     ulrset_comp);
   if (!retval) {
     ugraph_node_add((ugraph*)coll,(ugnode*)set);
   }
@@ -139,8 +146,8 @@ int ulrcoll_put(ulrcoll* coll,ulrset* set)
 
 int ulr_closure(ulrgram* gram,ulrset* itemset)
 {
-  ucursor* i,j;
-  uset* is,js;
+  ucursor i,j;
+  uset* is,* js;
   ulritemp item,*itemp;
   ulrprodp prod,*prodp;
   ulritem* new_item;
@@ -151,6 +158,7 @@ int ulr_closure(ulrgram* gram,ulrset* itemset)
     itemp = is->next(is,&i);
     if (!itemp) break;
     item = *itemp;
+    js = (uset*)gram->prods;
     js->iterate(&j);
     while (1) {
       prodp = js->next(js,&j);
@@ -176,11 +184,12 @@ int ulr_goto(ulrgram* gram,
 	     ulrset* itemset,
 	     int inpsym)
 {
-  ucursor* c;
+  ucursor c;
   uset* s;
-  ulritem* item,*itemp;
+  ulritemp item,* itemp;
   ulrset* new_set;
   ulritem* new_item;
+  int retval;
 
   new_set = ulrset_new(inpsym);
   if (!new_set) {
@@ -225,9 +234,9 @@ ulrcoll* ulr0auto(ulrgram* gram)
   ulrset* itemset;
   ustack_ulrsetp stack;
   ulrcoll* coll;
-  ulritem* item,*itemp;
+  ulritemp item,*itemp;
   uset* s;
-  ucursor* c;
+  ucursor c;
 
   ustack_init(ulrsetp,&stack,-1,-1);
   itemset = ulrgram_start_set_get(gram);

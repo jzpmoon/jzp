@@ -584,7 +584,7 @@ void vcontext_relocate(vcontext* ctx){
 vslot vcontext_params_get(vcontext* ctx,int index){
   vgc_call* calling;
   vgc_cfun* cfun;
-  usize_t count;
+  int count;
   usize_t base;
   vslot slot;
   usize_t real_index;

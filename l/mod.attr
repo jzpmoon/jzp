@@ -1,62 +1,62 @@
 /*
  * define attribute src-load
  */
-LDEFATTR(src_load,"src-load",{
-    ltoken_state* ts;
-    last_obj* next;
-    last_obj* obj;
-    last_symbol* src_name;
+VDEFATTR(src_load,"src-load",{
+    vtoken_state* ts;
+    vast_obj* next;
+    vast_obj* obj;
+    vast_symbol* src_name;
     vps_mod* mod;
 
-    if (!LATTR_CONTEXT_FILE(req->parent)) {
+    if (!VATTR_CONTEXT_FILE(req->parent)) {
       uabort("src-load inst can not use here!");
     }
 
-    next = last_cdr(req->ast_obj);
-    if(next == NULL || next->t != lastk_cons){
+    next = vast_cdr(req->ast_obj);
+    if(next == NULL || next->t != vastk_cons){
       uabort("src load error because have no src name!");
     }
 
-    obj = last_car(next);
-    if(obj->t != lastk_symbol){
+    obj = vast_car(next);
+    if(obj->t != vastk_symbol){
       uabort("src name invalid!");
     }
-    src_name = (last_symbol*)obj;
+    src_name = (vast_symbol*)obj;
 
-    ts = lreader_from(req->reader);
+    ts = vreader_from(req->reader);
     if (!ts) {
       uabort("reader from error!");
     }
     
-    mod = lfile2vps(req->reader,src_name->name->value,req->vps);
+    mod = vfile2vps(req->reader,src_name->name->value,req->vps);
     
     ulog("src-load");
-    LATTR_RETURN_VOID;
+    VATTR_RETURN_VOID;
   })
 
 /*
  * define attribute mod-load
  */
-LDEFATTR(mod_load,"mod-load",{
-    last_obj* next;
-    last_obj* obj;
-    last_symbol* mod_name;
+VDEFATTR(mod_load,"mod-load",{
+    vast_obj* next;
+    vast_obj* obj;
+    vast_symbol* mod_name;
     vps_mod* mod;
 
-    if (!LATTR_CONTEXT_FILE(req->parent)) {
+    if (!VATTR_CONTEXT_FILE(req->parent)) {
       uabort("subr inst can not use here!");
     }
 
-    next = last_cdr(req->ast_obj);
-    if(next == NULL || next->t != lastk_cons){
+    next = vast_cdr(req->ast_obj);
+    if(next == NULL || next->t != vastk_cons){
       uabort("mod load error because have no src name!");
     }
 
-    obj = last_car(next);
-    if(obj->t != lastk_symbol){
+    obj = vast_car(next);
+    if(obj->t != vastk_symbol){
       uabort("mod name invalid!");
     }
-    mod_name = (last_symbol*)obj;
+    mod_name = (vast_symbol*)obj;
     
     mod = vps_mod_new(req->vps,mod_name->name);
     if (!mod) {
@@ -64,13 +64,13 @@ LDEFATTR(mod_load,"mod-load",{
     }
     
     ulog("mod-load");
-    LATTR_RETURN_VOID;
+    VATTR_RETURN_VOID;
   })
 
 /*
  * declare attribute
  */
-LATTRONLOAD(mod,{
-    LDECLATTR(src_load);
-    LDECLATTR(mod_load);
+VATTRONLOAD(mod,{
+    VDECLATTR(src_load);
+    VDECLATTR(mod_load);
   })

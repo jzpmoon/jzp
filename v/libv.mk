@@ -1,5 +1,5 @@
 bin=libv.$(suf_so)
-obj=vm.o vcontext.o vgc.o vgc_obj.o vpass.o vgenbc.o
+obj=vm.o vcontext.o vgc.o vgc_obj.o vpass.o vgenbc.o vparser.o vreader.o
 lib_path=../u/
 sobj=u
 somk=makefile

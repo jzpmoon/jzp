@@ -2,7 +2,7 @@
 #define _LEVAL_H_
 
 #include "vm.h"
-#include "lparser.h"
+#include "vparser.h"
 
 typedef struct _leval leval;
 
@@ -16,12 +16,14 @@ struct _leval{
   vcontext* ctx;
   vmod* mod;
   vps_cntr vps;
-  lreader* reader;
+  vreader* reader;
   leval_loader loader;
 };
 
 leval* lstartup();
 
 int leval_load(leval* eval,char* file_path);
+
+void ltoken_state_attr_init(vtoken_state* ts);
 
 #endif
