@@ -11,27 +11,22 @@ u_sobj=u
 u_somk=makefile
 CFLAGS=-std=c89 -Wall -Wextra -Wno-unused-parameter $(DEBUG_MODE)
 
-ATTR = mod proc base
+ATTR = mod,proc,base
 CFUN = base
 
 define gen_attr_file
-	cat $(shell echo ${ATTR}.attr | sed 's: :.attr :g') > $(temp_attr_file)
-	echo "void lattr_file_concat_init(vtoken_state* ts){ \
-	_vattr_file_init_$(shell echo ${ATTR} | \
-	sed 's: :(ts);_vattr_file_init_:g')(ts); \
-	}" >> $(temp_attr_file)
+	$(libv_path)/attr.sh --attr=$(ATTR) --out=$(temp_attr_file) \
+	--callback=lattr_file_concat_init
 endef
 
 define gen_cfun_file
-	cat $(shell echo ${CFUN}.cfun | sed 's: :.cfun :g') > $(temp_cfun_file)
-	echo "void lcfun_file_concat_init(vcontext* ctx,vmod* mod){ \
-	_lcfun_file_init_$(shell echo ${CFUN} | \
-	sed 's: :(ctx,mod);_lcfun_file_init_:g')(ctx,mod); \
-	}" >> $(temp_cfun_file)
+	$(libv_path)/cfun.sh --cfun=$(CFUN) --out=$(temp_cfun_file) \
+	--callback=lcfun_file_concat_init
 endef
 
 $(bin):$(temp_attr_file) $(temp_cfun_file) $(obj) $(v_sobj)
-	$(CC) $(obj) -L$(libv_path) -l$(v_sobj) -L$(libu_path) -l$(u_sobj) -o $(bin) -shared
+	$(CC) $(obj) -L$(libv_path) -l$(v_sobj) -L$(libu_path) -l$(u_sobj) \
+	-o $(bin) -shared
 .c.o:
 	$(CC) -c -o $@ $< -I $(libv_path) -I $(libu_path) $(CFLAGS) -fPIC
 $(temp_attr_file):
@@ -48,4 +43,5 @@ install:
 uninstall:
 	rm $(prefix)/$(bin)
 clean:
-	make -C $(libv_path) -f $(v_somk) clean;rm -f $(bin) $(obj) $(temp_attr_file) $(temp_cfun_file)
+	make -C $(libv_path) -f $(v_somk) clean; \
+	rm -f $(bin) $(obj) $(temp_attr_file) $(temp_cfun_file)

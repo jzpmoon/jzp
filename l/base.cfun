@@ -1,7 +1,7 @@
 /*
  *define cfun make-array
  */
-LDEFUN(make_array,"make-array",LSCOPE_GLOBAL,1,LRETVAL_YES,{
+VDEFUN(make_array,"make-array",VSCOPE_GLOBAL,1,VRETVAL_YES,{
     vslot slot;
     int array_length;
     vgc_array* array;
@@ -25,7 +25,7 @@ LDEFUN(make_array,"make-array",LSCOPE_GLOBAL,1,LRETVAL_YES,{
 /*
  *define cfun make-string
  */
-LDEFUN(make_string,"make-string",LSCOPE_GLOBAL,1,LRETVAL_YES,{
+VDEFUN(make_string,"make-string",VSCOPE_GLOBAL,1,VRETVAL_YES,{
     vslot slot;
     int string_length;
     vgc_string* string;
@@ -50,7 +50,7 @@ LDEFUN(make_string,"make-string",LSCOPE_GLOBAL,1,LRETVAL_YES,{
 /*
  *define cfun make-stream
  */
-LDEFUN(make_istream,"make-istream",LSCOPE_GLOBAL,1,LRETVAL_YES,{
+VDEFUN(make_istream,"make-istream",VSCOPE_GLOBAL,1,VRETVAL_YES,{
     vslot slot;
     vgc_obj* obj;
     vgc_string* string;
@@ -74,7 +74,7 @@ LDEFUN(make_istream,"make-istream",LSCOPE_GLOBAL,1,LRETVAL_YES,{
 /*
  *define cfun make-stream
  */
-LDEFUN(make_ostream,"make-ostream",LSCOPE_GLOBAL,1,LRETVAL_YES,{
+VDEFUN(make_ostream,"make-ostream",VSCOPE_GLOBAL,1,VRETVAL_YES,{
     vslot slot;
     vgc_obj* obj;
     vgc_string* string;
@@ -98,7 +98,7 @@ LDEFUN(make_ostream,"make-ostream",LSCOPE_GLOBAL,1,LRETVAL_YES,{
 /*
  *define cfun stream-output
  */
-LDEFUN(stream_output,"stream-output",LSCOPE_GLOBAL,2,LRETVAL_NO,{
+VDEFUN(stream_output,"stream-output",VSCOPE_GLOBAL,2,VRETVAL_NO,{
     URI_DEFINE;
     vslot slot = vcontext_params_get(ctx,0);
     vslot slot_stream = vcontext_params_get(ctx,1);
@@ -152,22 +152,22 @@ LDEFUN(stream_output,"stream-output",LSCOPE_GLOBAL,2,LRETVAL_NO,{
     return 0;
   });
 
-LDEFVAR(system_istream,"system-istream",LSCOPE_GLOBAL,{
+VDEFVAR(system_istream,"system-istream",VSCOPE_GLOBAL,{
     lobj_stream* lstream = lobj_istream_new_by_file(ctx->heap,stdin);
     return (vgc_obj*)lstream;
   });
 
-LDEFVAR(system_ostream,"system-ostream",LSCOPE_GLOBAL,{
+VDEFVAR(system_ostream,"system-ostream",VSCOPE_GLOBAL,{
     lobj_stream* lstream = lobj_ostream_new_by_file(ctx->heap,stdout);
     return (vgc_obj*)lstream;
   });
 
-LFUNONLOAD(base,{
-    LDECLFUN(make_array);
-    LDECLFUN(make_string);
-    LDECLFUN(make_istream);
-    LDECLFUN(make_ostream);
-    LDECLFUN(stream_output);
-    LDECLVAR(system_istream);
-    LDECLVAR(system_ostream);
+VFUNONLOAD(base,{
+    VDECLFUN(make_array);
+    VDECLFUN(make_string);
+    VDECLFUN(make_istream);
+    VDECLFUN(make_ostream);
+    VDECLFUN(stream_output);
+    VDECLVAR(system_istream);
+    VDECLVAR(system_ostream);
   })

@@ -1,5 +1,4 @@
 #include "vm.h"
-#include "vparser.h"
 
 #include "_ltemp.attr"
 

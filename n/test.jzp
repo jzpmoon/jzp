@@ -145,9 +145,9 @@
   (retvoid)
 )
 
-(test-output)
+;(test-output)
 
-;(test-find-maximum)
+(test-find-maximum)
 
 ;(test-fibonacci)
 

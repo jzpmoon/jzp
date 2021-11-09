@@ -1,0 +1,13 @@
+/*
+ * define attribute inst-tpl
+ */
+VDEFATTR(inst_tpl,"inst-tpl",{
+    return 0;
+})
+
+/*
+ * declare attribute
+ */
+VATTRONLOAD(autogen,{
+    VDECLATTR(inst_tpl);
+})

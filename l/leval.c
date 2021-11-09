@@ -1,6 +1,5 @@
 #include "lobj.h"
 #include "leval.h"
-#include "lcfun.h"
 
 vps_mod* leval_vps_load(leval* eval,char* file_path)
 {
