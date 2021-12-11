@@ -74,7 +74,8 @@ leval* lstartup(){
 
   reader = vreader_new(ctx->symtb,
 		       ctx->strtb,
-		       ltoken_state_attr_init);
+		       lattr_init,
+		       &vast_attr_symcall);
   if (!reader) {
     uabort("new reader error!");
   }

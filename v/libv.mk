@@ -1,6 +1,6 @@
 bin=libv.$(suf_so)
 obj=vm.o vcontext.o vgc.o vgc_obj.o vpass.o vgenbc.o vparser.o vreader.o \
-    vattr.o
+    vattr.o autogen.o
 temp_attr_file=_vtemp.attr
 
 lib_path=../u/

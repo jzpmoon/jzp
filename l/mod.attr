@@ -2,13 +2,15 @@
  * define attribute src-load
  */
 VDEFATTR(src_load,"src-load",{
+    vps_extra* ex;
     vtoken_state* ts;
     vast_obj* next;
     vast_obj* obj;
     vast_symbol* src_name;
     vps_mod* mod;
 
-    if (!VATTR_CONTEXT_FILE(req->parent)) {
+    ex = req->extra;
+    if (!VATTR_CONTEXT_FILE(ex->parent)) {
       uabort("src-load inst can not use here!");
     }
 
@@ -28,7 +30,7 @@ VDEFATTR(src_load,"src-load",{
       uabort("reader from error!");
     }
     
-    mod = vfile2vps(req->reader,src_name->name->value,req->vps);
+    mod = vfile2vps(req->reader,src_name->name->value,ex->vps);
     
     ulog("src-load");
     VATTR_RETURN_VOID;
@@ -38,12 +40,14 @@ VDEFATTR(src_load,"src-load",{
  * define attribute mod-load
  */
 VDEFATTR(mod_load,"mod-load",{
+    vps_extra* ex;
     vast_obj* next;
     vast_obj* obj;
     vast_symbol* mod_name;
     vps_mod* mod;
 
-    if (!VATTR_CONTEXT_FILE(req->parent)) {
+    ex = req->extra;
+    if (!VATTR_CONTEXT_FILE(ex->parent)) {
       uabort("subr inst can not use here!");
     }
 
@@ -58,7 +62,7 @@ VDEFATTR(mod_load,"mod-load",{
     }
     mod_name = (vast_symbol*)obj;
     
-    mod = vps_mod_new(req->vps,mod_name->name);
+    mod = vps_mod_new(ex->vps,mod_name->name);
     if (!mod) {
       uabort("vps mod new error");
     }

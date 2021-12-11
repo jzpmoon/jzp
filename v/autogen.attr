@@ -2,6 +2,12 @@
  * define attribute inst-tpl
  */
 VDEFATTR(inst_tpl,"inst-tpl",{
+    vast_obj* next;
+
+    next = vast_cdr(req->ast_obj);
+    if (!next) {
+      uabort("target instruction not define!");
+    }
     return 0;
 })
 

@@ -4,7 +4,8 @@
 
 vreader* vreader_new(ustring_table* symtb,
 		     ustring_table* strtb,
-		     vattr_init_ft ainit)
+		     vattr_init_ft ainit,
+		     vast_attr* dattr)
 {
   uhstb_vast_attr* attrtb;
   vreader* reader;
@@ -25,6 +26,9 @@ vreader* vreader_new(ustring_table* symtb,
   reader->strtb = strtb;
   reader->attrtb = attrtb;
   reader->ainit = ainit;
+  reader->dattr = dattr;
+
+  if (ainit) ainit(reader);
   
   return reader;
 }
@@ -45,7 +49,7 @@ vtoken_state* vreader_from(vreader* reader)
 			  reader->symtb,
 			  reader->strtb,
 			  reader->attrtb,
-			  reader->ainit);
+			  reader->dattr);
   return ts;
 }
 

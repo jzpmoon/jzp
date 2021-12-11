@@ -103,39 +103,31 @@ void vast_obj_log(vast_obj* ast_obj);
     {sname,NULL,_vast_attr_action_##aname};
 
 #define VATTRONLOAD(afname,body)			\
-  void _vattr_file_init_##afname(vtoken_state* ts){	\
+  void _vattr_file_init_##afname(vreader* reader){	\
     body						\
       }
 
-#define VATTR_CONTEXT_FILE(parent)					\
-  (parent->t == vcfgk_grp &&						\
-   ((vcfg_graph*)parent)->scope == VPS_SCOPE_ENTRY)
-
-#define VATTR_CONTEXT_SUBR(parent)			\
-  (parent->t == vcfgk_grp &&				\
-   ((vcfg_graph*)parent)->scope != VPS_SCOPE_ENTRY)
-
-#define VATTR_RETURN(type,vps)			\
+#define VATTR_RETURN(type,obj)			\
   do {						\
     res->res_type = type;			\
-    res->res_vps = (vps_t*)(vps);		\
+    res->res_obj = obj;				\
     return 1;					\
   } while(0)
 
 #define VATTR_RETURN_VOID return (0)
 
-#define VDECLATTR(aname) VATTR_INIT(ts,aname)
+#define VDECLATTR(aname) VATTR_INIT(reader,aname)
 
-#define VATTR_INIT(ts,aname)				\
+#define VATTR_INIT(reader,aname)			\
   do{							\
     _vast_attr_infor_##aname.name =			\
-      ustring_table_put(ts->symtb,			\
+      ustring_table_put((reader)->symtb,		\
 			_vast_attr_infor_##aname.sname,	\
 			-1);				\
     if(!_vast_attr_infor_##aname.name){			\
       uabort("init attr error!");			\
     }							\
-    uhstb_vast_attr_put(ts->attrtb,			\
+    uhstb_vast_attr_put((reader)->attrtb,		\
 			_vast_attr_infor_##aname.	\
 			name->				\
 			hash_code,			\
@@ -149,10 +141,6 @@ int vast_attr_put_comp(vast_attr* k1,vast_attr* k2);
 
 int vast_attr_get_comp(vast_attr* k1,vast_attr* k2);
 
-int vast2vps(vast_attr_req* req,vast_attr_res* res);
-
-UDECLFUN(UFNAME vfile2vps,
-	 UARGS (vreader* reader,char* file_path,vps_cntr* vps),
-	 URET vps_mod*);
+int vast2obj(vast_attr_req* req,vast_attr_res* res);
 
 #endif

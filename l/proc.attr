@@ -2,6 +2,7 @@
  * define attribute g-struct
  */
 VDEFATTR(g_struct,"g-struct",{
+    vps_extra* ex;
     vps_cntr* vps;
     vps_mod* top;
     vast_obj* next;
@@ -11,9 +12,10 @@ VDEFATTR(g_struct,"g-struct",{
     vps_type* struct_type;
     int count;
 
-    vps = req->vps;
-    top = req->top;
-    if (!VATTR_CONTEXT_FILE(req->parent)) {
+    ex = req->extra;
+    vps = ex->vps;
+    top = ex->top;
+    if (!VATTR_CONTEXT_FILE(ex->parent)) {
       uabort("src-load inst can not use here!");
     }
 
@@ -76,6 +78,7 @@ VDEFATTR(g_struct,"g-struct",{
  * define attribute struct
  */
 VDEFATTR(struct,"struct",{
+    vps_extra* ex;
     vps_cntr* vps;
     vps_mod* top;
     vast_obj* next;
@@ -85,9 +88,10 @@ VDEFATTR(struct,"struct",{
     vps_type* struct_type;
     int count;
 
-    vps = req->vps;
-    top = req->top;
-    if (!VATTR_CONTEXT_FILE(req->parent)) {
+    ex = req->extra;
+    vps = ex->vps;
+    top = ex->top;
+    if (!VATTR_CONTEXT_FILE(ex->parent)) {
       uabort("src-load inst can not use here!");
     }
 
@@ -148,11 +152,13 @@ VDEFATTR(struct,"struct",{
  * define attribute sizeof
  */
 VDEFATTR(sizeof,"sizeof",{
+    vps_extra* ex;
     vast_obj* next;
     vast_obj* obj;
     vast_symbol* type_name;
     vps_type* type;
-    
+
+    ex = req->extra;
     next = vast_cdr(req->ast_obj);
     if(!next || next->t != vastk_cons){
       uabort("sizeof error!");
@@ -163,7 +169,7 @@ VDEFATTR(sizeof,"sizeof",{
     }
     type_name = (vast_symbol*)obj;
     
-    type = vps_type_get(req->top,type_name->name);
+    type = vps_type_get(ex->top,type_name->name);
     if (!type) {
       uabort("struct undefine!");
     }
@@ -174,11 +180,13 @@ VDEFATTR(sizeof,"sizeof",{
  * define attribute indexof
  */
 VDEFATTR(indexof,"indexof",{
+    vps_extra* ex;
     vast_obj* next;
     vast_obj* obj;
     vast_symbol* type_name;
     vps_type* type;
     
+    ex = req->extra;
     next = vast_cdr(req->ast_obj);
     if(!next || next->t != vastk_cons){
       uabort("indexof error!");
@@ -189,7 +197,7 @@ VDEFATTR(indexof,"indexof",{
     }
     type_name = (vast_symbol*)obj;
 
-    type = vps_type_get(req->top,type_name->name);
+    type = vps_type_get(ex->top,type_name->name);
     if (!type) {
       uabort("struct member undefine!");
     }

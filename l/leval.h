@@ -24,7 +24,7 @@ leval* lstartup();
 
 int leval_load(leval* eval,char* file_path);
 
-void ltoken_state_attr_init(vtoken_state* ts);
+void lattr_init(vreader* reader);
 
 void lcfun_init(vcontext* ctx,vmod* mod);
 

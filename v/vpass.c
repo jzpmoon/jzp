@@ -2,6 +2,7 @@
 #include "ulist_tpl.c"
 #include "vbytecode.h"
 #include "vm.h"
+#include "vparser.h"
 #include "vpass.h"
 
 uhstb_def_tpl(vps_datap);
@@ -12,6 +13,137 @@ ulist_def_tpl(vpsp);
 ulist_def_tpl(vps_datap);
 ulist_def_tpl(vps_cfgp);
 ulist_def_tpl(vps_instp);
+
+static int symcall_action(vast_attr_req* req,
+			  vast_attr_res* res)
+{
+  vast_obj* ast_obj;
+  vps_extra* extra;
+  vps_cntr* vps;
+  vps_cfg* parent;
+  vcfg_graph* grp;
+  vps_inst* inst;
+  vast_obj* obj;
+  vast_obj* next;
+  vast_symbol* symbol;
+  
+  ast_obj = req->ast_obj;
+  extra = req->extra;
+  vps = extra->vps;
+  parent = extra->parent;
+  if (parent->t != vcfgk_grp) {
+    uabort("parent not a graph!");
+  }
+  grp = (vcfg_graph*)parent;
+  obj = vast_car(ast_obj);
+  symbol = (vast_symbol*)obj;
+
+  /* push params */
+  next = vast_cdr(ast_obj);
+  while (next) {
+    obj = vast_car(next);
+    if (obj->t == vastk_symbol) {
+      vast_symbol* sym = (vast_symbol*)obj;
+      inst = vps_ipushdt(vps,grp,sym->name);
+    }else if(obj->t == vastk_integer){
+      vast_integer* inte = (vast_integer*)obj;
+      inst = vps_ipushint(vps,grp,inte->name,inte->value);
+    }else if(obj->t == vastk_number){
+      vast_number* num = (vast_number*)obj;
+      inst = vps_ipushnum(vps,grp,num->name,num->value);
+    }else if(obj->t == vastk_string){
+      vast_string* str = (vast_string*)obj;
+      inst = vps_ipushstr(vps,grp,str->value);
+    }else{
+      uabort("push inst error!");
+      inst = NULL;
+    }
+    vcfg_grp_inst_apd(grp,inst);
+    next = vast_cdr(next);
+  }
+  /* push subr name */
+  inst = vps_ipushdt(vps,grp,symbol->name);
+  vcfg_grp_inst_apd(grp,inst);
+  /* call subr */
+  inst = vps_icall(vps);
+  vcfg_grp_inst_apd(grp,inst);
+
+  ulog0("symcall");
+  VATTR_RETURN_VOID;
+}
+
+vast_attr vast_attr_symcall = {NULL,NULL,symcall_action};
+
+UDEFUN(UFNAME vfile2vps,
+       UARGS (vreader* reader,char* file_path,vps_cntr* vps),
+       URET vps_mod*)
+UDECLARE
+  FILE* file;
+  vtoken_state* ts;
+  vps_mod* mod;
+  vast_obj* ast_obj;
+  ustring* mod_name;
+  vcfg_graph* grp;
+  vps_inst* inst;
+  vast_attr_req req;
+  vast_attr_res res;
+  vps_extra extra;
+UBEGIN
+  ts = vreader_from(reader);
+  if (!ts) {
+    uabort("reader from error!");
+  }
+  mod_name = ustring_table_put(ts->symtb,file_path,-1);
+  if (!mod_name) {
+    uabort("mod name put symtb error!");
+  }
+
+  mod = vps_mod_new(vps,mod_name);
+  if (!mod) {
+    uabort("new mod error!");
+  }
+  vps_cntr_load(vps,mod);
+  
+  file = fopen(file_path,"r");
+  if(!file){
+    uabort("open file error!");
+  }
+  
+  vtoken_state_reset(ts,file);
+
+  grp = vcfg_graph_new(vps,NULL);
+  if(!grp){
+    uabort("new grp error!");
+  }
+  grp->parent = (vps_t*)mod;
+  grp->scope = VPS_SCOPE_ENTRY;
+  mod->entry = grp;
+  extra.vps = vps;
+  extra.top = mod;
+  extra.parent = (vps_cfg*)grp;
+  req.extra = &extra;
+  req.reader = reader;
+  while(1){
+    ast_obj = vparser_parse(ts);
+    if (!ast_obj){
+      break;
+    }
+    vast_obj_log(ast_obj);
+    req.ast_obj = ast_obj;
+    vast2obj(&req,&res);
+  }
+  vtoken_state_close(ts);
+
+  inst = vps_iretvoid(vps);
+  vcfg_grp_inst_apd(grp,inst);
+
+  vcfg_grp_build(vps,grp);
+  vcfg_grp_connect(vps,grp);
+
+  vps_mod_loaded(mod);
+
+  return mod;
+UEND
 
 #define vps_cntr_nextnum(vps) \
   (vps)->seqnum++

@@ -27,8 +27,8 @@ if [ $attr != "" ]
 then
     echo "#include \"vparser.h\"" > $out
     cat $(echo ${attr}.attr | sed 's:,:.attr :g') >> $out
-    echo "void ${callback}(vtoken_state* ts){ \
+    echo "void ${callback}(vreader* reader){ \
             _vattr_file_init_$(echo ${attr} | \
-            sed 's:,:(ts);_vattr_file_init_:g')(ts); \
+            sed 's:,:(reader);_vattr_file_init_:g')(reader); \
           }" >> $out
 fi

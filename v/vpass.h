@@ -5,6 +5,7 @@
 #include "ugraph.h"
 #include "vgc_obj.h"
 #include "vgenbc.h"
+#include "vreader.h"
 
 #define VPSHEADER				\
   int t
@@ -187,6 +188,28 @@ typedef struct _vps_cntr{
 } vps_cntr;
 
 #define VPS_CNTR_MOD_TABLE_SIZE 17
+
+typedef struct _vps_extra{
+  vps_cntr* vps;
+  vps_mod* top;
+  vps_cfg* parent;
+} vps_extra;
+
+#define VATTR_CONTEXT_FILE(parent)					\
+  (parent->t == vcfgk_grp &&						\
+   ((vcfg_graph*)parent)->scope == VPS_SCOPE_ENTRY)
+
+#define VATTR_CONTEXT_SUBR(parent)			\
+  (parent->t == vcfgk_grp &&				\
+   ((vcfg_graph*)parent)->scope != VPS_SCOPE_ENTRY)
+
+enum { var_vps_apd };
+
+extern vast_attr vast_attr_symcall;
+
+UDECLFUN(UFNAME vfile2vps,
+	 UARGS (vreader* reader,char* file_path,vps_cntr* vps),
+	 URET vps_mod*);
 
 vps_inst*
 vps_inst_new(vps_cntr* vps,
