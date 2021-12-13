@@ -50,3 +50,8 @@ int virtb_load()
 #undef DF
   return 0;
 }
+
+int ir2target()
+{
+  return 0;
+}

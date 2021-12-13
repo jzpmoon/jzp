@@ -18,7 +18,7 @@ static int symcall_action(vast_attr_req* req,
 			  vast_attr_res* res)
 {
   vast_obj* ast_obj;
-  vps_extra* extra;
+  vps_jzp_req* jreq;
   vps_cntr* vps;
   vps_cfg* parent;
   vcfg_graph* grp;
@@ -28,9 +28,10 @@ static int symcall_action(vast_attr_req* req,
   vast_symbol* symbol;
   
   ast_obj = req->ast_obj;
-  extra = req->extra;
-  vps = extra->vps;
-  parent = extra->parent;
+  jreq = (vps_jzp_req*)req;
+  vps = jreq->vps;
+  parent = jreq->parent;
+  
   if (parent->t != vcfgk_grp) {
     uabort("parent not a graph!");
   }
@@ -85,9 +86,8 @@ UDECLARE
   ustring* mod_name;
   vcfg_graph* grp;
   vps_inst* inst;
-  vast_attr_req req;
+  vps_jzp_req req;
   vast_attr_res res;
-  vps_extra extra;
 UBEGIN
   ts = vreader_from(reader);
   if (!ts) {
@@ -118,10 +118,9 @@ UBEGIN
   grp->parent = (vps_t*)mod;
   grp->scope = VPS_SCOPE_ENTRY;
   mod->entry = grp;
-  extra.vps = vps;
-  extra.top = mod;
-  extra.parent = (vps_cfg*)grp;
-  req.extra = &extra;
+  req.vps = vps;
+  req.top = mod;
+  req.parent = (vps_cfg*)grp;
   req.reader = reader;
   while(1){
     ast_obj = vparser_parse(ts);
@@ -130,7 +129,7 @@ UBEGIN
     }
     vast_obj_log(ast_obj);
     req.ast_obj = ast_obj;
-    vast2obj(&req,&res);
+    vast2obj((vast_attr_req*)&req,&res);
   }
   vtoken_state_close(ts);
 

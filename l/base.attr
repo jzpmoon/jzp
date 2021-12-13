@@ -2,24 +2,19 @@
  * common function define subr
  */
 static vcfg_graph* subr(vast_attr_req* subreq,int scope)
-{ 
-  vps_cntr* vps;
-  vps_mod* top;
+{
+  vps_jzp_req* jreq;
   vast_obj* next;
   vast_obj* obj;
   vast_symbol* subr_name;
   vast_obj* args;
   vcfg_graph* grp;
-  vast_attr_req req;
-  vps_extra ex;
+  vps_jzp_req dreq;
 
-  ex = *(vps_extra*)subreq->extra;
-  vps = ex.vps;
-  top = ex.top;
-  req.extra = &ex;
-  req.reader = subreq->reader;
+  jreq = (vps_jzp_req*)subreq;
+  dreq = vast_req_dbl(jreq);
 
-  next = vast_cdr(subreq->ast_obj);
+  next = vast_cdr(jreq->ast_obj);
   if(!next || next->t != vastk_cons){
     uabort("subr error!");
   }
@@ -35,11 +30,11 @@ static vcfg_graph* subr(vast_attr_req* subreq,int scope)
     uabort("subr error!");
   }
 
-  grp = vcfg_graph_new(vps,subr_name->name);
+  grp = vcfg_graph_new(jreq->vps,subr_name->name);
   if(!grp){
     uabort("subr new cfg error!");
   }
-  grp->parent = (vps_t*)top;
+  grp->parent = (vps_t*)jreq->top;
   grp->scope = scope;
 
   obj = vast_car(next);
@@ -59,7 +54,7 @@ static vcfg_graph* subr(vast_attr_req* subreq,int scope)
 	uabort("arg not a symbol!");
       }
       sym = (vast_symbol*)arg;
-      data = vps_any_new(vps,sym->name);
+      data = vps_any_new(jreq->vps,sym->name);
       if(!data){
 	uabort("vps_any_new error!");
       }
@@ -71,7 +66,7 @@ static vcfg_graph* subr(vast_attr_req* subreq,int scope)
     }
   }
 
-  ex.parent = (vps_cfg*)grp;
+  dreq.parent = (vps_cfg*)grp;
   next = vast_cdr(next);
   /* instruction sequence */
   while(next){
@@ -93,20 +88,20 @@ static vcfg_graph* subr(vast_attr_req* subreq,int scope)
       vast_attr_res res;
       vast_attr* attr;
 
-      req.ast_obj = obj;
+      dreq.ast_obj = obj;
       attr = inst_name->attr;
-      if (attr == subreq->reader->dattr) {
+      if (attr == jreq->reader->dattr) {
 	uabort("not a inst!");
       }
-      (attr->action)(&req,&res);
+      (attr->action)((vast_attr_req*)&dreq,&res);
     } else {
       uabort("symbol not define attribute!");
     }
     next = vast_cdr(next);
   }
 
-  vcfg_grp_build(vps,grp);
-  vcfg_grp_connect(vps,grp);
+  vcfg_grp_build(jreq->vps,grp);
+  vcfg_grp_connect(jreq->vps,grp);
   
   return grp;
 }
@@ -115,15 +110,15 @@ static vcfg_graph* subr(vast_attr_req* subreq,int scope)
  * define attribute subr
  */
 VDEFATTR(g_subr,"g-subr",{
+    vps_jzp_req* jreq;
     vcfg_graph* grp;
-    vps_extra* ex;
 
-    ex = req->extra;
-    if (!VATTR_CONTEXT_FILE(ex->parent)) {
+    jreq = (vps_jzp_req*)req;
+    if (!VATTR_CONTEXT_FILE(jreq->parent)) {
       uabort("g-subr inst can not use here!");
     }
     grp = subr(req,VPS_SCOPE_GLOBAL);
-    vps_mod_code_put(ex->top,grp);
+    vps_mod_code_put(jreq->top,grp);
     VATTR_RETURN_VOID;
   })
   
@@ -131,15 +126,15 @@ VDEFATTR(g_subr,"g-subr",{
  * define attribute subr
  */
 VDEFATTR(subr,"subr",{
+    vps_jzp_req* jreq;
     vcfg_graph* grp;
-    vps_extra* ex;
 
-    ex = req->extra;
-    if (!VATTR_CONTEXT_FILE(ex->parent)) {
+    jreq = (vps_jzp_req*)req;
+    if (!VATTR_CONTEXT_FILE(jreq->parent)) {
       uabort("subr inst can not use here!");
     }
     grp = subr(req,VPS_SCOPE_LOCAL);
-    vps_mod_code_put(ex->top,grp);
+    vps_mod_code_put(jreq->top,grp);
     VATTR_RETURN_VOID;
   })
 
@@ -147,16 +142,16 @@ VDEFATTR(subr,"subr",{
  * define attribute g-var
  */
 VDEFATTR(g_var,"g-var",{
+    vps_jzp_req* jreq;
     vast_obj* obj;
     vast_obj* next;
-    vps_extra* ex;
 
-    ex = req->extra;
+    jreq = (vps_jzp_req*)req;
 
-    if (!VATTR_CONTEXT_FILE(ex->parent)) {
+    if (!VATTR_CONTEXT_FILE(jreq->parent)) {
       uabort("g-var inst can not use here!");
     }
-    next = vast_cdr(req->ast_obj);
+    next = vast_cdr(jreq->ast_obj);
     if(!next){
       uabort("g-var inst have no operand!");
     }
@@ -170,9 +165,9 @@ VDEFATTR(g_var,"g-var",{
     if(obj->t == vastk_symbol){
       vast_symbol* sym = (vast_symbol*)obj;
       vps_data* data;
-      data = vps_any_new(ex->vps,sym->name);
+      data = vps_any_new(jreq->vps,sym->name);
       data->scope = VPS_SCOPE_GLOBAL;
-      vps_mod_data_put(ex->top,data);
+      vps_mod_data_put(jreq->top,data);
     }else{
       uabort("g-var inst error!");
     }
@@ -184,22 +179,14 @@ VDEFATTR(g_var,"g-var",{
  * define attribute var
  */
 VDEFATTR(var,"var",{
-    vast_obj* ast_obj;
-    vps_cntr* vps;
-    vps_mod* top;
-    vps_cfg* parent;
+    vps_jzp_req* jreq;
     vast_obj* obj;
     vast_obj* next;
-    vps_extra* ex;
 
-    ast_obj = req->ast_obj;
-    ex = req->extra;
-    top = ex->top;
-    parent = ex->parent;
-    vps = ex->vps;
-
-    if (VATTR_CONTEXT_FILE(parent)) {
-      next = vast_cdr(ast_obj);
+    jreq = (vps_jzp_req*)req;
+    
+    if (VATTR_CONTEXT_FILE(jreq->parent)) {
+      next = vast_cdr(jreq->ast_obj);
       if (!next) {
 	uabort("var inst have no operand!");
       }
@@ -213,9 +200,9 @@ VDEFATTR(var,"var",{
       if (obj->t == vastk_symbol) {
 	vast_symbol* sym = (vast_symbol*)obj;
 	vps_data* data;
-	data = vps_any_new(vps,sym->name);
+	data = vps_any_new(jreq->vps,sym->name);
 	data->scope = VPS_SCOPE_LOCAL;
-	vps_mod_data_put(top,data);
+	vps_mod_data_put(jreq->top,data);
       } else {
 	uabort("var inst error!");
       }
@@ -231,28 +218,20 @@ VDEFATTR(var,"var",{
  * define attribute local
  */
 VDEFATTR(local,"local",{
-    vast_obj* ast_obj;
-    vps_cntr* vps;
-    vps_mod* top;
-    vps_cfg* parent;
+    vps_jzp_req* jreq;
     vast_obj* obj;
     vast_obj* next;
-    vps_extra* ex;
 
-    ast_obj = req->ast_obj;
-    ex = req->extra;
-    top = ex->top;
-    parent = ex->parent;
-    vps = ex->vps;
+    jreq = (vps_jzp_req*)req;
     
-    if(VATTR_CONTEXT_SUBR(parent)){
+    if(VATTR_CONTEXT_SUBR(jreq->parent)){
       vcfg_graph* grp;
 
-      grp = (vcfg_graph*)parent;
+      grp = (vcfg_graph*)jreq->parent;
       if (grp->insts->len > 0) {
 	uabort("local only allow use in front of inst!");
       }
-      next = vast_cdr(ast_obj);
+      next = vast_cdr(jreq->ast_obj);
       if(!next){
 	uabort("local inst have no operand!");
       }
@@ -269,7 +248,7 @@ VDEFATTR(local,"local",{
 	if(vcfg_grp_dtget(grp,sym->name)){
 	  uabort("local name:%s already exists!",sym->name->value);
 	}
-	data = vps_any_new(vps,sym->name);
+	data = vps_any_new(jreq->vps,sym->name);
 	data->idx = grp->locals->count;
 	data->scope = VPS_SCOPE_LOCAL;
 	vcfg_grp_locals_apd(grp,data);
@@ -287,26 +266,20 @@ VDEFATTR(local,"local",{
  * define attribute load
  */
 VDEFATTR(load,"load",{
-    vps_cntr* vps;
-    vps_mod* top;
-    vps_cfg* parent;
+    vps_jzp_req* jreq;
     vps_inst* inst;
     vast_obj* obj;
     vast_obj* next;
     vcfg_graph* grp;
-    vps_extra* ex;
 
     ulog0("load");
-    ex = req->extra;
-    vps = ex->vps;
-    top = ex->top;
-    parent = ex->parent;
+    jreq = (vps_jzp_req*)req;
     
-    if (!VATTR_CONTEXT_SUBR(parent)) {
+    if (!VATTR_CONTEXT_SUBR(jreq->parent)) {
       uabort("load inst can not use here!");
     }
-    grp = (vcfg_graph*)parent;
-    next = vast_cdr(req->ast_obj);
+    grp = (vcfg_graph*)jreq->parent;
+    next = vast_cdr(jreq->ast_obj);
     if(!next){
       uabort("load inst have no operand!");
     }
@@ -319,10 +292,10 @@ VDEFATTR(load,"load",{
     }
     if(obj->t == vastk_symbol){
       vast_symbol* sym = (vast_symbol*)obj;
-      inst = vps_iloaddt(vps,sym->name);
+      inst = vps_iloaddt(jreq->vps,sym->name);
     }else if(obj->t == vastk_integer){
       vast_integer* inte = (vast_integer*)obj;
-      inst = vps_iloadimm(vps,inte->value);
+      inst = vps_iloadimm(jreq->vps,inte->value);
     }else{
       uabort("load inst error!");
       inst = NULL;
@@ -335,22 +308,20 @@ VDEFATTR(load,"load",{
  * define attribute store
  */
 VDEFATTR(store,"store",{
-    vps_cfg* parent;
+    vps_jzp_req* jreq;
     vps_inst* inst;
     vast_obj* obj;
     vast_obj* next;
     vcfg_graph* grp;
-    vps_extra* ex;
 
     ulog0("store");
-    ex = req->extra;
-    parent = ex->parent;
+    jreq = (vps_jzp_req*)req;
     
-    if(!VATTR_CONTEXT_SUBR(parent)){
+    if(!VATTR_CONTEXT_SUBR(jreq->parent)){
       uabort("store inst can not use here!");
     }
-    grp = (vcfg_graph*)parent;
-    next = vast_cdr(req->ast_obj);
+    grp = (vcfg_graph*)jreq->parent;
+    next = vast_cdr(jreq->ast_obj);
     if(!next){
       uabort("store inst have no operand!");
     }
@@ -363,10 +334,10 @@ VDEFATTR(store,"store",{
     }
     if(obj->t == vastk_symbol){
       vast_symbol* sym = (vast_symbol*)obj;
-      inst = vps_istoredt(ex->vps,sym->name);
+      inst = vps_istoredt(jreq->vps,sym->name);
     }else if(obj->t == vastk_integer){
       vast_integer* inte = (vast_integer*)obj;
-      inst = vps_istoreimm(ex->vps,inte->value);
+      inst = vps_istoreimm(jreq->vps,inte->value);
     }else{
       uabort("store inst error!");      
       inst = NULL;
@@ -379,22 +350,20 @@ VDEFATTR(store,"store",{
  * define attribute push
  */
 VDEFATTR(push,"push",{
-    vps_cfg* parent;
+    vps_jzp_req* jreq;
     vcfg_graph* grp;
     vps_inst* inst;
     vast_obj* obj;
     vast_obj* next;
-    vps_extra* ex;
     
     ulog0("push");
-    ex = req->extra;
-    parent = ex->parent;
+    jreq = (vps_jzp_req*)req;
     
-    if(!VATTR_CONTEXT_SUBR(parent)){
+    if(!VATTR_CONTEXT_SUBR(jreq->parent)){
       uabort("push inst can not use here!");
     }
-    grp = (vcfg_graph*)parent;
-    next = vast_cdr(req->ast_obj);
+    grp = (vcfg_graph*)jreq->parent;
+    next = vast_cdr(jreq->ast_obj);
     if(!next){
       uabort("push inst have no operand!");
     }
@@ -407,23 +376,23 @@ VDEFATTR(push,"push",{
     }
     if(obj->t == vastk_symbol){
       vast_symbol* sym = (vast_symbol*)obj;
-      inst = vps_ipushdt(ex->vps,grp,sym->name);
+      inst = vps_ipushdt(jreq->vps,grp,sym->name);
     }else if(obj->t == vastk_integer){
       vast_integer* inte = (vast_integer*)obj;
-      inst = vps_ipushint(ex->vps,grp,inte->name,inte->value);
+      inst = vps_ipushint(jreq->vps,grp,inte->name,inte->value);
     }else if(obj->t == vastk_number){
       vast_number* num = (vast_number*)obj;
-      inst = vps_ipushnum(ex->vps,grp,num->name,num->value);
+      inst = vps_ipushnum(jreq->vps,grp,num->name,num->value);
     }else if(obj->t == vastk_string){
       vast_string* str = (vast_string*)obj;
-      inst = vps_ipushstr(ex->vps,grp,str->value);
+      inst = vps_ipushstr(jreq->vps,grp,str->value);
     }else if(obj->t == vastk_character){
       vast_character* chara = (vast_character*)obj;
-      inst = vps_ipushchar(ex->vps,grp,chara->value);
+      inst = vps_ipushchar(jreq->vps,grp,chara->value);
     }else if(obj->t == vastk_nil){
-      inst = vps_ipushnil(ex->vps,grp);
+      inst = vps_ipushnil(jreq->vps,grp);
     } else if (obj->t == vastk_cons) {
-      vast_attr_req new_req;
+      vps_jzp_req dreq;
       vast_obj* next;
       vast_symbol* sym;
       vast_attr* attr;
@@ -435,11 +404,11 @@ VDEFATTR(push,"push",{
       if (!obj || obj->t != vastk_symbol) {
 	uabort("push arg error!");
       }
-      new_req = *req;
+      dreq = vast_req_dbl(jreq);
       sym = (vast_symbol*)obj;
       attr = sym->attr;
-      new_req.ast_obj = next;
-      attr->action(&new_req,res);
+      dreq.ast_obj = next;
+      attr->action((vast_attr_req*)&dreq,res);
       if (res->res_type != var_vps_apd) {
 	uabort("push arg error!");
       }
@@ -452,7 +421,7 @@ VDEFATTR(push,"push",{
       }
       type = (vps_type*)vps_obj;
 
-      inst = vps_ipushint(ex->vps,grp,NULL,type->type_size);
+      inst = vps_ipushint(jreq->vps,grp,NULL,type->type_size);
     }else{
       uabort("push inst error!");
       inst = NULL;
@@ -464,22 +433,20 @@ VDEFATTR(push,"push",{
  * define attribute top
  */
 VDEFATTR(top,"top",{
-    vps_cfg* parent;
+    vps_jzp_req* jreq;
     vps_inst* inst;
     vast_obj* obj;
     vast_obj* next;
     vcfg_graph* grp;
-    vps_extra* ex;
     
     ulog0("top");
-    ex = req->extra;
-    parent = ex->parent;
+    jreq = (vps_jzp_req*)req;
     
-    if(!VATTR_CONTEXT_SUBR(parent)){
+    if(!VATTR_CONTEXT_SUBR(jreq->parent)){
       uabort("top inst can not use here!");
     }
-    grp = (vcfg_graph*)parent;
-    next = vast_cdr(req->ast_obj);
+    grp = (vcfg_graph*)jreq->parent;
+    next = vast_cdr(jreq->ast_obj);
     if(!next){
       uabort("top inst have no operand!");
     }
@@ -492,7 +459,7 @@ VDEFATTR(top,"top",{
     }
     if(obj->t == vastk_integer){
       vast_integer* inte = (vast_integer*)obj;
-      inst = vps_itop(ex->vps,inte->value);
+      inst = vps_itop(jreq->vps,inte->value);
     }else{
       uabort("top inst error!");
       inst = NULL;
@@ -505,22 +472,20 @@ VDEFATTR(top,"top",{
  * define attribute pop
  */
 VDEFATTR(pop,"pop",{
-    vps_cfg* parent;
+    vps_jzp_req* jreq;
     vcfg_graph* grp;
     vps_inst* inst;
     vast_obj* obj;
     vast_obj* next;
-    vps_extra* ex;
 
     ulog0("pop");
-    ex = req->extra;
-    parent = ex->parent;
+    jreq = (vps_jzp_req*)req;
     
-    if(!VATTR_CONTEXT_SUBR(parent)){
+    if(!VATTR_CONTEXT_SUBR(jreq->parent)){
       uabort("pop inst can not use here!");
     }
-    grp = (vcfg_graph*)parent;
-    next = vast_cdr(req->ast_obj);
+    grp = (vcfg_graph*)jreq->parent;
+    next = vast_cdr(jreq->ast_obj);
     if (next) {
       if (next->t != vastk_cons) {
 	uabort("top inst error!");
@@ -531,13 +496,13 @@ VDEFATTR(pop,"pop",{
       }
       if (obj->t == vastk_symbol) {
 	vast_symbol* sym = (vast_symbol*)obj;
-	inst = vps_ipopdt(ex->vps,grp,sym->name);
+	inst = vps_ipopdt(jreq->vps,grp,sym->name);
       } else {
 	uabort("pop inst error!");
 	inst = NULL;
       }
     } else {
-      inst = vps_ipopv(ex->vps);
+      inst = vps_ipopv(jreq->vps);
     }
     vcfg_grp_inst_apd(grp,inst);
     VATTR_RETURN_VOID;
@@ -547,20 +512,18 @@ VDEFATTR(pop,"pop",{
  * define attribute add
  */
 VDEFATTR(add,"add",{
-    vps_cfg* parent;
+    vps_jzp_req* jreq;
     vps_inst* inst;
     vcfg_graph* grp;
-    vps_extra* ex;
 
     ulog0("add");
-    ex = req->extra;
-    parent = ex->parent;
+    jreq = (vps_jzp_req*)req;
     
-    if(!VATTR_CONTEXT_SUBR(parent)){
+    if(!VATTR_CONTEXT_SUBR(jreq->parent)){
       uabort("add inst can not use here!");
     }
-    grp = (vcfg_graph*)parent;
-    inst = vps_iadd(ex->vps);
+    grp = (vcfg_graph*)jreq->parent;
+    inst = vps_iadd(jreq->vps);
     vcfg_grp_inst_apd(grp,inst);
     VATTR_RETURN_VOID;
   })
@@ -569,20 +532,18 @@ VDEFATTR(add,"add",{
  * define attribute sub
  */
 VDEFATTR(sub,"sub",{
-    vps_cfg* parent;
+    vps_jzp_req* jreq;
     vps_inst* inst;
     vcfg_graph* grp;
-    vps_extra* ex;
     
     ulog0("sub");
-    ex = req->extra;
-    parent = ex->parent;
+    jreq = (vps_jzp_req*)req;
     
-    if(!VATTR_CONTEXT_SUBR(parent)){
+    if(!VATTR_CONTEXT_SUBR(jreq->parent)){
       uabort("sub inst can not use here!");
     }
-    grp = (vcfg_graph*)parent;
-    inst = vps_isub(ex->vps);
+    grp = (vcfg_graph*)jreq->parent;
+    inst = vps_isub(jreq->vps);
     vcfg_grp_inst_apd(grp,inst);
     VATTR_RETURN_VOID;
   })
@@ -591,20 +552,18 @@ VDEFATTR(sub,"sub",{
  * define attribute mul
  */
 VDEFATTR(mul,"mul",{
-    vps_cfg* parent;
+    vps_jzp_req* jreq;
     vps_inst* inst;
     vcfg_graph* grp;
-    vps_extra* ex;
     
     ulog0("mul");
-    ex = req->extra;
-    parent = ex->parent;
+    jreq = (vps_jzp_req*)req;
 
-    if(!VATTR_CONTEXT_SUBR(parent)){
+    if(!VATTR_CONTEXT_SUBR(jreq->parent)){
       uabort("mul inst can not use here!");
     }
-    grp = (vcfg_graph*)parent;
-    inst = vps_imul(ex->vps);
+    grp = (vcfg_graph*)jreq->parent;
+    inst = vps_imul(jreq->vps);
     vcfg_grp_inst_apd(grp,inst);
     VATTR_RETURN_VOID;
   })
@@ -613,20 +572,18 @@ VDEFATTR(mul,"mul",{
  * define attribute div
  */
 VDEFATTR(div,"div",{
-    vps_cfg* parent;
+    vps_jzp_req* jreq;
     vps_inst* inst;
     vcfg_graph* grp;
-    vps_extra* ex;
     
     ulog0("div");
-    ex = req->extra;
-    parent = ex->parent;
+    jreq = (vps_jzp_req*)req;
     
-    if(!VATTR_CONTEXT_SUBR(parent)){
+    if(!VATTR_CONTEXT_SUBR(jreq->parent)){
       uabort("div inst can not use here!");
     }
-    grp = (vcfg_graph*)parent;
-    inst = vps_idiv(ex->vps);
+    grp = (vcfg_graph*)jreq->parent;
+    inst = vps_idiv(jreq->vps);
     vcfg_grp_inst_apd(grp,inst);
     VATTR_RETURN_VOID;
   })
@@ -635,22 +592,20 @@ VDEFATTR(div,"div",{
  * define attribute jmpi
  */
 VDEFATTR(jmpi,"jmpi",{
-    vps_cfg* parent;
+    vps_jzp_req* jreq;
     vps_inst* inst;
     vast_obj* obj;
     vast_obj* next;
     vcfg_graph* grp;
-    vps_extra* ex;
 
     ulog0("jmpi");
-    ex = req->extra;
-    parent = ex->parent;
+    jreq = (vps_jzp_req*)req;
     
-    if(!VATTR_CONTEXT_SUBR(parent)){
+    if(!VATTR_CONTEXT_SUBR(jreq->parent)){
       uabort("jmpi inst can not use here!");
     }
-    grp = (vcfg_graph*)parent;
-    next = vast_cdr(req->ast_obj);
+    grp = (vcfg_graph*)jreq->parent;
+    next = vast_cdr(jreq->ast_obj);
     if(!next){
       uabort("jmpi inst have no operand!");
     }
@@ -663,10 +618,10 @@ VDEFATTR(jmpi,"jmpi",{
     }
     if(obj->t == vastk_symbol){
       vast_symbol* symbol = (vast_symbol*)obj;
-      inst = vps_ijmpilb(ex->vps,symbol->name);
+      inst = vps_ijmpilb(jreq->vps,symbol->name);
     }else if(obj->t == vastk_integer){
       vast_integer* inte = (vast_integer*)obj;
-      inst = vps_ijmpiimm(ex->vps,inte->value);
+      inst = vps_ijmpiimm(jreq->vps,inte->value);
     }else{
       uabort("jmpi inst error!");
       inst = NULL;
@@ -679,22 +634,20 @@ VDEFATTR(jmpi,"jmpi",{
  * define attribute jmp
  */
 VDEFATTR(jmp,"jmp",{
-    vps_cfg* parent;
+    vps_jzp_req* jreq;
     vps_inst* inst;
     vast_obj* obj;
     vast_obj* next;
     vcfg_graph* grp;
-    vps_extra* ex;
 
     ulog0("jmp");
-    ex = req->extra;
-    parent = ex->parent;
+    jreq = (vps_jzp_req*)req;
     
-    if(!VATTR_CONTEXT_SUBR(parent)){
+    if(!VATTR_CONTEXT_SUBR(jreq->parent)){
       uabort("jmp inst can not use here!");
     }
-    grp = (vcfg_graph*)parent;
-    next = vast_cdr(req->ast_obj);
+    grp = (vcfg_graph*)jreq->parent;
+    next = vast_cdr(jreq->ast_obj);
     if(!next){
       uabort("jmp inst have no operand!");
     }
@@ -707,10 +660,10 @@ VDEFATTR(jmp,"jmp",{
     }
     if(obj->t == vastk_symbol){
       vast_symbol* symbol = (vast_symbol*)obj;
-      inst = vps_ijmplb(ex->vps,symbol->name);
+      inst = vps_ijmplb(jreq->vps,symbol->name);
     }else if(obj->t == vastk_integer){
       vast_integer* inte = (vast_integer*)obj;
-      inst = vps_ijmpimm(ex->vps,inte->value);
+      inst = vps_ijmpimm(jreq->vps,inte->value);
     }else{
       uabort("jmp inst error!");
       inst = NULL;
@@ -723,20 +676,18 @@ VDEFATTR(jmp,"jmp",{
  * define attribute eq
  */
 VDEFATTR(eq,"eq",{
-    vps_cfg* parent;
+    vps_jzp_req* jreq;
     vps_inst* inst;
     vcfg_graph* grp;
-    vps_extra* ex;
 
     ulog0("eq");
-    ex = req->extra;
-    parent = ex->parent;
+    jreq = (vps_jzp_req*)req;
     
-    if(!VATTR_CONTEXT_SUBR(parent)){
+    if(!VATTR_CONTEXT_SUBR(jreq->parent)){
       uabort("eq inst can not use here!");
     }
-    grp = (vcfg_graph*)parent;
-    inst = vps_ieq(ex->vps);
+    grp = (vcfg_graph*)jreq->parent;
+    inst = vps_ieq(jreq->vps);
     vcfg_grp_inst_apd(grp,inst);
     VATTR_RETURN_VOID;
   })
@@ -745,20 +696,18 @@ VDEFATTR(eq,"eq",{
  * define attribute gt
  */
 VDEFATTR(gt,"gt",{
-    vps_cfg* parent;
+    vps_jzp_req* jreq;
     vps_inst* inst;
     vcfg_graph* grp;
-    vps_extra* ex;
 
     ulog0("gt");
-    ex = req->extra;
-    parent = ex->parent;
+    jreq = (vps_jzp_req*)req;
     
-    if(!VATTR_CONTEXT_SUBR(parent)){
+    if(!VATTR_CONTEXT_SUBR(jreq->parent)){
       uabort("gt inst can not use here!");
     }
-    grp = (vcfg_graph*)parent;
-    inst = vps_igt(ex->vps);
+    grp = (vcfg_graph*)jreq->parent;
+    inst = vps_igt(jreq->vps);
     vcfg_grp_inst_apd(grp,inst);
     VATTR_RETURN_VOID;
   })
@@ -767,20 +716,18 @@ VDEFATTR(gt,"gt",{
  * define attribute lt
  */
 VDEFATTR(lt,"lt",{
-    vps_cfg* parent;
+    vps_jzp_req* jreq;
     vps_inst* inst;
     vcfg_graph* grp;
-    vps_extra* ex;
 
     ulog0("lt");
-    ex = req->extra;
-    parent = ex->parent;
+    jreq = (vps_jzp_req*)req;
     
-    if(!VATTR_CONTEXT_SUBR(parent)){
+    if(!VATTR_CONTEXT_SUBR(jreq->parent)){
       uabort("lt inst can not use here!");
     }
-    grp = (vcfg_graph*)parent;
-    inst = vps_ilt(ex->vps);
+    grp = (vcfg_graph*)jreq->parent;
+    inst = vps_ilt(jreq->vps);
     vcfg_grp_inst_apd(grp,inst);
     VATTR_RETURN_VOID;
   })
@@ -789,20 +736,18 @@ VDEFATTR(lt,"lt",{
  * define attribute and
  */
 VDEFATTR(and,"and",{
-    vps_cfg* parent;
+    vps_jzp_req* jreq;
     vps_inst* inst;
     vcfg_graph* grp;
-    vps_extra* ex;
 
     ulog0("and");
-    ex = req->extra;
-    parent = ex->parent;
+    jreq = (vps_jzp_req*)req;
     
-    if(!VATTR_CONTEXT_SUBR(parent)){
+    if(!VATTR_CONTEXT_SUBR(jreq->parent)){
       uabort("and inst can not use here!");
     }
-    grp = (vcfg_graph*)parent;
-    inst = vps_iand(ex->vps);
+    grp = (vcfg_graph*)jreq->parent;
+    inst = vps_iand(jreq->vps);
     vcfg_grp_inst_apd(grp,inst);
     VATTR_RETURN_VOID;
   })
@@ -811,20 +756,18 @@ VDEFATTR(and,"and",{
  * define attribute or
  */
 VDEFATTR(or,"or",{
-    vps_cfg* parent;
+    vps_jzp_req* jreq;
     vps_inst* inst;
     vcfg_graph* grp;
-    vps_extra* ex;
 
     ulog0("or");
-    ex = req->extra;
-    parent = ex->parent;
+    jreq = (vps_jzp_req*)req;
     
-    if(!VATTR_CONTEXT_SUBR(parent)){
+    if(!VATTR_CONTEXT_SUBR(jreq->parent)){
       uabort("or inst can not use here!");
     }
-    grp = (vcfg_graph*)parent;
-    inst = vps_ior(ex->vps);
+    grp = (vcfg_graph*)jreq->parent;
+    inst = vps_ior(jreq->vps);
     vcfg_grp_inst_apd(grp,inst);
     VATTR_RETURN_VOID;
   })
@@ -833,20 +776,18 @@ VDEFATTR(or,"or",{
  * define attribute not
  */
 VDEFATTR(not,"not",{
-    vps_cfg* parent;
+    vps_jzp_req* jreq;
     vps_inst* inst;
     vcfg_graph* grp;
-    vps_extra* ex;
 
     ulog0("not");
-    ex = req->extra;
-    parent = ex->parent;
+    jreq = (vps_jzp_req*)req;
     
-    if(!VATTR_CONTEXT_SUBR(parent)){
+    if(!VATTR_CONTEXT_SUBR(jreq->parent)){
       uabort("not inst can not use here!");
     }
-    grp = (vcfg_graph*)parent;
-    inst = vps_inot(ex->vps);
+    grp = (vcfg_graph*)jreq->parent;
+    inst = vps_inot(jreq->vps);
     vcfg_grp_inst_apd(grp,inst);
     VATTR_RETURN_VOID;
   })
@@ -855,20 +796,18 @@ VDEFATTR(not,"not",{
  * define attribute call
  */
 VDEFATTR(call,"call",{
-    vps_cfg* parent;
+    vps_jzp_req* jreq;
     vps_inst* inst;
     vcfg_graph* grp;
-    vps_extra* ex;
 
     ulog0("call");
-    ex = req->extra;
-    parent = ex->parent;
+    jreq = (vps_jzp_req*)req;
     
-    if(!VATTR_CONTEXT_SUBR(parent)){
+    if(!VATTR_CONTEXT_SUBR(jreq->parent)){
       uabort("call inst can not use here!");
     }
-    grp = (vcfg_graph*)parent;
-    inst = vps_icall(ex->vps);
+    grp = (vcfg_graph*)jreq->parent;
+    inst = vps_icall(jreq->vps);
     vcfg_grp_inst_apd(grp,inst);
     VATTR_RETURN_VOID;
   })
@@ -877,20 +816,18 @@ VDEFATTR(call,"call",{
  * define attribute return
  */
 VDEFATTR(return,"return",{
-    vps_cfg* parent;
+    vps_jzp_req* jreq;
     vps_inst* inst;
     vcfg_graph* grp;
-    vps_extra* ex;
 
     ulog0("return");
-    ex = req->extra;
-    parent = ex->parent;
+    jreq = (vps_jzp_req*)req;
     
-    if(!VATTR_CONTEXT_SUBR(parent)){
+    if(!VATTR_CONTEXT_SUBR(jreq->parent)){
       uabort("return inst can not use here!");
     }
-    grp = (vcfg_graph*)parent;
-    inst = vps_ireturn(ex->vps);
+    grp = (vcfg_graph*)jreq->parent;
+    inst = vps_ireturn(jreq->vps);
     vcfg_grp_inst_apd(grp,inst);
     VATTR_RETURN_VOID;
   })
@@ -899,20 +836,18 @@ VDEFATTR(return,"return",{
  * define attribute retvoid
  */
 VDEFATTR(retvoid,"retvoid",{
-    vps_cfg* parent;
+    vps_jzp_req* jreq;
     vps_inst* inst;
     vcfg_graph* grp;
-    vps_extra* ex;
 
     ulog0("retvoid");
-    ex = req->extra;
-    parent = ex->parent;
+    jreq = (vps_jzp_req*)req;
     
-    if(!VATTR_CONTEXT_SUBR(parent)){
+    if(!VATTR_CONTEXT_SUBR(jreq->parent)){
       uabort("retvoid inst can not use here!");
     }
-    grp = (vcfg_graph*)parent;
-    inst = vps_iretvoid(ex->vps);
+    grp = (vcfg_graph*)jreq->parent;
+    inst = vps_iretvoid(jreq->vps);
     vcfg_grp_inst_apd(grp,inst);
     VATTR_RETURN_VOID;
   })
@@ -921,22 +856,20 @@ VDEFATTR(retvoid,"retvoid",{
  * define attribute ref
  */
 VDEFATTR(ref,"ref",{
-    vps_cfg* parent;
+    vps_jzp_req* jreq;
     vps_inst* inst;
     vast_obj* obj;
     vast_obj* next;
     vcfg_graph* grp;
-    vps_extra* ex;
 
     ulog0("ref");
-    ex = req->extra;
-    parent = ex->parent;
+    jreq = (vps_jzp_req*)req;
     
-    if(!VATTR_CONTEXT_SUBR(parent)){
+    if(!VATTR_CONTEXT_SUBR(jreq->parent)){
       uabort("ref inst can not use here!");
     }
-    grp = (vcfg_graph*)parent;
-    next = vast_cdr(req->ast_obj);
+    grp = (vcfg_graph*)jreq->parent;
+    next = vast_cdr(jreq->ast_obj);
     if(!next){
       uabort("ref inst have no operand!");
     }
@@ -949,12 +882,12 @@ VDEFATTR(ref,"ref",{
     }
     if(obj->t == vastk_symbol){
       vast_symbol* sym = (vast_symbol*)obj;
-      inst = vps_irefdt(ex->vps,sym->name);
+      inst = vps_irefdt(jreq->vps,sym->name);
     }else if(obj->t == vastk_integer){
       vast_integer* inte = (vast_integer*)obj;
-      inst = vps_irefimm(ex->vps,inte->value);
+      inst = vps_irefimm(jreq->vps,inte->value);
     } else if (obj->t == vastk_cons) {
-      vast_attr_req new_req;
+      vps_jzp_req dreq;
       vast_obj* next;
       vast_symbol* sym;
       vast_attr* attr;
@@ -966,11 +899,11 @@ VDEFATTR(ref,"ref",{
       if (!obj || obj->t != vastk_symbol) {
 	uabort("ref arg error!");
       }
-      new_req = *req;
+      dreq = vast_req_dbl(jreq);
       sym = (vast_symbol*)obj;
       attr = sym->attr;
-      new_req.ast_obj = next;
-      attr->action(&new_req,res);
+      dreq.ast_obj = next;
+      attr->action((vast_attr_req*)&dreq,res);
       if (res->res_type != var_vps_apd) {
 	uabort("ref arg error!");
       }
@@ -983,7 +916,7 @@ VDEFATTR(ref,"ref",{
       }
       type = (vps_type*)vps_obj;
 
-      inst = vps_irefimm(ex->vps,type->type_index);
+      inst = vps_irefimm(jreq->vps,type->type_index);
     }else{
       uabort("ref inst error!");
       inst = NULL;
@@ -996,22 +929,20 @@ VDEFATTR(ref,"ref",{
  * define attribute set
  */
 VDEFATTR(set,"set",{
-    vps_cfg* parent;
+    vps_jzp_req* jreq;
     vps_inst* inst;
     vast_obj* obj;
     vast_obj* next;
     vcfg_graph* grp;
-    vps_extra* ex;
 
     ulog0("set");
-    ex = req->extra;
-    parent = ex->parent;
+    jreq = (vps_jzp_req*)req;
     
-    if(!VATTR_CONTEXT_SUBR(parent)){
+    if(!VATTR_CONTEXT_SUBR(jreq->parent)){
       uabort("set inst can not use here!");
     }
-    grp = (vcfg_graph*)parent;
-    next = vast_cdr(req->ast_obj);
+    grp = (vcfg_graph*)jreq->parent;
+    next = vast_cdr(jreq->ast_obj);
     if(!next){
       uabort("set inst have no operand!");
     }
@@ -1024,12 +955,12 @@ VDEFATTR(set,"set",{
     }
     if(obj->t == vastk_symbol){
       vast_symbol* sym = (vast_symbol*)obj;
-      inst = vps_isetdt(ex->vps,sym->name);
+      inst = vps_isetdt(jreq->vps,sym->name);
     }else if(obj->t == vastk_integer){
       vast_integer* inte = (vast_integer*)obj;
-      inst = vps_isetimm(ex->vps,inte->value);
+      inst = vps_isetimm(jreq->vps,inte->value);
     } else if (obj->t == vastk_cons) {
-      vast_attr_req new_req;
+      vps_jzp_req dreq;
       vast_obj* next;
       vast_symbol* sym;
       vast_attr* attr;
@@ -1041,11 +972,11 @@ VDEFATTR(set,"set",{
       if (!obj || obj->t != vastk_symbol) {
 	uabort("set arg error!");
       }
-      new_req = *req;
+      dreq = vast_req_dbl(jreq);
       sym = (vast_symbol*)obj;
       attr = sym->attr;
-      new_req.ast_obj = next;
-      attr->action(&new_req,res);
+      dreq.ast_obj = next;
+      attr->action((vast_attr_req*)&dreq,res);
       if (res->res_type != var_vps_apd) {
 	uabort("set arg error!");
       }
@@ -1058,7 +989,7 @@ VDEFATTR(set,"set",{
       }
       type = (vps_type*)vps_obj;
 
-      inst = vps_isetimm(ex->vps,type->type_index);
+      inst = vps_isetimm(jreq->vps,type->type_index);
     }else{
       uabort("set inst error!");
       inst = NULL;
@@ -1071,22 +1002,20 @@ VDEFATTR(set,"set",{
  * define attribute label
  */
 VDEFATTR(label,"label",{
-    vps_cfg* parent;
+    vps_jzp_req* jreq;
     vps_inst* inst;
     vast_obj* obj;
     vast_obj* next;
     vcfg_graph* grp;
-    vps_extra* ex;
 
     ulog0("label");
-    ex = req->extra;
-    parent = ex->parent;
+    jreq = (vps_jzp_req*)req;
     
-    if(!VATTR_CONTEXT_SUBR(parent)){
+    if(!VATTR_CONTEXT_SUBR(jreq->parent)){
       uabort("label inst can not use here!");
     }
-    grp = (vcfg_graph*)parent;
-    next = vast_cdr(req->ast_obj);
+    grp = (vcfg_graph*)jreq->parent;
+    next = vast_cdr(jreq->ast_obj);
     if(!next){
       uabort("label inst have no operand!");
     }
@@ -1099,7 +1028,7 @@ VDEFATTR(label,"label",{
     }
     if (obj->t == vastk_symbol) {
       vast_symbol* symbol = (vast_symbol*)obj;
-      inst = vps_ilabel(ex->vps,symbol->name);
+      inst = vps_ilabel(jreq->vps,symbol->name);
     } else {
       uabort("label inst error!");
       inst = NULL;
@@ -1112,20 +1041,18 @@ VDEFATTR(label,"label",{
  * define attribute nop
  */
 VDEFATTR(nop,"nop",{
-    vps_cfg* parent;
+    vps_jzp_req* jreq;
     vps_inst* inst;
     vcfg_graph* grp;
-    vps_extra* ex;
 
     ulog0("nop");
-    ex = req->extra;
-    parent = ex->parent;
+    jreq = (vps_jzp_req*)req;
     
-    if (!VATTR_CONTEXT_SUBR(parent)) {
+    if (!VATTR_CONTEXT_SUBR(jreq->parent)) {
       uabort("nop inst can not use here!");
     }
-    grp = (vcfg_graph*)parent;
-    inst = vps_inop(ex->vps);
+    grp = (vcfg_graph*)jreq->parent;
+    inst = vps_inop(jreq->vps);
     vcfg_grp_inst_apd(grp,inst);
     VATTR_RETURN_VOID;
   })

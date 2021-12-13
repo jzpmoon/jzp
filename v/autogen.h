@@ -18,3 +18,5 @@ virtb* virtb_new();
 int virtb_put(virtb* irtb,int ir_no,char* ir_str,int ir_code,int ir_len);
 
 int virtb_load();
+
+int ir2target();

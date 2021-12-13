@@ -147,8 +147,8 @@
 
 ;(test-output)
 
-(test-find-maximum)
+;(test-find-maximum)
 
-;(test-fibonacci)
+(test-fibonacci)
 
 ;(test-string)

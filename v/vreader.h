@@ -14,11 +14,15 @@ typedef struct _vast_obj{
   VASTHEADER;
 } vast_obj;
 
+#define VAST_ATTR_REQ_HEADER \
+  struct _vreader* reader;   \
+  vast_obj* ast_obj
+
 typedef struct _vast_attr_req{
-  struct _vreader* reader;
-  vast_obj* ast_obj;
-  void* extra;
+  VAST_ATTR_REQ_HEADER;
 } vast_attr_req;
+
+#define vast_req_dbl(req) *(req)
 
 /*
  * field member "res_type" from above enum.

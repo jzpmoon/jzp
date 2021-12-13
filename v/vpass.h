@@ -189,11 +189,12 @@ typedef struct _vps_cntr{
 
 #define VPS_CNTR_MOD_TABLE_SIZE 17
 
-typedef struct _vps_extra{
+typedef struct _vps_jzp_req{
+  VAST_ATTR_REQ_HEADER;
   vps_cntr* vps;
   vps_mod* top;
   vps_cfg* parent;
-} vps_extra;
+} vps_jzp_req;
 
 #define VATTR_CONTEXT_FILE(parent)					\
   (parent->t == vcfgk_grp &&						\

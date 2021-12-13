@@ -2,19 +2,20 @@
  * define attribute src-load
  */
 VDEFATTR(src_load,"src-load",{
-    vps_extra* ex;
+    vps_jzp_req* jreq;
     vtoken_state* ts;
     vast_obj* next;
     vast_obj* obj;
     vast_symbol* src_name;
     vps_mod* mod;
 
-    ex = req->extra;
-    if (!VATTR_CONTEXT_FILE(ex->parent)) {
+    jreq = (vps_jzp_req*)req;
+
+    if (!VATTR_CONTEXT_FILE(jreq->parent)) {
       uabort("src-load inst can not use here!");
     }
 
-    next = vast_cdr(req->ast_obj);
+    next = vast_cdr(jreq->ast_obj);
     if(next == NULL || next->t != vastk_cons){
       uabort("src load error because have no src name!");
     }
@@ -25,12 +26,12 @@ VDEFATTR(src_load,"src-load",{
     }
     src_name = (vast_symbol*)obj;
 
-    ts = vreader_from(req->reader);
+    ts = vreader_from(jreq->reader);
     if (!ts) {
       uabort("reader from error!");
     }
     
-    mod = vfile2vps(req->reader,src_name->name->value,ex->vps);
+    mod = vfile2vps(jreq->reader,src_name->name->value,jreq->vps);
     
     ulog("src-load");
     VATTR_RETURN_VOID;
@@ -40,18 +41,19 @@ VDEFATTR(src_load,"src-load",{
  * define attribute mod-load
  */
 VDEFATTR(mod_load,"mod-load",{
-    vps_extra* ex;
+    vps_jzp_req* jreq;
     vast_obj* next;
     vast_obj* obj;
     vast_symbol* mod_name;
     vps_mod* mod;
 
-    ex = req->extra;
-    if (!VATTR_CONTEXT_FILE(ex->parent)) {
+    jreq = (vps_jzp_req*)req;
+
+    if (!VATTR_CONTEXT_FILE(jreq->parent)) {
       uabort("subr inst can not use here!");
     }
 
-    next = vast_cdr(req->ast_obj);
+    next = vast_cdr(jreq->ast_obj);
     if(next == NULL || next->t != vastk_cons){
       uabort("mod load error because have no src name!");
     }
@@ -62,7 +64,7 @@ VDEFATTR(mod_load,"mod-load",{
     }
     mod_name = (vast_symbol*)obj;
     
-    mod = vps_mod_new(ex->vps,mod_name->name);
+    mod = vps_mod_new(jreq->vps,mod_name->name);
     if (!mod) {
       uabort("vps mod new error");
     }
