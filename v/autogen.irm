@@ -1,0 +1,15 @@
+;; instruction template
+
+(inst-tpl (load x)
+          (load x))
+
+(inst-tpl (store x)
+          (store x))
+
+(inst-tpl (push x)
+	  (push x))
+
+(inst-tpl pushv pushv)
+
+(inst-tpl (pop x)
+	  (pop x))
