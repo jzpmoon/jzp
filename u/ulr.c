@@ -51,6 +51,11 @@ ulritem* ulritem_new(ulrprod* prod,int dot)
   return item;
 }
 
+ulrgram* ulrgram_new()
+{
+  return NULL;
+}
+
 ulrset* ulrgram_start_set_get(ulrgram* gram)
 {
   ulrset* itemset;

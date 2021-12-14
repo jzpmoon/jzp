@@ -1,9 +1,7 @@
-#include "autogen.h"
+#include "vag.h"
 #include "_vtemp.attr"
 
-void vattr_init(vreader* reader){
-  if (virtb_load()) {
-    uabort("ir load error!");
-  }
+void vattr_init(vreader* reader)
+{
   vattr_file_concat_init(reader);
 }
