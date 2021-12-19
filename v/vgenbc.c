@@ -1,21 +1,24 @@
-#include "ulist_tpl.c"
 #include "vgenbc.h"
 
-ulist_def_tpl(vinstp);
-
-usize_t
-vinst_full_length(ulist_vinstp* insts){
+static usize_t
+inst_full_length(ulist_vps_instp* insts)
+{
   ucursor cursor;
   usize_t length = 0;
+  
   insts->iterate(&cursor);
-  while(1){
-    vinstp* inst = insts->next((uset*)insts,&cursor);
-    if(!inst){
+  while (1) {
+    vps_instp* inst = insts->next((uset*)insts,&cursor);
+    if (!inst) {
       break;
     }
-    switch((*inst)->opcode){
+    switch ((*inst)->opc.opcode) {
 #define DF(code,name,value,len)			\
-      case (code):length+=len;break;
+      case code:				\
+	if (vbytecode_is_vaild(value)) {	\
+	  length += len;			\
+	}					\
+	break;
       VBYTECODE
 #undef DF
     }
@@ -23,20 +26,26 @@ vinst_full_length(ulist_vinstp* insts){
   return length;
 }
 
-usize_t
-vinst_byte_length(ulist_vinstp* insts,usize_t offset){
+static usize_t
+inst_byte_length(ulist_vps_instp* insts,usize_t offset)
+{
   usize_t i      = 0;
   usize_t length = 0;
   ucursor cursor;
+  
   insts->iterate(&cursor);
-  while(i < offset){
-    vinstp* inst = insts->next((uset*)insts,&cursor);
-    if(!inst){
+  while (i < offset) {
+    vps_instp* inst = insts->next((uset*)insts,&cursor);
+    if (!inst) {
       break;
     }
-    switch((*inst)->opcode){
+    switch ((*inst)->opc.opcode) {
 #define DF(code,name,value,len)			\
-      case (code):length+=len;break;
+      case code:				\
+	if (vbytecode_is_vaild(value)) {	\
+	  length += len;			\
+	}					\
+	break;
       VBYTECODE
 #undef DF
     }
@@ -45,48 +54,55 @@ vinst_byte_length(ulist_vinstp* insts,usize_t offset){
   return length;
 }
 
-vgc_string* vinst_to_str(vgc_heap* heap,ulist_vinstp* insts){
+vgc_string* vps_inst_to_str(vgc_heap* heap,ulist_vps_instp* insts)
+{
   ucursor cursor;
-  usize_t byte_count = 0;
-  usize_t length = vinst_full_length(insts);
+  usize_t byte_count;
+  usize_t length;
   vgc_string* str;
+  
+  byte_count = 0;
+  length = inst_full_length(insts);
   str = vgc_string_new(heap,
 		       length,
 		       vgc_heap_area_static);
-  if(!str){
-    uabort("vinst_to_str:vgc_string new error!");
+  if (!str) {
+    return NULL;
   }
   insts->iterate(&cursor);
-  while(1){
-    vinstp* instp = insts->next((uset*)insts,&cursor);
-    vinst* inst;
-    if(!instp){
+  while (1) {
+    vps_instp* instp = insts->next((uset*)insts,&cursor);
+    vps_inst* inst;
+    if (!instp) {
       break;
     }
     inst = *instp;
-    switch(inst->opcode){
-#define DF(ocode,name,value,len)					\
-      case (ocode):{							\
-	int i = 0;							\
-	usize_t operand;						\
-	if (len < 1) break;						\
-	if(ocode == Bjmp || ocode == Bjmpi){				\
-	  operand = vinst_byte_length(insts,				\
-				      inst->operand);			\
-	}else{								\
-	  operand = inst->operand;					\
-	}								\
-	str->u.b[byte_count++] = inst->opcode;				\
-	while (i < len - 1) {						\
-	  str->u.b[byte_count++] = operand>>(8*i);			\
-	  i++;								\
-	}								\
-	break;								\
+    switch (inst->opc.opcode) {
+#define DF(ocode,name,value,len)				\
+      case ocode: {						\
+	int i = 0;						\
+	usize_t operand;					\
+	if (!vbytecode_is_vaild(value)) break;			\
+	str->u.b[byte_count++] = ocode;				\
+	if (len > 1) {						\
+	  if (vps_inst_opck_get(inst) == viopck_branch) {	\
+	    operand = vps_inst_imm_get(inst);			\
+	    operand = inst_byte_length(insts,			\
+				       operand);		\
+	  } else {						\
+	    operand = vps_inst_imm_get(inst);			\
+	  }							\
+	  while (i < len - 1) {					\
+	    str->u.b[byte_count++] = operand>>(8*i);		\
+	    i++;						\
+	  }							\
+	}							\
+	break;							\
       }						
       VBYTECODE				
 #undef DF
-	}
-  };
+    }
+  }
 
   return str;
 }

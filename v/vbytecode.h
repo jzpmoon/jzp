@@ -29,5 +29,9 @@
   DF(Bretvoid,"retvoid",0376,1)						\
   DF(Bnop,"nop",0377,1)							\
   									\
-  DF(Vlabel,"label",0400,0)
+  DF(Vlabel,"label",0400,2)
+
+#define vbytecode_is_vaild(value)		\
+  (value < 0400)
+
 #endif

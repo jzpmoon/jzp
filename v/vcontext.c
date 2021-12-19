@@ -9,11 +9,11 @@ uhstb_def_tpl(vsymbol);
 static void gdata_load(vcontext* ctx,vmod* mod,vps_data* data);
 static void ldata_load(vgc_heap* heap,vgc_array* consts,vps_data* data);
 static vslot data2data(vgc_heap* heap,vps_data* data);
-static int inst2inst(vgc_array* consts,
-		     ulist_vps_cfgp* cfgs,
-		     vcfg_block* blk,
-		     vmod* mod,
-		     ulist_vinstp* insts);
+static int insts_concat(vgc_array* consts,
+			ulist_vps_cfgp* cfgs,
+			vcfg_block* blk,
+			vmod* mod,
+			ulist_vps_instp* insts);
 
 #define VCONTEXT_MODTB_SIZE 17
 #define VCONTEXT_OBJTB_SIZE 17
@@ -174,34 +174,46 @@ static int get_insts_count(ulist_vps_cfgp* cfgs,vps_id id)
   return insts_count;
 }
 
-static int inst2inst(vgc_array* consts,
-		     ulist_vps_cfgp* cfgs,
-		     vcfg_block* blk,
-		     vmod* mod,
-		     ulist_vinstp* insts)
+static int insts_concat(vgc_array* consts,
+			ulist_vps_cfgp* cfgs,
+			vcfg_block* blk,
+			vmod* mod,
+			ulist_vps_instp* insts)
 {
-  ulist_vps_instp* src_insts;
+  /*part insts*/
+  ulist_vps_instp* pinsts;
   ucursor cursor;
 
-  src_insts = blk->insts;
+  pinsts = blk->insts;
   insts->iterate(&cursor);
 
   while(1){
-    vps_instp* instp = insts->next((uset*)src_insts,&cursor);
-    vps_inst* src_inst;
-    vinst* inst;
+    vps_instp* instp = insts->next((uset*)pinsts,&cursor);
+    vps_inst* pinst;
 
     if (!instp) {
       break;
     }
-    src_inst = *instp;
-    switch (vps_inst_opek_get(src_inst)) {
+    pinst = *instp;
+#define DF(code,name,value,len)			\
+    case code:					\
+      if (len > 1) {				\
+	goto l1;				\
+      }else {					\
+	goto l2;				\
+      }						\
+      break;
+    switch (pinst->opc.opcode) {
+      VBYTECODE
+#undef DF
+    }
+  l1:
+    switch (vps_inst_opek_get(pinst)) {
     case vinstk_imm:
-      inst = &src_inst->inst;
-      if(src_inst->data){
-	inst->operand = src_inst->data->idx;
+      if(pinst->ope[0].data){
+	vps_inst_imm_set(pinst,pinst->ope[0].data->idx);
       }
-      ulist_vinstp_append(insts,inst);
+      ulist_vps_instp_append(insts,pinst);
       ulog("inst imm");
       break;
     case vinstk_locdt:
@@ -214,52 +226,52 @@ static int inst2inst(vgc_array* consts,
 	  uabort("vcfg_block have no parent!");
 	}
 	grp = (vcfg_graph*)cfg;
-	data = vcfg_grp_dtget(grp,src_inst->label);
+	data = vcfg_grp_dtget(grp,pinst->ope[0].label);
 	if(!data){
-	  uabort("local variable: %s not find",src_inst->label->value);
+	  uabort("local variable: %s not find",pinst->ope[0].label->value);
 	}
-	inst = &src_inst->inst;
-	inst->operand = data->idx;
-	ulist_vinstp_append(insts,inst);
+	vps_inst_imm_set(pinst,data->idx);
+	ulist_vps_instp_append(insts,pinst);
 	ulog("inst local data");
       }
       break;
     case vinstk_glodt:
       {
-	vps_data* data = src_inst->data;
+	vps_data* data = pinst->ope[0].data;
 	vreloc reloc;
 
 	reloc.ref_name = data->name;
 	reloc.rel_idx = data->idx;
 	reloc.rel_obj = consts;
 	vmod_add_reloc(mod,reloc);
-	inst = &src_inst->inst;
-	inst->operand = data->idx;
-	ulist_vinstp_append(insts,inst);
-	ulog("inst global data");      
+	vps_inst_imm_set(pinst,data->idx);
+	ulist_vps_instp_append(insts,pinst);
+	ulog("inst global data");
       }
       break;
     case vinstk_code:
       {
 	int insts_count;
 
-	inst = &src_inst->inst;
-	insts_count = get_insts_count_by_name(cfgs,src_inst->label);
-	inst->operand = insts_count;
-	ulist_vinstp_append(insts,inst);
+	insts_count = get_insts_count_by_name(cfgs,pinst->ope[0].label);
+	vps_inst_imm_set(pinst,insts_count);
+	ulist_vps_instp_append(insts,pinst);
 	ulog("inst code");
       }
       break;
     case vinstk_non:
       {
-	inst = &src_inst->inst;
-	ulist_vinstp_append(insts,inst);
+	ulist_vps_instp_append(insts,pinst);
 	ulog("inst non");
       }
       break;
     default:
       break;
     }
+    continue;
+  l2:
+    ulist_vps_instp_append(insts,pinst);
+    ulog("inst non operand");
   }
   return 0;
 }
@@ -309,12 +321,13 @@ static vslot data2data(vgc_heap* heap,vps_data* data)
   return slot;
 }
 
-vgc_subr* vcontext_graph_load(vcontext* ctx,vmod* mod,vcfg_graph* grp){
+vgc_subr* vcontext_graph_load(vcontext* ctx,vmod* mod,vcfg_graph* grp)
+{
   vgc_heap* heap;
   vgc_array* consts;
   ulist_vps_datap* imms;
   ulist_vps_cfgp* cfgs;
-  ulist_vinstp* insts;
+  ulist_vps_instp* insts;
   vgc_string* bytecode;
   vgc_subr* subr;
   ucursor cursor;
@@ -323,30 +336,33 @@ vgc_subr* vcontext_graph_load(vcontext* ctx,vmod* mod,vcfg_graph* grp){
   consts = vgc_array_new(heap,
 			 grp->imms->len,
 			 vgc_heap_area_static);
-  if(!consts){
+  if (!consts) {
     uabort("subr consts new error!");
   }
   /* load code */
   cfgs = grp->cfgs;
-  insts = ulist_vinstp_alloc(&ctx->mp.allocator);
+  insts = ulist_vps_instp_alloc(&ctx->mp.allocator);
   
   cfgs->iterate(&cursor);
-  while(1){
+  while (1) {
     vps_cfgp* cfgp = cfgs->next((uset*)cfgs,&cursor);
     vcfg_block* blk;
-    if(!cfgp){
+    if (!cfgp) {
       break;
     }
-    if((*cfgp)->t != vcfgk_blk){
+    if ((*cfgp)->t != vcfgk_blk) {
       uabort("vps_cfg not a block!");
     }
     blk = (vcfg_block*)(*cfgp);
-    if(inst2inst(consts,cfgs,blk,mod,insts)){
-      uabort("inst2inst error!");
+    if (insts_concat(consts,cfgs,blk,mod,insts)) {
+      uabort("insts concat error!");
     }
   }
 
-  bytecode = vinst_to_str(heap,insts);
+  bytecode = vps_inst_to_str(heap,insts);
+  if (!bytecode) {
+    uabort("vps inst to str error!");
+  }
   vcontext_obj_push(ctx,bytecode);
   vcontext_obj_push(ctx,consts);
   subr = vgc_subr_new(ctx,

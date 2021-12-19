@@ -4,7 +4,6 @@
 #include "ulist_tpl.h"
 #include "ugraph.h"
 #include "vgc_obj.h"
-#include "vgenbc.h"
 #include "vreader.h"
 
 #define VPSHEADER				\
@@ -71,31 +70,44 @@ enum viopek{
   vinstk_non,
 };
 
-typedef struct _vps_inst{
-  VPSHEADER;
-  struct {
-    unsigned char iopck : 4;
-    unsigned char iopek : 4;
-  } _instk;
-  vinst inst;
+typedef struct _vps_opc{
+  unsigned char iopck;
+  usize_t opcode;
+} vps_opc;
+
+typedef struct _vps_ope{
+  unsigned char iopek;
+  usize_t operand;
   ustring* label;
   vps_data* data;
+} vps_ope;
+
+typedef struct _vps_inst{
+  VPSHEADER;
+  vps_opc opc;
+  vps_ope ope[1];
 } vps_inst,*vps_instp;
 
 #define vps_inst_opck_get(inst)			\
-  (inst)->_instk.iopck
+  (inst)->opc.iopck
 
 #define vps_inst_opck_set(inst,k)		\
-  (inst)->_instk.iopck = k
+  (inst)->opc.iopck = k
 
 #define vps_inst_opek_get(inst)			\
-  (inst)->_instk.iopek
+  (inst)->ope[0].iopek
 
 #define vps_inst_opek_set(inst,k)		\
-  (inst)->_instk.iopek = k
+  (inst)->ope[0].iopek = k
 
 #define vps_inst_isret(inst)			\
-  ((inst)->_instk.iopck == viopck_ret)
+  ((inst)->opc.iopck == viopck_ret)
+
+#define vps_inst_imm_set(inst,imm)		\
+  (inst)->ope[0].operand = imm
+
+#define vps_inst_imm_get(inst)			\
+  (inst)->ope[0].operand
 
 typedef struct _vps_type{
   VPSHEADER;
