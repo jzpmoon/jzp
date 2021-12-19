@@ -1,19 +1,51 @@
 /*
+ * define attribute opcode define
+ */
+VDEFATTR(opcode_def,"opcode-def",{
+    vir_attr_req* ireq;
+
+    ireq = (vir_attr_req*)req;
+
+    VATTR_RETURN_VOID;
+})
+
+/*
+ * define attribute opcode define
+ */
+VDEFATTR(operand_def,"operand-def",{
+    vir_attr_req* ireq;
+
+    ireq = (vir_attr_req*)req;
+
+    VATTR_RETURN_VOID;
+})
+
+/*
  * define attribute inst-tpl
  */
 VDEFATTR(inst_tpl,"inst-tpl",{
+    vir_attr_req* ireq;
     vast_obj* next;
+    vast_obj* obj;
 
-    next = vast_cdr(req->ast_obj);
+    ireq = (vir_attr_req*)req;
+    next = vast_cdr(ireq->ast_obj);
     if (!next) {
-      uabort("target instruction not define!");
+      uabort("instruction not define!");
     }
-    return 0;
+    obj = vast_car(next);
+    if (!obj) {
+      uabort("target instruction not define!");      
+    }
+
+    VATTR_RETURN_VOID;
 })
 
 /*
  * declare attribute
  */
 VATTRONLOAD(autogen,{
+    VDECLATTR(opcode_def);
+    VDECLATTR(operand_def);
     VDECLATTR(inst_tpl);
 })

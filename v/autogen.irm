@@ -1,5 +1,11 @@
 ;; instruction template
 
+(opcode-def (load store push popv pop jmp jmpi refl ref setl set top
+	     eq gt lt and or not add sub mul div call return retvoid nop
+	     label))
+
+(operand-def (x))
+
 (inst-tpl (load x)
           (load x))
 
@@ -9,7 +15,8 @@
 (inst-tpl (push x)
 	  (push x))
 
-(inst-tpl pushv pushv)
+(inst-tpl (popv)
+	  (popv))
 
 (inst-tpl (pop x)
 	  (pop x))

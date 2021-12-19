@@ -602,6 +602,41 @@ vast_nil* vast_nil_new(vtoken_state* ts)
   return nil;
 }
 
+vast_obj* vast_car(vast_obj* cons)
+{
+  if (cons->t != vastk_cons) {
+    return NULL;
+  }
+  return ((vast_cons*)cons)->car;
+}
+
+vast_obj* vast_cdr(vast_obj* cons)
+{
+  if (cons->t != vastk_cons) {
+    return NULL;
+  }
+  return ((vast_cons*)cons)->cdr;
+}
+
+vast_obj* vast_cdar(vast_obj* cons)
+{
+  vast_obj* obj;
+
+  if (cons->t != vastk_cons) {
+    return NULL;
+  }
+  obj = vast_cdr(cons);
+  if (!obj) {
+    return NULL;
+  }
+  if (obj->t != vastk_cons) {
+    return NULL;
+  }
+  obj = vast_car(obj);
+  
+  return obj;
+}
+
 void vtoken_state_init(vtoken_state* ts)
 {
   ubuffer_ready_write(ts->buff);

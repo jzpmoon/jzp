@@ -84,14 +84,11 @@ vast_nil* vast_nil_new(vtoken_state* ts);
 
 void vast_obj_log(vast_obj* ast_obj);
 
-#define vast_car(cons) \
-  ((vast_cons*)cons)->car
+vast_obj* vast_car(vast_obj* cons);
 
-#define vast_cdr(cons) \
-  ((vast_cons*)cons)->cdr
+vast_obj* vast_cdr(vast_obj* cons);
 
-#define vast_cdar(cons) \
-  vast_car(vast_cdr(cons))
+vast_obj* vast_cdar(vast_obj* cons);
 
 #define VDEFATTR(aname,sname,body)			\
   int							\

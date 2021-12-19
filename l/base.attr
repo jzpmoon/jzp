@@ -46,10 +46,11 @@ static vcfg_graph* subr(vast_attr_req* subreq,int scope)
     args = obj;
     /* args procedure */
     while(args != NULL){
-      vast_obj* arg = vast_car(args);
+      vast_obj* arg;
       vast_symbol* sym;
       vps_data* data;
 
+      arg = vast_car(args);
       if (arg->t != vastk_symbol) {
 	uabort("arg not a symbol!");
       }
