@@ -1203,8 +1203,8 @@ void vps_cntr_clean(vps_cntr* vps)
   umem_pool_clean(&vps->mp);
 }
 
-static vps_type_comp(vps_typep* type1,
-		     vps_typep* type2)
+static int vps_type_comp(vps_typep* type1,
+			 vps_typep* type2)
 {
   vps_type* t1;
   vps_type* t2;
