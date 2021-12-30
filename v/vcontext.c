@@ -195,7 +195,7 @@ static int insts_concat(vgc_array* consts,
       break;
     }
     pinst = *instp;
-#define DF(code,name,value,len)			\
+#define DF(code,name,value,len,oct)			\
     case code:					\
       if (len > 1) {				\
 	goto l1;				\

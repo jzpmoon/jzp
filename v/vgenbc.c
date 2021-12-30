@@ -13,7 +13,7 @@ inst_full_length(ulist_vps_instp* insts)
       break;
     }
     switch ((*inst)->opc.opcode) {
-#define DF(code,name,value,len)			\
+#define DF(code,name,value,len,oct)			\
       case code:				\
 	if (vbytecode_is_vaild(value)) {	\
 	  length += len;			\
@@ -40,7 +40,7 @@ inst_byte_length(ulist_vps_instp* insts,usize_t offset)
       break;
     }
     switch ((*inst)->opc.opcode) {
-#define DF(code,name,value,len)			\
+#define DF(code,name,value,len,oct)			\
       case code:				\
 	if (vbytecode_is_vaild(value)) {	\
 	  length += len;			\
@@ -78,7 +78,7 @@ vgc_string* vps_inst_to_str(vgc_heap* heap,ulist_vps_instp* insts)
     }
     inst = *instp;
     switch (inst->opc.opcode) {
-#define DF(ocode,name,value,len)				\
+#define DF(ocode,name,value,len,oct)				\
       case ocode: {						\
 	int i = 0;						\
 	usize_t operand;					\

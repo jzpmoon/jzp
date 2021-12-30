@@ -178,7 +178,7 @@ vps_inst_new(vps_cntr* vps,
   vps_inst* inst;
   usize_t instsz;
   int opect;
-#define DF(code,name,value,len)				\
+#define DF(code,name,value,len,oct)				\
   case code:{						\
     if (len > 1) {					\
       opect = 1;					\

@@ -14,31 +14,43 @@ virtb* virtb_new()
 
 int vir_comp(vir* ir1,vir* ir2)
 {
-  return ir1->ir_no - ir2->ir_no;
+  return (int)(ir1->ir_str - ir2->ir_str);
 }
 
-int virtb_put(virtb* irtb,int ir_no,char* ir_str,int ir_code,int ir_len)
+int virtb_put(virtb* irtb,vir ir)
 {
-  vir ir;
   int retval;
-  
-  ir.ir_no = ir_no;
-  ir.ir_str = ir_str;
-  ir.ir_code = ir_code;
-  ir.ir_len = ir_len;
 
-  retval = uhstb_vir_put(irtb,ir_no,&ir,NULL,NULL,vir_comp);
+  retval = uhstb_vir_put(irtb,ir.ir_str->hash_code,&ir,NULL,NULL,vir_comp);
   if (!retval) {
     return -1;
   }
   return 0;
 }
 
-int virtb_load(virtb* irtb)
+int virtb_load(vreader* reader,virtb* irtb)
 {
-#define DF(no,str,code,len)			\
-  if(!virtb_put(irtb,no,str,code,len)){		\
-    return -1;					\
+  ustring* ir_cid;
+  ustring* ir_str;
+  vir ir;
+  
+#define DF(no,str,code,len,oct)			                  \
+  ir_cid = ustring_table_put(reader->symtb,#no,-1);       \
+  if (!ir_cid) {                                          \
+	uabort("put symtb ir_no error!");                     \
+  }                                                       \
+  ir_str = ustring_table_put(reader->symtb,str,-1);       \
+  if (!ir_str) {                                          \
+	uabort("put symtb ir_str error!");                    \
+  }                                                       \
+  ir.ir_no = no;                                          \
+  ir.ir_cid = ir_cid;                                     \
+  ir.ir_str = ir_str;                                     \
+  ir.ir_code = code;                                      \
+  ir.ir_len = len;                                        \
+  ir.ir_oct = oct;                                        \
+  if (!virtb_put(irtb,ir)) {                              \
+    return -1;					                          \
   }
 #include "vbytecode.h"
   VBYTECODE;
@@ -53,7 +65,8 @@ ulrgram* vfile2gram(vreader* reader,char* file_path)
   vir_attr_req ireq;
   vast_attr_res res;
   vast_obj* ast_obj;
-  virtb* irtb;
+  virtb* sirtb;
+  virtb* dirtb;
   ulrgram* gram;
   
   ts = vreader_from(reader);
@@ -64,11 +77,15 @@ ulrgram* vfile2gram(vreader* reader,char* file_path)
   if(!file){
     uabort("open file error!");
   }
-  irtb = virtb_new();
-  if (!irtb) {
+  sirtb = virtb_new();
+  if (!sirtb) {
     uabort("virtb new error!");
   }
-  if (virtb_load(irtb)) {
+  dirtb = virtb_new();
+  if (!dirtb) {
+    uabort("virtb new error!");
+  }
+  if (virtb_load(reader,sirtb)) {
     uabort("virtb load error!");
   }
   gram = ulrgram_new();
@@ -76,7 +93,8 @@ ulrgram* vfile2gram(vreader* reader,char* file_path)
     uabort("lr gram new error!");
   }
   ireq.reader = reader;
-  ireq.irtb = irtb;
+  ireq.sirtb = sirtb;
+  ireq.dirtb = dirtb;
   ireq.gram = gram;
   vtoken_state_reset(ts,file);
   while (1) {

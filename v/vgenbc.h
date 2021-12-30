@@ -6,7 +6,7 @@
 #include "vpass.h"
 
 enum vbytecode{
-  #define DF(code,name,value,len) \
+  #define DF(code,name,value,len,oct) \
     code=value,
     VBYTECODE
   #undef DF

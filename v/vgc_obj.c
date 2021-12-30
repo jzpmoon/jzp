@@ -43,7 +43,7 @@ vslot vgc_array_pop(vgc_array* array){
 }
 
 void vgc_array_set(vgc_array* array,usize_t idx,vslot slot){
-  if (idx >= 0 && idx < array->_len) {
+  if (idx < array->_len) {
     array->objs[idx] = slot;
   }
 }

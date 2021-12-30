@@ -1,21 +1,74 @@
 /*
  * define attribute opcode define
  */
-VDEFATTR(opcode_def,"opcode-def",{
+VDEFATTR(inst_def,"inst-def",{
     vir_attr_req* ireq;
+	vast_obj* next;
+	vast_obj* obj;
+	vast_symbol* sym;
+	vast_string* str;
+	vast_integer* inte;
+	vir ir;
 
     ireq = (vir_attr_req*)req;
+	next = vast_cdr(ireq->ast_obj);
+	if (!next || next->t != vastk_cons) {
+		uabort("inst-def must define body!");
+	}
+	next = vast_car(next);
+	if (!next || next->t != vastk_cons) {
+		uabort("inst-def body null!");
+	}
+	obj = vast_car(next);
+	if (!obj || obj->t != vastk_symbol) {
+		uabort("inst id must be symbol");
+	}
+	sym = (vast_symbol*)obj;
+	ir.ir_cid = sym->name;
+	next = vast_cdr(next);
+	if (!next || next->t != vastk_cons) {
+		uabort("inst str must define!");
+	}
+	obj = vast_car(next);
+	if (!obj || obj->t != vastk_string) {
+		uabort("inst str must be string");
+	}
+	str = (vast_string*)obj;
+	ir.ir_str = str->value;
+	next = vast_cdr(next);
+	if (!next || next->t != vastk_cons) {
+		uabort("inst code must define!");
+	}
+	obj = vast_car(next);
+	if (!obj || obj->t != vastk_integer) {
+		uabort("inst code must be integer");
+	}
+	inte = (vast_integer*)obj;
+	ir.ir_code = inte->value;
+	next = vast_cdr(next);
+	if (!next || next->t != vastk_cons) {
+		uabort("inst len must define!");
+	}
+	obj = vast_car(next);
+	if (!obj || obj->t != vastk_integer) {
+		uabort("inst len must be integer");
+	}
+	inte = (vast_integer*)obj;
+	ir.ir_len = inte->value;
+	next = vast_cdr(next);
+	if (!next || next->t != vastk_cons) {
+		uabort("inst operand count must define!");
+	}
+	obj = vast_car(next);
+	if (!obj || obj->t != vastk_integer) {
+		uabort("inst operand count must be integer");
+	}
+	inte = (vast_integer*)obj;
+	ir.ir_oct = inte->value;
 
-    VATTR_RETURN_VOID;
-})
-
-/*
- * define attribute opcode define
- */
-VDEFATTR(operand_def,"operand-def",{
-    vir_attr_req* ireq;
-
-    ireq = (vir_attr_req*)req;
+	if (virtb_put(ireq->dirtb,ir)) {
+		uabort("dirtb put error!");
+	}
 
     VATTR_RETURN_VOID;
 })
@@ -45,7 +98,6 @@ VDEFATTR(inst_tpl,"inst-tpl",{
  * declare attribute
  */
 VATTRONLOAD(autogen,{
-    VDECLATTR(opcode_def);
-    VDECLATTR(operand_def);
+    VDECLATTR(inst_def);
     VDECLATTR(inst_tpl);
 })
