@@ -468,6 +468,12 @@ void vparser_atom_log(vast_obj* s_exp){
       ulog1("  \"%s\"",((vast_string*)s_exp)->value->value);
     }else if(s_exp->t == vastk_number){
       ulog1("  %f",((vast_number*)s_exp)->value);
+    }else if(s_exp->t == vastk_integer){
+      ulog1("  %d",((vast_integer*)s_exp)->value);
+    }else if(s_exp->t == vastk_character){
+      ulog1("  '%c'",((vast_character*)s_exp)->value);
+    }else if(s_exp->t == vastk_nil){
+      ulog("  nil");
     }else{
       ulog0(" [unkonw]");
     }

@@ -22,10 +22,8 @@ int virtb_put(virtb* irtb,vir ir)
   int retval;
 
   retval = uhstb_vir_put(irtb,ir.ir_str->hash_code,&ir,NULL,NULL,vir_comp);
-  if (!retval) {
-    return -1;
-  }
-  return 0;
+
+  return retval;
 }
 
 int virtb_load(vreader* reader,virtb* irtb)
@@ -33,6 +31,7 @@ int virtb_load(vreader* reader,virtb* irtb)
   ustring* ir_cid;
   ustring* ir_str;
   vir ir;
+  int retval;
   
 #define DF(no,str,code,len,oct)			                  \
   ir_cid = ustring_table_put(reader->symtb,#no,-1);       \
@@ -49,8 +48,11 @@ int virtb_load(vreader* reader,virtb* irtb)
   ir.ir_code = code;                                      \
   ir.ir_len = len;                                        \
   ir.ir_oct = oct;                                        \
-  if (!virtb_put(irtb,ir)) {                              \
-    return -1;					                          \
+  retval = virtb_put(irtb,ir);                            \
+  if (retval == 1) {                                      \
+    uabort("ir inst already exists!");                    \
+  } else if (retval != 0) {                               \
+    uabort("sirtb put error!");                           \
   }
 #include "vbytecode.h"
   VBYTECODE;
@@ -109,4 +111,22 @@ ulrgram* vfile2gram(vreader* reader,char* file_path)
   vtoken_state_close(ts);
   
   return gram;
+}
+
+int main(int argc,char** args)
+{
+  ulrgram* gram;
+  vreader* reader;
+  
+  ulog_init("vag.log",UTRUE);
+  if(argc == 1){
+    ulog("no input file!");
+    return 0;
+  }
+  reader = vreader_easy_new(vattr_init);
+  if (!reader) {
+	  uabort("reader new error!");
+  }
+  gram = vfile2gram(reader,args[1]);
+  return 0;
 }

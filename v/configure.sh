@@ -2,6 +2,8 @@
 prefix=$(pwd)
 envc="unx"
 thw="arm64"
+smk="libv.mk"
+dmk="makefile"
 
 old_ifs=$IFS
 for arg in $*
@@ -19,15 +21,21 @@ do
     elif [ $key = "--thw" ]
     then
 	thw=$val
+	elif [ $key = "--smk" ]
+    then
+	smk=$val
+	elif [ $key = "--dmk" ]
+    then
+	dmk=$val
     fi
     IFS=$old_ifs
 done
 
-echo "prefix=$prefix" > makefile
-echo "envc=$envc" >> makefile
-echo "thw=$thw" >> makefile
-echo "currdir=$(pwd)" >> makefile
+echo "prefix=$prefix" > $dmk
+echo "envc=$envc" >> $dmk
+echo "thw=$thw" >> $dmk
+echo "currdir=$(pwd)" >> $dmk
 
-echo "include ../u/env/env_"${envc}".mk" >> makefile
+echo "include ../u/env/env_"${envc}".mk" >> $dmk
 
-cat libv.mk >> makefile
+cat $smk >> $dmk

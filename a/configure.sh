@@ -31,7 +31,7 @@ echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$prefix' >> $entry_exec
 echo '$prefix/jzpl $*' >> $entry_exec
 chmod 700 $entry_exec
 
-entry_mk=makefile
+makefile
 echo "prefix=$prefix" > makefile
 echo "envc=$envc" >> makefile
 echo "thw=$thw" >> makefile
@@ -39,4 +39,4 @@ echo "currdir=$(pwd)" >> makefile
 echo "entry_exec=$entry_exec" >> makefile
 echo "include ../u/env/env_"${envc}".mk" >> makefile
 
-cat jzpl.mk >> $entry_mk
+cat jzpl.mk >> makefile

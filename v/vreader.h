@@ -88,7 +88,9 @@ vreader* vreader_new(ustring_table* symtb,
 		     ustring_table* strtb,
 		     vattr_init_ft ainit,
 		     vast_attr* dattr);
-
+			 
+vreader* vreader_easy_new(vattr_init_ft ainit);
+			 
 struct _vtoken_state* vreader_from(vreader* reader);
 
 void vreader_clean(vreader* reader);

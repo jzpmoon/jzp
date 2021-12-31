@@ -20,7 +20,7 @@ CFLAGS   = -std=c89 -Wall $(DEBUG_MODE)
 	$(CC) -c -o $@ $< -I $(libl_path) -I $(libv_path) -I $(libu_path) $(CFLAGS)
 $(l_lib):
 	cd $(libl_path); \
-	./configure.sh --prefix=$(prefix) --envc=$(envc); \
+	./configure.sh --prefix=$(prefix) --envc=$(envc) --thw=$(thw); \
 	cd $(currdir); \
 	make -C $(libl_path) -f $(l_somk)
 install:

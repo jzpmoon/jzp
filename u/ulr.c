@@ -53,7 +53,15 @@ ulritem* ulritem_new(ulrprod* prod,int dot)
 
 ulrgram* ulrgram_new()
 {
-  return NULL;
+  ulrgram* gram;
+  
+  gram = ualloc(sizeof(ulrgram));
+  gram->noncnt = 0;
+  gram->tercnt = 0;
+  gram->accprod = NULL;
+  gram->prods = ulist_ulrprodp_alloc(&u_global_allocator);
+  
+  return gram;
 }
 
 ulrset* ulrgram_start_set_get(ulrgram* gram)

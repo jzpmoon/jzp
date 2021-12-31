@@ -9,6 +9,7 @@ VDEFATTR(inst_def,"inst-def",{
 	vast_string* str;
 	vast_integer* inte;
 	vir ir;
+	int retval;
 
     ireq = (vir_attr_req*)req;
 	next = vast_cdr(ireq->ast_obj);
@@ -66,8 +67,11 @@ VDEFATTR(inst_def,"inst-def",{
 	inte = (vast_integer*)obj;
 	ir.ir_oct = inte->value;
 
-	if (virtb_put(ireq->dirtb,ir)) {
-		uabort("dirtb put error!");
+	retval = virtb_put(ireq->dirtb,ir);
+	if (retval == 1) {
+	  uabort("inst already exists!");
+	} else if (retval != 0) {
+	  uabort("dirtb put error!");
 	}
 
     VATTR_RETURN_VOID;

@@ -33,6 +33,24 @@ vreader* vreader_new(ustring_table* symtb,
   return reader;
 }
 
+vreader* vreader_easy_new(vattr_init_ft ainit)
+{
+  ustring_table* symtb;
+  ustring_table* strtb;
+  
+  symtb = ustring_table_new(-1);
+  if(!symtb){
+    uabort("vcontext_new:symtb new error!");
+  }
+
+  strtb = ustring_table_new(-1);
+  if(!strtb){
+    uabort("vcontext_new:strtb new error!");
+  }
+  
+  return vreader_new(symtb,strtb,ainit,NULL);
+}
+
 vtoken_state* vreader_from(vreader* reader)
 {
   uallocator* allocator;
