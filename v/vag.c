@@ -1,10 +1,12 @@
 #include "uhstb_tpl.c"
+#include "ulist_tpl.c"
 #include "vgenbc.h"
 #include "vparser.h"
 #include "vag.h"
 #include "_vtemp.attr"
 
 uhstb_def_tpl(vir);
+ulist_def_tpl(vir_nterm);
 
 void vattr_init(vreader* reader)
 {
@@ -117,6 +119,47 @@ ulrgram* vfile2gram(vreader* reader,char* file_path)
   vtoken_state_close(ts);
   
   return gram;
+}
+
+int vir_nterms_put(vir_nterms* nterms,ustring* name,int no)
+{
+  uset* set;
+  ucursor c;
+  vir_nterm n;
+
+  set = (uset*)nterms;
+  set->iterate(&c);
+  while (1) {
+    vir_nterm* nterm = set->next(set,&c);
+    if (!nterm) {
+      break;
+    }
+    if (nterm->name == name) {
+      return 0;
+    }
+  }
+  n.name = name;
+  n.no = no;
+  return ulist_vir_nterm_append(nterms,n);
+}
+
+vir_nterm* vir_nterm_get(vir_nterms* nterms,ustring* name)
+{
+  uset* set;
+  ucursor c;
+
+  set = (uset*)nterms;
+  set->iterate(&c);
+  while (1) {
+    vir_nterm* nterm = set->next(set,&c);
+    if (!nterm) {
+      break;
+    }
+    if (nterm->name == name) {
+      return nterm;
+    }
+  }
+  return NULL;
 }
 
 int main(int argc,char** args)

@@ -83,7 +83,7 @@ int ustring_charp_comp(ustring* str,char* charp)
 }
 
 int ustring_to_integer(ustring* str){
-  return atoi(str->value);
+  return (int)strtol(str->value,NULL,0);
 }
 
 double ustring_to_number(ustring* str){

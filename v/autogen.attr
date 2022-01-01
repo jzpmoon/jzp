@@ -84,15 +84,16 @@ VDEFATTR(inst_tpl,"inst-tpl",{
     vir_attr_req* ireq;
     vast_obj* next;
     vast_obj* obj;
+    ulrprod* prod;
 
     ireq = (vir_attr_req*)req;
     next = vast_cdr(ireq->ast_obj);
-    if (!next) {
-      uabort("instruction not define!");
+    if (!next || next->t != vastk_cons) {
+      uabort("inst tpl have no parameter!");
     }
     obj = vast_car(next);
-    if (!obj) {
-      uabort("target instruction not define!");      
+    if (!obj || obj->t != vastk_symbol) {
+      uabort("inst tpl name not define!");      
     }
 
     VATTR_RETURN_VOID;
