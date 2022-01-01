@@ -10,10 +10,12 @@ agmk=makefile1
 CFLAGS=-std=c89 -Wall -Wextra -Wno-unused-parameter $(DEBUG_MODE)
 
 define gen_ag_exec
-	./configure.sh --prefix=$(currdir) --envc=$(envc) --thw=$(thw) --smk=vag.mk --dmk=$(agmk); \
-	make -f $(agmk);make -f $(agmk) install; \
+	./configure.sh --prefix=$(currdir) --envc=$(envc) \
+	--thw=$(thw) --smk=vag.mk --dmk=$(agmk); \
+	make -f $(agmk); \
+	export LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(currdir)/$(lib_path); \
 	./$(ag_exec) autogen.irm; \
-	make -f $(agmk) clean;make -f $(agmk) uninstall
+	make -f $(agmk) clean
 endef
 
 $(bin):$(ag_exec) $(obj) $(sobj)

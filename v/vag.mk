@@ -1,5 +1,5 @@
 bin=vag$(suf_pg)
-obj=vparser.o vreader.o vattr.o vag.o
+obj=vparser.o vreader.o vag.o
 temp_attr_file=_vtemp.attr
 
 lib_path=../u/

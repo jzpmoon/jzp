@@ -31,7 +31,6 @@ echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$prefix' >> $entry_exec
 echo '$prefix/jzpl $*' >> $entry_exec
 chmod 700 $entry_exec
 
-makefile
 echo "prefix=$prefix" > makefile
 echo "envc=$envc" >> makefile
 echo "thw=$thw" >> makefile

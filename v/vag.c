@@ -2,8 +2,14 @@
 #include "vgenbc.h"
 #include "vparser.h"
 #include "vag.h"
+#include "_vtemp.attr"
 
 uhstb_def_tpl(vir);
+
+void vattr_init(vreader* reader)
+{
+  vattr_file_concat_init(reader);
+}
 
 virtb* virtb_new()
 {
