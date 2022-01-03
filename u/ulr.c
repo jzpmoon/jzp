@@ -9,6 +9,19 @@ uhstb_def_tpl(ulrsetp);
 ustack_decl_tpl(ulrsetp);
 ustack_def_tpl(ulrsetp);
 
+ulrprod* ulrprod_new(int bdylen)
+{
+  usize_t prodsz;
+  ulrprod* prod;
+
+  prodsz = TYPE_SIZE_OF(ulrprod,int,bdylen);
+  prod = ualloc(prodsz);
+  if (prod) {
+    prod->bdylen = bdylen;
+  }
+  return prod;
+}
+
 ulrset* ulrset_new(int inpsym)
 {
   ulrset* set;

@@ -52,6 +52,8 @@ typedef struct _ulrcoll{
   uhstb_ulrsetp* sets;
 } ulrcoll;
 
+ulrprod* ulrprod_new(int bdylen);
+
 ulrgram* ulrgram_new();
 
 ulrcoll* ulr0auto(ulrgram* gram);

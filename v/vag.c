@@ -6,6 +6,7 @@
 #include "_vtemp.attr"
 
 uhstb_def_tpl(vir);
+uhstb_def_tpl(vag_tplp);
 ulist_def_tpl(vir_nterm);
 
 void vattr_init(vreader* reader)
@@ -121,7 +122,7 @@ ulrgram* vfile2gram(vreader* reader,char* file_path)
   return gram;
 }
 
-int vir_nterms_put(vir_nterms* nterms,ustring* name,int no)
+int vir_nterms_put(vir_nterms* nterms,ustring* name)
 {
   uset* set;
   ucursor c;
@@ -135,12 +136,15 @@ int vir_nterms_put(vir_nterms* nterms,ustring* name,int no)
       break;
     }
     if (nterm->name == name) {
-      return 0;
+      return nterm->no;
     }
   }
   n.name = name;
-  n.no = no;
-  return ulist_vir_nterm_append(nterms,n);
+  n.no = nterms->len;
+  if (ulist_vir_nterm_append(nterms,n)) {
+    return -1;
+  }
+  return nterms->len;
 }
 
 vir_nterm* vir_nterm_get(vir_nterms* nterms,ustring* name)

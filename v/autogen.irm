@@ -55,4 +55,6 @@
 (inst-tpl S (retvoid) (retvoid))
 (inst-tpl S (nop) (nop))
 (inst-tpl S (label x) (label x))
-(inst-tpl ACC S)
+(inst-tpl U S)
+(inst-tpl U U S)
+(inst-acc ACC U)

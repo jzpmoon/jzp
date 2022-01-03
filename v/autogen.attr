@@ -3,76 +3,76 @@
  */
 VDEFATTR(inst_def,"inst-def",{
     vir_attr_req* ireq;
-	vast_obj* next;
-	vast_obj* obj;
-	vast_symbol* sym;
-	vast_string* str;
-	vast_integer* inte;
-	vir ir;
-	int retval;
+    vast_obj* next;
+    vast_obj* obj;
+    vast_symbol* sym;
+    vast_string* str;
+    vast_integer* inte;
+    vir ir;
+    int retval;
 
     ireq = (vir_attr_req*)req;
-	next = vast_cdr(ireq->ast_obj);
-	if (!next || next->t != vastk_cons) {
-		uabort("inst-def must define body!");
-	}
-	next = vast_car(next);
-	if (!next || next->t != vastk_cons) {
-		uabort("inst-def body null!");
-	}
-	obj = vast_car(next);
-	if (!obj || obj->t != vastk_symbol) {
-		uabort("inst id must be symbol");
-	}
-	sym = (vast_symbol*)obj;
-	ir.ir_cid = sym->name;
-	next = vast_cdr(next);
-	if (!next || next->t != vastk_cons) {
-		uabort("inst str must define!");
-	}
-	obj = vast_car(next);
-	if (!obj || obj->t != vastk_string) {
-		uabort("inst str must be string");
-	}
-	str = (vast_string*)obj;
-	ir.ir_str = str->value;
-	next = vast_cdr(next);
-	if (!next || next->t != vastk_cons) {
-		uabort("inst code must define!");
-	}
-	obj = vast_car(next);
-	if (!obj || obj->t != vastk_integer) {
-		uabort("inst code must be integer");
-	}
-	inte = (vast_integer*)obj;
-	ir.ir_code = inte->value;
-	next = vast_cdr(next);
-	if (!next || next->t != vastk_cons) {
-		uabort("inst len must define!");
-	}
-	obj = vast_car(next);
-	if (!obj || obj->t != vastk_integer) {
-		uabort("inst len must be integer");
-	}
-	inte = (vast_integer*)obj;
-	ir.ir_len = inte->value;
-	next = vast_cdr(next);
-	if (!next || next->t != vastk_cons) {
-		uabort("inst operand count must define!");
-	}
-	obj = vast_car(next);
-	if (!obj || obj->t != vastk_integer) {
-		uabort("inst operand count must be integer");
-	}
-	inte = (vast_integer*)obj;
-	ir.ir_oct = inte->value;
+    next = vast_cdr(ireq->ast_obj);
+    if (!next || next->t != vastk_cons) {
+      uabort("inst-def must define body!");
+    }
+    next = vast_car(next);
+    if (!next || next->t != vastk_cons) {
+      uabort("inst-def body null!");
+    }
+    obj = vast_car(next);
+    if (!obj || obj->t != vastk_symbol) {
+      uabort("inst id must be symbol");
+    }
+    sym = (vast_symbol*)obj;
+    ir.ir_cid = sym->name;
+    next = vast_cdr(next);
+    if (!next || next->t != vastk_cons) {
+      uabort("inst str must define!");
+    }
+    obj = vast_car(next);
+    if (!obj || obj->t != vastk_string) {
+      uabort("inst str must be string");
+    }
+    str = (vast_string*)obj;
+    ir.ir_str = str->value;
+    next = vast_cdr(next);
+    if (!next || next->t != vastk_cons) {
+      uabort("inst code must define!");
+    }
+    obj = vast_car(next);
+    if (!obj || obj->t != vastk_integer) {
+      uabort("inst code must be integer");
+    }
+    inte = (vast_integer*)obj;
+    ir.ir_code = inte->value;
+    next = vast_cdr(next);
+    if (!next || next->t != vastk_cons) {
+      uabort("inst len must define!");
+    }
+    obj = vast_car(next);
+    if (!obj || obj->t != vastk_integer) {
+      uabort("inst len must be integer");
+    }
+    inte = (vast_integer*)obj;
+    ir.ir_len = inte->value;
+    next = vast_cdr(next);
+    if (!next || next->t != vastk_cons) {
+      uabort("inst operand count must define!");
+    }
+    obj = vast_car(next);
+    if (!obj || obj->t != vastk_integer) {
+      uabort("inst operand count must be integer");
+    }
+    inte = (vast_integer*)obj;
+    ir.ir_oct = inte->value;
 
-	retval = virtb_put(ireq->dirtb,ir);
-	if (retval == 1) {
-	  uabort("inst already exists!");
-	} else if (retval != 0) {
-	  uabort("dirtb put error!");
-	}
+    retval = virtb_put(ireq->dirtb,ir);
+    if (retval == 1) {
+      uabort("inst already exists!");
+    } else if (retval != 0) {
+      uabort("dirtb put error!");
+    }
 
     VATTR_RETURN_VOID;
 })
@@ -84,16 +84,25 @@ VDEFATTR(inst_tpl,"inst-tpl",{
     vir_attr_req* ireq;
     vast_obj* next;
     vast_obj* obj;
-    ulrprod* prod;
+    vast_symbol* tplne;
 
     ireq = (vir_attr_req*)req;
     next = vast_cdr(ireq->ast_obj);
-    if (!next || next->t != vastk_cons) {
+    if (vast_consp(next)) {
       uabort("inst tpl have no parameter!");
     }
     obj = vast_car(next);
-    if (!obj || obj->t != vastk_symbol) {
+    if (vast_symbolp(obj)) {
       uabort("inst tpl name not define!");      
+    }
+    tplne = (vast_symbol*)obj;
+    next = vast_cdr(next);
+    if (vast_consp(next)) {
+      uabort("inst tpl body not define!");
+    }
+    obj = vast_car(next);
+    if (vast_consp(obj)) {
+      obj = vast_car(obj);
     }
 
     VATTR_RETURN_VOID;

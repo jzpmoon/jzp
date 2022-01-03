@@ -90,6 +90,22 @@ vast_obj* vast_cdr(vast_obj* cons);
 
 vast_obj* vast_cdar(vast_obj* cons);
 
+#define vast_typeof(obj,type) (!(obj) || (obj)->t != type)
+
+#define vast_consp(obj) vast_typeof(obj,vastk_cons)
+
+#define vast_symbolp(obj) vast_typeof(obj,vastk_symbol)
+
+#define vast_integerp(obj) vast_typeof(obj,vastk_integer)
+
+#define vast_numberp(obj) vast_typeof(obj,vastk_number)
+
+#define vast_stringp(obj) vast_typeof(obj,vastk_string)
+
+#define vast_characterp(obj) vast_typeof(obj,vastk_character)
+
+#define vast_nilp(obj) vast_typeof(obj,vastk_nil)
+
 #define VDEFATTR(aname,sname,body)			\
   int							\
   _vast_attr_action_##aname(vast_attr_req* req,		\
