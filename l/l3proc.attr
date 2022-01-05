@@ -203,7 +203,7 @@ VDEFATTR(indexof,"indexof",{
 /*
  * declare attribute
  */
-VATTRONLOAD(proc,{
+VATTRONLOAD(l3proc,{
     VDECLATTR(g_struct);
     VDECLATTR(struct);
     VDECLATTR(sizeof);

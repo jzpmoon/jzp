@@ -1,16 +1,16 @@
 #include "uerror.h"
-#include "leval.h"
+#include "l3eval.h"
 
 UDEFUN(UFNAME jzpl,UARGS (int argc,char** args),URET int)
 UDECLARE
   leval* eval;
 UBEGIN
-  if(argc == 1){
+  if (argc == 1) {
     ulog("no input file!");
     return 0;
   }
-  eval = lstartup();
-  leval_load(eval,args[1]);
+  eval = l3startup();
+  l3eval_load(eval,args[1]);
   return 0;	
 UEND
 

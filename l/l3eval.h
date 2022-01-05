@@ -20,12 +20,12 @@ struct _leval{
   leval_loader loader;
 };
 
-leval* lstartup();
+leval* l3startup();
 
-int leval_load(leval* eval,char* file_path);
+int l3eval_load(leval* eval,char* file_path);
 
-void lattr_init(vreader* reader);
+void l3attr_init(vreader* reader);
 
-void lcfun_init(vcontext* ctx,vmod* mod);
+void l3cfun_init(vcontext* ctx,vmod* mod);
 
 #endif

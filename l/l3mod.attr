@@ -76,7 +76,7 @@ VDEFATTR(mod_load,"mod-load",{
 /*
  * declare attribute
  */
-VATTRONLOAD(mod,{
+VATTRONLOAD(l3mod,{
     VDECLATTR(src_load);
     VDECLATTR(mod_load);
   })

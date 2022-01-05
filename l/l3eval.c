@@ -1,5 +1,17 @@
 #include "lobj.h"
-#include "leval.h"
+#include "l3eval.h"
+#include "_l3temp.attr"
+#include "_l3temp.cfun"
+
+void l3cfun_init(vcontext* ctx,vmod* mod)
+{
+  l3cfun_file_concat_init(ctx,mod);
+}
+
+void l3attr_init(vreader* reader)
+{
+  l3attr_file_concat_init(reader);
+}
 
 vps_mod* leval_vps_load(leval* eval,char* file_path)
 {
@@ -10,7 +22,7 @@ vps_mod* leval_vps_load(leval* eval,char* file_path)
   return mod;
 }
 
-int leval_load(leval* eval,char* file_path)
+int l3eval_load(leval* eval,char* file_path)
 {
   vps_mod* mod;
   vps_cntr* vps;
@@ -39,7 +51,7 @@ static int leval_loader_load(vmod_loader* loader,vmod* mod){
   return 0;
 }
 
-leval* lstartup(){
+leval* l3startup(){
   leval* eval;
   vgc_heap* heap;
   vcontext* ctx;
@@ -74,7 +86,7 @@ leval* lstartup(){
 
   reader = vreader_new(ctx->symtb,
 		       ctx->strtb,
-		       lattr_init,
+		       l3attr_init,
 		       &vast_attr_symcall);
   if (!reader) {
     uabort("new reader error!");
@@ -92,7 +104,7 @@ leval* lstartup(){
 
   eval->loader = loader;
   
-  lcfun_init(ctx,eval->mod);
+  l3cfun_init(ctx,eval->mod);
   vmod_loaded(mod);
   
   ctx->loader = (vmod_loader*)&eval->loader;

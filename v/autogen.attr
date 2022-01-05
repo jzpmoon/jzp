@@ -13,55 +13,55 @@ VDEFATTR(inst_def,"inst-def",{
 
     ireq = (vir_attr_req*)req;
     next = vast_cdr(ireq->ast_obj);
-    if (!next || next->t != vastk_cons) {
+    if (vast_consp(next)) {
       uabort("inst-def must define body!");
     }
     next = vast_car(next);
-    if (!next || next->t != vastk_cons) {
+    if (vast_consp(next)) {
       uabort("inst-def body null!");
     }
     obj = vast_car(next);
-    if (!obj || obj->t != vastk_symbol) {
+    if (vast_symbolp(obj)) {
       uabort("inst id must be symbol");
     }
     sym = (vast_symbol*)obj;
     ir.ir_cid = sym->name;
     next = vast_cdr(next);
-    if (!next || next->t != vastk_cons) {
+    if (vast_consp(next)) {
       uabort("inst str must define!");
     }
     obj = vast_car(next);
-    if (!obj || obj->t != vastk_string) {
+    if (vast_stringp(obj)) {
       uabort("inst str must be string");
     }
     str = (vast_string*)obj;
     ir.ir_str = str->value;
     next = vast_cdr(next);
-    if (!next || next->t != vastk_cons) {
+    if (vast_consp(next)) {
       uabort("inst code must define!");
     }
     obj = vast_car(next);
-    if (!obj || obj->t != vastk_integer) {
+    if (vast_integerp(obj)) {
       uabort("inst code must be integer");
     }
     inte = (vast_integer*)obj;
     ir.ir_code = inte->value;
     next = vast_cdr(next);
-    if (!next || next->t != vastk_cons) {
+    if (vast_consp(next)) {
       uabort("inst len must define!");
     }
     obj = vast_car(next);
-    if (!obj || obj->t != vastk_integer) {
+    if (vast_integerp(obj)) {
       uabort("inst len must be integer");
     }
     inte = (vast_integer*)obj;
     ir.ir_len = inte->value;
     next = vast_cdr(next);
-    if (!next || next->t != vastk_cons) {
+    if (vast_consp(next)) {
       uabort("inst operand count must define!");
     }
     obj = vast_car(next);
-    if (!obj || obj->t != vastk_integer) {
+    if (vast_integerp(obj)) {
       uabort("inst operand count must be integer");
     }
     inte = (vast_integer*)obj;

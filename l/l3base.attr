@@ -1061,7 +1061,7 @@ VDEFATTR(nop,"nop",{
 /*
  * declare attribute
  */
-VATTRONLOAD(base,{
+VATTRONLOAD(l3base,{
     VDECLATTR(g_subr);
     VDECLATTR(subr);
     VDECLATTR(g_var);

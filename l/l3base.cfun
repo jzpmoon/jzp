@@ -162,7 +162,7 @@ VDEFVAR(system_ostream,"system-ostream",VSCOPE_GLOBAL,{
     return (vgc_obj*)lstream;
   });
 
-VFUNONLOAD(base,{
+VFUNONLOAD(l3base,{
     VDECLFUN(make_array);
     VDECLFUN(make_string);
     VDECLFUN(make_istream);

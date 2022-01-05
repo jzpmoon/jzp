@@ -1,6 +1,6 @@
 bin=libv.$(suf_so)
 obj=vm.o vcontext.o vgc.o vgc_obj.o vpass.o vgenbc.o \
-    vparser.o vreader.o
+    vparser.o vreader.o vclosure.o
 ag_exec=vag$(suf_pg)
 
 lib_path=../u/
