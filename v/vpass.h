@@ -220,6 +220,9 @@ enum { var_vps_apd };
 
 extern vast_attr vast_attr_symcall;
 
+typedef vps_mod* (*vps_prod_ft)(vreader* reader,char* file_path,
+				vps_cntr* vps);
+
 UDECLFUN(UFNAME vfile2vps,
 	 UARGS (vreader* reader,char* file_path,vps_cntr* vps),
 	 URET vps_mod*);

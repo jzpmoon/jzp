@@ -1,0 +1,18 @@
+/*
+ * define attribute lambda
+ */
+VDEFATTR(lambda,"lambda",{
+    vps_closure_req* jreq;
+    vcfg_graph* grp;
+
+    jreq = (vps_closure_req*)req;
+
+    VATTR_RETURN_VOID;
+  })
+
+/*
+ * declare attribute
+ */
+VATTRONLOAD(l5base,{
+    VDECLATTR(lambda);
+})

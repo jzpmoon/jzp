@@ -21,6 +21,8 @@ struct _var_infor{
   var_gen_ft var_gen;
 };
 
+typedef void (*vcfun_init_ft)(vcontext* ctx,vmod* mod);
+
 #define VSCOPE_GLOBAL VPS_SCOPE_GLOBAL
 #define VSCOPE_LOCAL VPS_SCOPE_LOCAL
 #define VRETVAL_YES 1

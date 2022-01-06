@@ -10,7 +10,7 @@ UBEGIN
     return 0;
   }
   eval = l3startup();
-  l3eval_load(eval,args[1]);
+  leval_load(eval,args[1]);
   return 0;	
 UEND
 
