@@ -17,7 +17,10 @@ leval* l3startup()
 {
   leval* eval;
 
-  eval = lstartup(l5attr_init,l5cfun_init,vfile2vps,&vast_attr_symcall);
+  eval = lstartup(l5attr_init,
+		  l5cfun_init,
+		  vclosure2vps,
+		  &vclosure_attr_symcall);
   ulog("l5startup");
   
   return eval;

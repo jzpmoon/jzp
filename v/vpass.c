@@ -80,20 +80,14 @@ UDEFUN(UFNAME vfile2vps,
        URET vps_mod*)
 UDECLARE
   FILE* file;
-  vtoken_state* ts;
   vps_mod* mod;
-  vast_obj* ast_obj;
   ustring* mod_name;
   vcfg_graph* grp;
   vps_inst* inst;
   vps_jzp_req req;
   vast_attr_res res;
 UBEGIN
-  ts = vreader_from(reader);
-  if (!ts) {
-    uabort("reader from error!");
-  }
-  mod_name = ustring_table_put(ts->symtb,file_path,-1);
+  mod_name = ustring_table_put(reader->symtb,file_path,-1);
   if (!mod_name) {
     uabort("mod name put symtb error!");
   }
@@ -108,8 +102,6 @@ UBEGIN
   if(!file){
     uabort("open file error!");
   }
-  
-  vtoken_state_reset(ts,file);
 
   grp = vcfg_graph_new(vps,NULL);
   if(!grp){
@@ -122,23 +114,13 @@ UBEGIN
   req.top = mod;
   req.parent = (vps_cfg*)grp;
   req.reader = reader;
-  while(1){
-    ast_obj = vparser_parse(ts);
-    if (!ast_obj){
-      break;
-    }
-    vast_obj_log(ast_obj);
-    req.ast_obj = ast_obj;
-    vast2obj((vast_attr_req*)&req,&res);
+  if (vfile2obj(reader,file_path,(vast_attr_req*)&req,&res)) {
+    uabort("file2obj error!");
   }
-  vtoken_state_close(ts);
-
   inst = vps_iretvoid(vps);
   vcfg_grp_inst_apd(grp,inst);
-
   vcfg_grp_build(vps,grp);
   vcfg_grp_connect(vps,grp);
-
   vps_mod_loaded(mod);
 
   return mod;

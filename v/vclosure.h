@@ -24,4 +24,9 @@ typedef struct _vps_closure_req{
 UDECLFUN(UFNAME vclosure_new,
 	 UARGS (vps_cntr* vps),
 	 URET vclosure*);
+
+UDECLFUN(UFNAME vclosure2vps,
+	 UARGS (vreader* reader,char* file_path,vps_cntr* vps),
+	 URET vps_mod*);
+
 #endif

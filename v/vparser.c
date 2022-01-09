@@ -752,3 +752,35 @@ int vast2obj(vast_attr_req* req,vast_attr_res* res)
   }
   VATTR_RETURN_VOID;
 }
+
+UDEFUN(UFNAME vfile2obj,
+       UARGS (vreader* reader,char* file_path,vast_attr_req* req,
+	      vast_attr_res* res),
+       URET int)
+UDECLARE
+  FILE* file;
+  vtoken_state* ts;
+  vast_obj* ast_obj;
+UBEGIN
+  ts = vreader_from(reader);
+  if (!ts) {
+    return -1;
+  }  
+  file = fopen(file_path,"r");
+  if (!file) {
+    return -1;
+  }
+  vtoken_state_reset(ts,file);
+  while (1) {
+    ast_obj = vparser_parse(ts);
+    if (!ast_obj) {
+      break;
+    }
+    vast_obj_log(ast_obj);
+    req->ast_obj = ast_obj;
+    vast2obj(req,res);
+  }
+  vtoken_state_close(ts);
+
+  return 0;
+UEND

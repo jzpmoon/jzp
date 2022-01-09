@@ -8,7 +8,7 @@ vps_mod* leval_vps_load(leval* eval,char* file_path)
 
   prod = eval->loader.prod;
   if (prod) {
-    mod = eval->loader.prod(eval->reader,file_path,&eval->vps);
+    mod = prod(eval->reader,file_path,&eval->vps);
     vreader_clean(eval->reader);
   } else {
     mod = NULL;
