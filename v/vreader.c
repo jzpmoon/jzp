@@ -1,6 +1,7 @@
+#include "ulist_tpl.c"
 #include "vreader.h"
 
-#define VATTR_TABLE_SIZE 17
+ulist_def_tpl(vast_kw);
 
 vreader* vreader_new(ustring_table* symtb,
 		     ustring_table* strtb,
@@ -8,16 +9,23 @@ vreader* vreader_new(ustring_table* symtb,
 		     vast_attr* dattr)
 {
   uhstb_vast_attr* attrtb;
+  ulist_vast_kw* kws;
   vreader* reader;
   
-  attrtb = uhstb_vast_attr_new(VATTR_TABLE_SIZE);
+  attrtb = uhstb_vast_attr_new(-1);
   if (!attrtb) {
+    return NULL;
+  }
+  kws = ulist_vast_kw_new();
+  if (!kws) {
+    uhstb_vast_attr_dest(attrtb,NULL);
     return NULL;
   }
 
   reader = ualloc(sizeof(vreader));
   if (!reader) {
     uhstb_vast_attr_dest(attrtb,NULL);
+    ulist_vast_kw_dest(kws,NULL);
     return NULL;
   }
 
@@ -27,6 +35,7 @@ vreader* vreader_new(ustring_table* symtb,
   reader->attrtb = attrtb;
   reader->ainit = ainit;
   reader->dattr = dattr;
+  reader->kws = kws;
 
   if (ainit) ainit(reader);
   
@@ -51,27 +60,32 @@ vreader* vreader_easy_new(vattr_init_ft ainit)
   return vreader_new(symtb,strtb,ainit,NULL);
 }
 
+int vreader_keyword_put(vreader* reader,vast_kw keyword)
+{
+  return ulist_vast_kw_append(reader->kws,keyword);
+}
+
 vtoken_state* vreader_from(vreader* reader)
 {
   uallocator* allocator;
   ustream* stream;
   vtoken_state* ts;
 
-  allocator = &reader->mp.allocator;
+  allocator = vreader_alloc_get(reader);
   stream = ustream_alloc(allocator,USTREAM_INPUT,USTREAM_FILE);
   if (!stream) {
     return NULL;
   }
   ts = vtoken_state_alloc(allocator,
 			  stream,
-			  reader->symtb,
-			  reader->strtb,
-			  reader->attrtb,
-			  reader->dattr);
+			  reader);
   return ts;
 }
 
 void vreader_clean(vreader* reader)
 {
-  umem_pool_clean(&reader->mp);
+  uallocator* allocator;
+  
+  allocator = vreader_alloc_get(reader);
+  allocator->clean(allocator);
 }

@@ -157,10 +157,13 @@ vps_inst_new(vps_cntr* vps,
 	     ustring* label,
 	     vps_data* data)
 {
+  uallocator* alloc;
   vps_inst* inst;
   usize_t instsz;
   int opect;
-#define DF(code,name,value,len,oct)				\
+
+  alloc = vps_cntr_alloc_get(vps);
+#define DF(code,name,value,len,oct)			\
   case code:{						\
     if (len > 1) {					\
       opect = 1;					\
@@ -168,7 +171,7 @@ vps_inst_new(vps_cntr* vps,
       opect = 0;					\
     }							\
     instsz = TYPE_SIZE_OF(vps_inst,vps_ope,opect);	\
-    inst = umem_pool_alloc(&vps->mp,instsz);		\
+    inst = alloc->alloc(alloc,instsz);			\
     if (inst) {						\
       inst->t = vpsk_inst;				\
       inst->opc.iopck = iopck;				\
@@ -551,9 +554,11 @@ vps_data* vps_num_new(vps_cntr* vps,
 		      ustring* name,
 		      double num)
 {
+  uallocator* alloc;
   vps_data* data;
 
-  data = umem_pool_alloc(&vps->mp,sizeof(vps_data));
+  alloc = vps_cntr_alloc_get(vps);
+  data = alloc->alloc(alloc,sizeof(vps_data));
   if(data){
     data->t = vpsk_dt;
     data->dtk = vdtk_num;
@@ -567,9 +572,11 @@ vps_data* vps_int_new(vps_cntr* vps,
 		      ustring* name,
 		      int inte)
 {
+  uallocator* alloc;
   vps_data* data;
 
-  data = umem_pool_alloc(&vps->mp,sizeof(vps_data));
+  alloc = vps_cntr_alloc_get(vps);
+  data = alloc->alloc(alloc,sizeof(vps_data));
   if(data){
     data->t = vpsk_dt;
     data->dtk = vdtk_int;
@@ -582,9 +589,11 @@ vps_data* vps_int_new(vps_cntr* vps,
 vps_data* vps_char_new(vps_cntr* vps,
 		       int chara)
 {
+  uallocator* alloc;
   vps_data* data;
-
-  data = umem_pool_alloc(&vps->mp,sizeof(vps_data));
+  
+  alloc = vps_cntr_alloc_get(vps);
+  data = alloc->alloc(alloc,sizeof(vps_data));
   if(data){
     data->t = vpsk_dt;
     data->dtk = vdtk_char;
@@ -597,9 +606,11 @@ vps_data* vps_str_new(vps_cntr* vps,
 		      ustring* name,
 		      ustring* string)
 {
+  uallocator* alloc;
   vps_data* data;
 
-  data = umem_pool_alloc(&vps->mp,sizeof(vps_data));
+  alloc = vps_cntr_alloc_get(vps);
+  data = alloc->alloc(alloc,sizeof(vps_data));
   if(data){
     data->t = vpsk_dt;
     data->dtk = vdtk_str;
@@ -612,9 +623,11 @@ vps_data* vps_str_new(vps_cntr* vps,
 vps_data* vps_any_new(vps_cntr* vps,
 		      ustring* name)
 {
+  uallocator* alloc;  
   vps_data* data;
-  
-  data = umem_pool_alloc(&vps->mp,sizeof(vps_data));
+
+  alloc = vps_cntr_alloc_get(vps);
+  data = alloc->alloc(alloc,sizeof(vps_data));
   if(data){
     data->t = vpsk_dt;
     data->dtk = vdtk_any;
@@ -627,9 +640,11 @@ vps_data* vps_dtcd_new(vps_cntr* vps,
 		       ustring* name,
 		       vps_cfg* code)
 {
+  uallocator* alloc;
   vps_data* data;
-  
-  data = umem_pool_alloc(&vps->mp,sizeof(vps_data));
+
+  alloc = vps_cntr_alloc_get(vps);
+  data = alloc->alloc(alloc,sizeof(vps_data));
   if(data){
     data->t = vpsk_dt;
     data->dtk = vdtk_code;
@@ -645,8 +660,8 @@ vcfg_block* vcfg_block_new(vps_cntr* vps,
   vcfg_block* b;
   uallocator* allocator;
 
-  allocator = &vps->mp.allocator;
-  b = umem_pool_alloc(&vps->mp,sizeof(vcfg_block));
+  allocator = vps_cntr_alloc_get(vps);
+  b = allocator->alloc(allocator,sizeof(vcfg_block));
   if(b){
     b->t = vcfgk_blk;
     b->parent = NULL;
@@ -680,14 +695,14 @@ vcfg_graph* vcfg_graph_new(vps_cntr* vps,ustring* name)
   vcfg_graph* g;
   uallocator* allocator;
 
-  allocator = &vps->mp.allocator;
-  g = umem_pool_alloc(&vps->mp,sizeof(vcfg_graph));
+  allocator = vps_cntr_alloc_get(vps);
+  g = allocator->alloc(allocator,sizeof(vcfg_graph));
   if(g){
     g->t = vcfgk_grp;
     g->parent = NULL;
     g->id.name = name;
     g->id.num = vps_cntr_nextnum(vps);
-    g->locals = uhstb_vps_datap_alloc(allocator,VCFG_GRP_DATA_TABLE_SIZE);
+    g->locals = uhstb_vps_datap_alloc(allocator,-1);
     g->insts = ulist_vps_instp_alloc(allocator);
     g->imms = ulist_vps_datap_alloc(allocator);
     g->cfgs = ulist_vps_cfgp_alloc(allocator);
@@ -1045,18 +1060,16 @@ vps_mod* vps_mod_new(vps_cntr* vps,
   vps_mod* mod;
   uallocator* allocator;
 
-  allocator = &vps->mp.allocator;
-  mod = umem_pool_alloc(&vps->mp,sizeof(vps_mod));
+  allocator = vps_cntr_alloc_get(vps);
+  mod = allocator->alloc(allocator,sizeof(vps_mod));
   if(mod){
     mod->t = vpsk_mod;
     mod->vps = vps;
-    mod->data = uhstb_vps_datap_alloc(allocator,
-				      VPS_MOD_DATA_TABLE_SIZE);
+    mod->data = uhstb_vps_datap_alloc(allocator,-1);
     if(!mod->data){
       uabort("new hash table data error!");
     }
-    mod->code = uhstb_vcfg_graphp_alloc(allocator,
-					VPS_MOD_CODE_TABLE_SIZE);
+    mod->code = uhstb_vcfg_graphp_alloc(allocator,-1);
     if(!mod->code){
       uabort("new hash table code error!");
     }
@@ -1137,13 +1150,15 @@ void vps_mod_code_put(vps_mod* mod,
 
 void vps_cntr_init(vps_cntr* cntr)
 {
+  uallocator* allocator;
+  
   umem_pool_init(&cntr->mp,-1);
-  cntr->mods = uhstb_vps_modp_alloc(&cntr->mp.allocator,
-				    VPS_CNTR_MOD_TABLE_SIZE);
+  allocator = vps_cntr_alloc_get(cntr);
+  cntr->mods = uhstb_vps_modp_alloc(allocator,-1);
   if (!cntr->mods) {
     uabort("new hash table mod error!");
   }
-  cntr->types = uhstb_vps_typep_alloc(&cntr->mp.allocator,-1);
+  cntr->types = uhstb_vps_typep_alloc(allocator,-1);
   if (!cntr->types) {
     uabort("new hash table type error!");
   }
@@ -1182,7 +1197,10 @@ int vps_cntr_load(vps_cntr* vps,
 
 void vps_cntr_clean(vps_cntr* vps)
 {
-  umem_pool_clean(&vps->mp);
+  uallocator* allocator;
+  
+  allocator = vps_cntr_alloc_get(vps);
+  allocator->clean(allocator);
 }
 
 static int vps_type_comp(vps_typep* type1,
@@ -1204,7 +1222,7 @@ vps_type* vps_type_new(vps_cntr* vps,
   vps_type* type;
   uallocator* allocator;
 
-  allocator = &vps->mp.allocator;
+  allocator = vps_cntr_alloc_get(vps);
   type = allocator->alloc(allocator,sizeof(vps_type));
   if (type){
     type->t = vpsk_type;

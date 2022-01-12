@@ -45,6 +45,21 @@ static int leval_loader_load(vmod_loader* loader,vmod* mod){
   return 0;
 }
 
+UDEFUN(UFNAME leval_kw_init,
+       UARGS (vreader* reader),
+       URET static void)
+UDECLARE
+
+UBEGIN
+  /*keyword init*/
+  #define DF(no,str)				       \
+  if (vreader_keyword_put(reader,(vast_kw){no,str})) { \
+    uabort("keyword put error!");		       \
+  }
+  #include "lkw.h"
+  #undef DF
+UEND
+
 UDEFUN(UFNAME lstartup,
        UARGS (vattr_init_ft attr_init,
 	      vcfun_init_ft cfun_init,
@@ -91,6 +106,9 @@ UBEGIN
   if (!reader) {
     uabort("new reader error!");
   }
+
+  /*keyword init*/
+  leval_kw_init(reader);
 
   vps_cntr_init(&eval->vps);
 

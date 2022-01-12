@@ -22,6 +22,12 @@ struct _leval{
   leval_loader loader;
 };
 
+enum leval_kw{
+  #define DF(no,str) no,
+  #include "lkw.h"
+  #undef DF
+};
+
 UDECLFUN(UFNAME lstartup,
 	 UARGS (vattr_init_ft attr_init,
 		vcfun_init_ft cfun_init,

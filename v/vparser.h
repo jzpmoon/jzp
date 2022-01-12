@@ -10,7 +10,7 @@ enum vastk{
   vastk_number,
   vastk_string,
   vastk_character,
-  vastk_nil,
+  vastk_keyword,
 };
 
 enum vtk{
@@ -22,7 +22,7 @@ enum vtk{
   vtk_character,
   vtk_integer,
   vtk_number,
-  vtk_nil,
+  vtk_keyword,
   vtk_eof,
 };
 
@@ -64,9 +64,10 @@ typedef struct _vast_character{
   int value;
 } vast_character;
 
-typedef struct _vast_nil{
+typedef struct _vast_keyword{
   VASTHEADER;
-} vast_nil;
+  vast_kw kw;
+} vast_keyword;
 
 vast_cons* vast_cons_new(vtoken_state* ts,vast_obj* car,vast_obj* cdr);
 
@@ -80,7 +81,7 @@ vast_string* vast_string_new(vtoken_state* ts,ustring* string);
 
 vast_character* vast_character_new(vtoken_state* ts,int character);
 
-vast_nil* vast_nil_new(vtoken_state* ts);
+vast_keyword* vast_keyword_new(vtoken_state* ts);
 
 void vast_obj_log(vast_obj* ast_obj);
 
@@ -103,8 +104,6 @@ vast_obj* vast_cdar(vast_obj* cons);
 #define vast_stringp(obj) vast_typeof(obj,vastk_string)
 
 #define vast_characterp(obj) vast_typeof(obj,vastk_character)
-
-#define vast_nilp(obj) vast_typeof(obj,vastk_nil)
 
 #define VDEFATTR(aname,sname,body)			\
   int							\

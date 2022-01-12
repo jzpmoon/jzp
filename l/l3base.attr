@@ -390,8 +390,16 @@ VDEFATTR(push,"push",{
     }else if(obj->t == vastk_character){
       vast_character* chara = (vast_character*)obj;
       inst = vps_ipushchar(jreq->vps,grp,chara->value);
-    }else if(obj->t == vastk_nil){
-      inst = vps_ipushnil(jreq->vps,grp);
+    }else if(obj->t == vastk_keyword){
+      vast_keyword* kw;
+
+      kw = (vast_keyword*)obj;
+      if (kw->kw.kw_type == lkw_nil) {
+	inst = vps_ipushnil(jreq->vps,grp);
+      } else {
+	uabort("keyword not define!");
+	inst = NULL;
+      }
     } else if (obj->t == vastk_cons) {
       vps_jzp_req dreq;
       vast_obj* next;
@@ -410,7 +418,7 @@ VDEFATTR(push,"push",{
       attr = sym->attr;
       dreq.ast_obj = next;
       attr->action((vast_attr_req*)&dreq,res);
-      if (res->res_type != var_vps_apd) {
+      if (res->res_type != var_apd) {
 	uabort("push arg error!");
       }
       if (!res->res_obj) {
@@ -905,7 +913,7 @@ VDEFATTR(ref,"ref",{
       attr = sym->attr;
       dreq.ast_obj = next;
       attr->action((vast_attr_req*)&dreq,res);
-      if (res->res_type != var_vps_apd) {
+      if (res->res_type != var_apd) {
 	uabort("ref arg error!");
       }
       if (!res->res_obj) {
@@ -978,7 +986,7 @@ VDEFATTR(set,"set",{
       attr = sym->attr;
       dreq.ast_obj = next;
       attr->action((vast_attr_req*)&dreq,res);
-      if (res->res_type != var_vps_apd) {
+      if (res->res_type != var_apd) {
 	uabort("set arg error!");
       }
       if (!res->res_obj) {

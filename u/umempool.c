@@ -6,6 +6,8 @@ static void* alloc_impl(uallocator* allocator,ualloc_size_t size);
 
 static void free_impl(uallocator* allocator,void* ptr){}
 
+static void clean_impl(uallocator* allocator);
+
 umem_node* umem_node_new(int size){
   int align_size;
   int offset_size;
@@ -28,6 +30,7 @@ umem_node* umem_node_new(int size){
 void umem_pool_init(umem_pool* pool,ualloc_size_t max_size) {
   pool->allocator.alloc = alloc_impl;
   pool->allocator.free = free_impl;
+  pool->allocator.clean = clean_impl;
   pool->now_count = 0;
   pool->now_size = 0;
   if (max_size > -1) {
@@ -101,4 +104,10 @@ void umem_pool_clean(umem_pool* pool){
   }
   ulog("umem pool clean after count:%d,size:%d",
 	pool->now_count,pool->now_size);
+}
+
+static void clean_impl(uallocator* allocator)
+{
+  umem_pool* mp = (umem_pool*)allocator;
+  return umem_pool_clean(mp);
 }

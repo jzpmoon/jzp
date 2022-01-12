@@ -19,7 +19,7 @@ static ustring* vtoken_state_symbol_finish(vtoken_state* ts){
   ubuffer* buff = ts->buff;
   ustring* str;
   ubuffer_ready_read(buff);
-  str = ustring_table_put(ts->symtb,buff->data,buff->limit);
+  str = ustring_table_put(ts->reader->symtb,buff->data,buff->limit);
   ubuffer_ready_write(buff);
   return str;
 }
@@ -28,7 +28,7 @@ static ustring* vtoken_state_string_finish(vtoken_state* ts){
   ubuffer* buff = ts->buff;
   ustring* str;
   ubuffer_ready_read(buff);
-  str = ustring_table_add(ts->strtb,buff->data,buff->limit);
+  str = ustring_table_add(ts->reader->strtb,buff->data,buff->limit);
   ubuffer_ready_write(buff);
   return str;
 }
@@ -245,13 +245,23 @@ int vtoken_lex_number(vtoken_state* ts){
 int vtoken_lex_keyword(vtoken_state* ts)
 {
   int retval;
-
-  retval = ustring_charp_comp(ts->id,"nil");
-  if (!retval) {
-    return ts->token = vtk_nil;
-  } else {
-    return ts->token = vtk_identify;
+  uset* set;
+  ucursor c;
+  
+  set = (uset*)ts->reader->kws;
+  set->iterate(&c);
+  while (1) {
+    vast_kw* kw = set->next(set,&c);
+    if (!kw) {
+      break;
+    }
+    retval = ustring_charp_comp(ts->id,kw->kw_str);
+    if (!retval) {
+      ts->kw = *kw;
+      return ts->token = vtk_keyword;
+    }
   }
+  return ts->token = vtk_identify;
 }
 
 int vtoken_lex_identify(vtoken_state* ts){
@@ -350,13 +360,13 @@ vast_obj* vparser_atom_parse(vtoken_state* ts){
       vast_attr in_attr = {NULL,ts->id,NULL};
       vast_attr* attr;
       vast_symbol* sym;
-      uhstb_vast_attr_get(ts->attrtb,
+      uhstb_vast_attr_get(ts->reader->attrtb,
 			  ts->id->hash_code,
 			  &in_attr,
 			  &attr,
 			  vast_attr_get_comp);
       if (!attr) {
-	attr = ts->dattr;
+	attr = ts->reader->dattr;
       }
       sym = vast_symbol_new(ts,ts->id,attr);
       if(!sym){
@@ -380,13 +390,13 @@ vast_obj* vparser_atom_parse(vtoken_state* ts){
       }
       return (vast_obj*)number;
     }
-  case vtk_nil:
+  case vtk_keyword:
     {
-      vast_nil* nil = vast_nil_new(ts);
-      if(!nil){
-	uabort("vparser_atom_parse error:new vast_nil!");
+      vast_keyword* kw = vast_keyword_new(ts);
+      if(!kw){
+	uabort("vparser_atom_parse error:new vast_keyword!");
       }
-      return (vast_obj*)nil;
+      return (vast_obj*)kw;
     }
   default:
     vtoken_log(ts);
@@ -472,8 +482,8 @@ void vparser_atom_log(vast_obj* s_exp){
       ulog1("  %d",((vast_integer*)s_exp)->value);
     }else if(s_exp->t == vastk_character){
       ulog1("  '%c'",((vast_character*)s_exp)->value);
-    }else if(s_exp->t == vastk_nil){
-      ulog("  nil");
+    }else if(s_exp->t == vastk_keyword){
+      ulog1("  %s",((vast_keyword*)s_exp)->kw.kw_str);
     }else{
       ulog0(" [unkonw]");
     }
@@ -595,17 +605,18 @@ vast_character* vast_character_new(vtoken_state* ts,int character)
   return chara;
 }
 
-vast_nil* vast_nil_new(vtoken_state* ts)
+vast_keyword* vast_keyword_new(vtoken_state* ts)
 {
   uallocator* allocator;
-  vast_nil* nil;
+  vast_keyword* kw;
   
   allocator = ts->allocator;
-  nil = allocator->alloc(allocator,sizeof(vast_nil));
-  if(nil){
-    nil->t = vastk_nil;
+  kw = allocator->alloc(allocator,sizeof(vast_keyword));
+  if(kw){
+    kw->t = vastk_keyword;
+    kw->kw = ts->kw;
   }
-  return nil;
+  return kw;
 }
 
 vast_obj* vast_car(vast_obj* cons)
@@ -656,25 +667,16 @@ void vtoken_state_init(vtoken_state* ts)
 }
 
 vtoken_state* vtoken_state_new(ustream* stream,
-			       ustring_table* symtb,
-			       ustring_table* strtb,
-			       uhstb_vast_attr* attrtb,
-			       vast_attr* dattr)
+			       vreader* reader)
 {
   return vtoken_state_alloc(&u_global_allocator,
 			    stream,
-			    symtb,
-			    strtb,
-			    attrtb,
-			    dattr);
+			    reader);
 }
 
 vtoken_state* vtoken_state_alloc(uallocator* allocator,
 				 ustream* stream,
-				 ustring_table* symtb,
-				 ustring_table* strtb,
-				 uhstb_vast_attr* attrtb,
-				 vast_attr* dattr)
+				 vreader* reader)
 {
   vtoken_state* ts;
   ubuffer* buff;
@@ -692,10 +694,7 @@ vtoken_state* vtoken_state_alloc(uallocator* allocator,
   ts->allocator = allocator;
   ts->stream = stream;
   ts->buff = buff;
-  ts->symtb = symtb;
-  ts->strtb = strtb;
-  ts->attrtb = attrtb;
-  ts->dattr = dattr;
+  ts->reader = reader;
   
   vtoken_state_init(ts);
   

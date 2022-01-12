@@ -168,8 +168,6 @@ typedef struct _vcfg_graph{
   int scope;
 } vcfg_graph,*vcfg_graphp;
 
-#define VCFG_GRP_DATA_TABLE_SIZE 17
-
 uhstb_decl_tpl(vcfg_graphp);
 uhstb_decl_tpl(vps_typep);
 
@@ -187,9 +185,6 @@ typedef struct _vps_mod{
   int status;
 } vps_mod,*vps_modp;
 
-#define VPS_MOD_DATA_TABLE_SIZE 17
-#define VPS_MOD_CODE_TABLE_SIZE 17
-
 uhstb_decl_tpl(vps_modp);
 
 typedef struct _vps_cntr{
@@ -199,7 +194,8 @@ typedef struct _vps_cntr{
   int seqnum;
 } vps_cntr;
 
-#define VPS_CNTR_MOD_TABLE_SIZE 17
+#define vps_cntr_alloc_get(vps) \
+  &(vps)->mp.allocator
 
 typedef struct _vps_jzp_req{
   VAST_ATTR_REQ_HEADER;
@@ -215,8 +211,6 @@ typedef struct _vps_jzp_req{
 #define VATTR_CONTEXT_SUBR(parent)			\
   (parent->t == vcfgk_grp &&				\
    ((vcfg_graph*)parent)->scope != VPS_SCOPE_ENTRY)
-
-enum { var_vps_apd };
 
 extern vast_attr vast_attr_symcall;
 

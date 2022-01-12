@@ -11,7 +11,7 @@ UDECLARE
   vclosure* closure;
   uallocator* allocator;
 UBEGIN
-  allocator = (uallocator*)&vps->mp;
+  allocator = vps_cntr_alloc_get(vps);
   closure = allocator->alloc(allocator,sizeof(vclosure));
   if (closure) {
     closure->fields = ulist_vps_datap_alloc(allocator);
@@ -28,7 +28,7 @@ UBEGIN
 
   return closure;
  err:
-  umem_pool_clean(&vps->mp);
+  allocator->clean(allocator);
   return NULL;
 UEND
 

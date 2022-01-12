@@ -168,7 +168,7 @@ VDEFATTR(sizeof,"sizeof",{
     if (!type) {
       uabort("struct undefine!");
     }
-    VATTR_RETURN(var_vps_apd,type);
+    VATTR_RETURN(var_apd,type);
   })
 
 /*
@@ -197,7 +197,7 @@ VDEFATTR(indexof,"indexof",{
     if (!type) {
       uabort("struct member undefine!");
     }
-    VATTR_RETURN(var_vps_apd,type);    
+    VATTR_RETURN(var_apd,type);    
   })
 
 /*

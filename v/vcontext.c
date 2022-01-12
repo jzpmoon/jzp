@@ -15,11 +15,6 @@ static int insts_concat(vgc_array* consts,
 			vmod* mod,
 			ulist_vps_instp* insts);
 
-#define VCONTEXT_MODTB_SIZE 17
-#define VCONTEXT_OBJTB_SIZE 17
-#define VCONTEXT_SYMTB_SIZE 17
-#define VCONTEXT_STRTB_SIZE 17
-
 UDEFUN(UFNAME vcontext_new,UARGS (vgc_heap* heap),URET vcontext*)
 UDECLARE
   vcontext* ctx;
@@ -38,17 +33,17 @@ UBEGIN
 
   umem_pool_init(&ctx->mp,-1);
   
-  mods = uhstb_vmod_new(VCONTEXT_MODTB_SIZE);
+  mods = uhstb_vmod_new(-1);
   if (!mods) {
     uabort("vcontext_new:mods new error!");
   }
     
-  symtb = ustring_table_new(VCONTEXT_SYMTB_SIZE);
+  symtb = ustring_table_new(-1);
   if(!symtb){
     uabort("vcontext_new:symtb new error!");
   }
 
-  strtb = ustring_table_new(VCONTEXT_STRTB_SIZE);
+  strtb = ustring_table_new(-1);
   if(!strtb){
     uabort("vcontext_new:strtb new error!");
   }
@@ -325,6 +320,7 @@ vgc_subr* vcontext_graph_load(vcontext* ctx,vmod* mod,vcfg_graph* grp)
 {
   vgc_heap* heap;
   vgc_array* consts;
+  uallocator* allocator;
   ulist_vps_datap* imms;
   ulist_vps_cfgp* cfgs;
   ulist_vps_instp* insts;
@@ -341,7 +337,9 @@ vgc_subr* vcontext_graph_load(vcontext* ctx,vmod* mod,vcfg_graph* grp)
   }
   /* load code */
   cfgs = grp->cfgs;
-  insts = ulist_vps_instp_alloc(&ctx->mp.allocator);
+
+  allocator = vcontext_alloc_get(ctx);
+  insts = ulist_vps_instp_alloc(allocator);
   
   cfgs->iterate(&cursor);
   while (1) {
@@ -384,7 +382,7 @@ vgc_subr* vcontext_graph_load(vcontext* ctx,vmod* mod,vcfg_graph* grp)
       vmod_gobj_put(heap,mod,grp->id.name,(vgc_obj*)subr);
     }
   }
-  umem_pool_clean(&ctx->mp);
+  allocator->clean(allocator);
   /* load imm data */
   imms = grp->imms;
   imms->iterate(&cursor);
@@ -635,12 +633,12 @@ void vmod_init(vmod* mod,ustring* name)
     uabort("vmod rells new error!");
   }
   
-  gobjtb = uhstb_vsymbol_new(VCONTEXT_OBJTB_SIZE);
+  gobjtb = uhstb_vsymbol_new(-1);
   if (!gobjtb) {
     uabort("vmod gobjtb new error!");
   }
 
-  lobjtb = uhstb_vsymbol_new(VCONTEXT_OBJTB_SIZE);
+  lobjtb = uhstb_vsymbol_new(-1);
   if (!lobjtb) {
     uabort("vmod lobjtb new error!");
   }

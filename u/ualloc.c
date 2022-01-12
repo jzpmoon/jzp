@@ -10,4 +10,7 @@ static void default_free(uallocator* allocator,void* ptr)
   ufree(ptr);
 }
 
-uallocator u_global_allocator = {default_alloc,default_free};
+static void default_clean(uallocator* allocator)
+{}
+
+uallocator u_global_allocator = {default_alloc,default_free,default_clean};

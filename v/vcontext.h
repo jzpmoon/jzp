@@ -25,9 +25,6 @@ typedef struct _vsymbol{
 ulist_decl_tpl(vreloc);
 uhstb_decl_tpl(vsymbol);
 
-#define VCONTEXT_SYMTB_SIZE 17
-#define VCONTEXT_STRTB_SIZE 17
-
 #define VMOD_STATUS_LOADED 1
 #define VMOD_STATUS_UNLOAD 0
 
@@ -73,6 +70,9 @@ struct _vcontext{
     vslot_define(vgc_call,calling);
   vslot_define_end
 };
+
+#define vcontext_alloc_get(ctx) \
+  &(ctx)->mp.allocator
 
 typedef struct _vgc_subr{
   VGCHEADER;

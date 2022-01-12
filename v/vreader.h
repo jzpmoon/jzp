@@ -3,6 +3,7 @@
 
 #include "ustring.h"
 #include "ustream.h"
+#include "ulist_tpl.h"
 #include "uhstb_tpl.h"
 #include "umempool.h"
 #include "vgc_obj.h"
@@ -23,6 +24,10 @@ typedef struct _vast_attr_req{
 } vast_attr_req;
 
 #define vast_req_dbl(req) *(req)
+
+enum var_type{
+  var_apd,
+};
 
 /*
  * field member "res_type" from above enum.
@@ -46,8 +51,29 @@ typedef struct _vast_attr{
 
 uhstb_decl_tpl(vast_attr);
 
-typedef struct _vtoken_state{
+typedef struct _vast_kw{
+  int kw_type;
+  ucharp kw_str;
+} vast_kw;
+
+ulist_decl_tpl(vast_kw);
+
+typedef void (*vattr_init_ft)(struct _vreader*);
+
+typedef struct _vreader{
   umem_pool mp;
+  ustring_table* symtb;
+  ustring_table* strtb;
+  uhstb_vast_attr* attrtb;
+  vattr_init_ft ainit;
+  vast_attr* dattr;
+  ulist_vast_kw* kws;
+} vreader;
+
+#define vreader_alloc_get(reader) \
+  &(reader)->mp.allocator
+
+typedef struct _vtoken_state{
   uallocator* allocator;
   ustream* stream;
   ubuffer* buff;
@@ -59,10 +85,8 @@ typedef struct _vtoken_state{
   int inte;
   int chara;
   int bool;
-  ustring_table* symtb;
-  ustring_table* strtb;
-  uhstb_vast_attr* attrtb;
-  vast_attr* dattr;
+  vast_kw kw;
+  vreader* reader;
   struct {
     int x;
     int y;
@@ -71,42 +95,25 @@ typedef struct _vtoken_state{
 
 #define VEOF (-1)
 
-struct _vreader;
-
-typedef void (*vattr_init_ft)(struct _vreader*);
-
-typedef struct _vreader{
-  umem_pool mp;
-  ustring_table* symtb;
-  ustring_table* strtb;
-  uhstb_vast_attr* attrtb;
-  vattr_init_ft ainit;
-  vast_attr* dattr;
-} vreader;
-
 vreader* vreader_new(ustring_table* symtb,
 		     ustring_table* strtb,
 		     vattr_init_ft ainit,
 		     vast_attr* dattr);
-			 
+
 vreader* vreader_easy_new(vattr_init_ft ainit);
-			 
-struct _vtoken_state* vreader_from(vreader* reader);
+
+int vreader_keyword_put(vreader* reader,vast_kw keyword);
+
+vtoken_state* vreader_from(vreader* reader);
 
 void vreader_clean(vreader* reader);
 
 vtoken_state* vtoken_state_new(ustream* stream,
-			       ustring_table* symtb,
-			       ustring_table* strtb,
-			       uhstb_vast_attr* attrtb,
-			       vast_attr* dattr);
+			       vreader* reader);
 
 vtoken_state* vtoken_state_alloc(uallocator* allocator,
 				 ustream* stream,
-				 ustring_table* symtb,
-				 ustring_table* strtb,
-				 uhstb_vast_attr* attrtb,
-				 vast_attr* dattr);
+				 vreader* reader);
 
 void vtoken_state_init(vtoken_state* ts);
 
