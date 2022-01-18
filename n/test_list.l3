@@ -1,0 +1,13 @@
+(src-load list.l3)
+
+(subr test ()
+  (push (sizeof list))
+  (push make-array)
+  (call)
+  (push 1)
+  (push list-append)
+  (call)
+  (return)
+)
+
+(test)
