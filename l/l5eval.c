@@ -13,7 +13,7 @@ static void l5attr_init(vreader* reader)
   l5attr_file_concat_init(reader);
 }
 
-leval* l3startup()
+leval* l5startup()
 {
   leval* eval;
 

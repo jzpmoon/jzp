@@ -1,11 +1,111 @@
 /*
- * define attribute lambda
+ * define attribute defun
  */
-VDEFATTR(lambda,"lambda",{
+VDEFATTR(defun,"defun",{
     vps_closure_req* jreq;
+    vps_closure_req dreq;
+    vclosure* closure;
+    vast_obj* obj;
+    vast_obj* next;
+    vast_symbol* fun_name;
     vcfg_graph* grp;
+    vast_obj* args;
 
     jreq = (vps_closure_req*)req;
+    dreq = vast_req_dbl(jreq);
+
+    closure = vclosure_new(jreq->vps);
+    if (!closure) {
+      uabort("new closure error!");
+    }
+    next = vast_cdr(jreq->ast_obj);
+    if (vast_consp(next)) {
+      uabort("not define funcion name!");
+    }
+    obj = vast_car(next);
+    if (vast_symbolp(obj)) {
+      uabort("has no function name!");
+    }
+    fun_name = (vast_symbol*)obj;
+
+    next = vast_cdr(next);
+    if(vast_consp(next)){
+      uabort("defun error!");
+    }
+
+    grp = vcfg_graph_new(jreq->vps,fun_name->name);
+    if(!grp){
+      uabort("defun new cfg error!");
+    }
+    grp->scope = VPS_SCOPE_GLOBAL;
+    
+    obj = vast_car(next);
+    if (obj) {
+      int arg_idx = 0;
+      if (vast_consp(obj)) {
+	uabort("defun args invalid!");
+      }
+      args = obj;
+      /* args procedure */
+      while (args != NULL) {
+	vast_obj* arg;
+	vast_symbol* sym;
+	vps_data* data;
+
+	arg = vast_car(args);
+	if (vast_symbolp(arg)) {
+	  uabort("arg not a symbol!");
+	}
+	sym = (vast_symbol*)arg;
+	data = vps_any_new(jreq->vps,sym->name);
+	if (!data) {
+	  uabort("vps_any_new error!");
+	}
+	data->idx = arg_idx;
+	data->scope = VPS_SCOPE_LOCAL;
+	vcfg_grp_params_apd(grp,data);
+	args = vast_cdr(args);
+	arg_idx++;
+      }
+    }
+    
+    next = vast_cdr(next);
+    /* function body sequence */
+    while (next) {
+      vast_obj* car;
+      vast_symbol* call_name;
+      if (vast_consp(next)) {
+	uabort("defun error!");
+      }
+      obj = vast_car(next);
+      if (vast_consp(obj)) {
+	uabort("defun error!");
+      }
+      car = vast_car(obj);
+      if (vast_symbolp(car)) {
+	uabort("defun call invalid!");
+      }
+      call_name = (vast_symbol*)car;
+      if (call_name->attr) {
+	vast_attr_res res;
+	vast_attr* attr;
+
+	dreq.ast_obj = obj;
+	attr = call_name->attr;
+	(attr->action)((vast_attr_req*)&dreq,&res);
+      } else {
+	uabort("symbol not define attribute!");
+      }
+      next = vast_cdr(next);
+    }
+
+    vcfg_grp_build(jreq->vps,grp);
+    vcfg_grp_connect(jreq->vps,grp);
+
+    closure->init = grp;
+    if (vclosure_child_add(jreq->closure,closure)) {
+      uabort("add child closure error!");
+    }
 
     VATTR_RETURN_VOID;
   })
@@ -14,5 +114,5 @@ VDEFATTR(lambda,"lambda",{
  * declare attribute
  */
 VATTRONLOAD(l5base,{
-    VDECLATTR(lambda);
+    VDECLATTR(defun);
 })

@@ -190,3 +190,12 @@ UBEGIN
 UEND
 
 vast_attr vclosure_attr_symcall = {NULL,NULL,symcall_action};
+
+UDEFUN(UFNAME vclosure_child_add,
+	 UARGS (vclosure* closure,vclosure* child),
+	 URET int)
+UDECLARE
+
+UBEGIN
+  return ulist_vclosurep_append(closure->childs,child);
+UEND

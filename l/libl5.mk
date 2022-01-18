@@ -1,7 +1,7 @@
-bin = libl.$(suf_so)
-obj = lobj.o leval.o l3eval.o
-temp_attr_file = _l3temp.attr
-temp_cfun_file = _l3temp.cfun
+bin = libl5.$(suf_so)
+obj = lobj.o leval.o l5eval.o
+temp_attr_file = _l5temp.attr
+temp_cfun_file = _l5temp.cfun
 
 libu_path=../u/
 libv_path=../v/
@@ -11,17 +11,17 @@ u_sobj=u
 u_somk=makefile
 CFLAGS=-std=c89 -Wall -Wextra -Wno-unused-parameter $(DEBUG_MODE)
 
-ATTR = l3mod,l3proc,l3base
-CFUN = l3base
+ATTR = l5base
+CFUN = l5base
 
 define gen_attr_file
 	$(libv_path)/attr.sh --attr=$(ATTR) --out=$(temp_attr_file) \
-	--callback=l3attr_file_concat_init
+	--callback=l5attr_file_concat_init
 endef
 
 define gen_cfun_file
 	$(libv_path)/cfun.sh --cfun=$(CFUN) --out=$(temp_cfun_file) \
-	--callback=l3cfun_file_concat_init
+	--callback=l5cfun_file_concat_init
 endef
 
 $(bin):$(temp_attr_file) $(temp_cfun_file) $(obj) $(v_sobj)

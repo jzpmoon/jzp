@@ -1,7 +1,7 @@
-bin_name = jzpl$(suf_pg)
-obj_list = jzpl.o
+bin_name = l5$(suf_pg)
+obj_list = l5.o
 
-l_lib = l
+l_lib = l5
 v_lib = v
 u_lib = u
 
@@ -20,7 +20,7 @@ CFLAGS   = -std=c89 -Wall $(DEBUG_MODE)
 	$(CC) -c -o $@ $< -I $(libl_path) -I $(libv_path) -I $(libu_path) $(CFLAGS)
 $(l_lib):
 	cd $(libl_path); \
-	./configure.sh --prefix=$(prefix) --envc=$(envc) --thw=$(thw); \
+	./configure5.sh --prefix=$(prefix) --envc=$(envc) --thw=$(thw); \
 	cd $(currdir); \
 	make -C $(libl_path) -f $(l_somk)
 install:

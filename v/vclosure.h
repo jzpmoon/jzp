@@ -21,6 +21,8 @@ typedef struct _vps_closure_req{
   vclosure* closure;
 } vps_closure_req;
 
+extern vast_attr vclosure_attr_symcall;
+
 UDECLFUN(UFNAME vclosure_new,
 	 UARGS (vps_cntr* vps),
 	 URET vclosure*);
@@ -28,5 +30,9 @@ UDECLFUN(UFNAME vclosure_new,
 UDECLFUN(UFNAME vclosure2vps,
 	 UARGS (vreader* reader,char* file_path,vps_cntr* vps),
 	 URET vps_mod*);
+
+UDECLFUN(UFNAME vclosure_child_add,
+	 UARGS (vclosure* closure,vclosure* child),
+	 URET int);
 
 #endif
