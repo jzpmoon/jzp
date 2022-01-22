@@ -627,7 +627,8 @@ VDEFATTR(jmpi,"jmpi",{
     }
     if(obj->t == vastk_symbol){
       vast_symbol* symbol = (vast_symbol*)obj;
-      inst = vps_ijmpilb(jreq->vps,symbol->name);
+      vps_id id = vps_id_get(jreq->vps,symbol->name);
+      inst = vps_ijmpilb(jreq->vps,id);
     }else if(obj->t == vastk_integer){
       vast_integer* inte = (vast_integer*)obj;
       inst = vps_ijmpiimm(jreq->vps,inte->value);
@@ -669,7 +670,8 @@ VDEFATTR(jmp,"jmp",{
     }
     if(obj->t == vastk_symbol){
       vast_symbol* symbol = (vast_symbol*)obj;
-      inst = vps_ijmplb(jreq->vps,symbol->name);
+      vps_id id = vps_id_get(jreq->vps,symbol->name);
+      inst = vps_ijmplb(jreq->vps,id);
     }else if(obj->t == vastk_integer){
       vast_integer* inte = (vast_integer*)obj;
       inst = vps_ijmpimm(jreq->vps,inte->value);
@@ -1037,7 +1039,8 @@ VDEFATTR(label,"label",{
     }
     if (obj->t == vastk_symbol) {
       vast_symbol* symbol = (vast_symbol*)obj;
-      inst = vps_ilabel(jreq->vps,symbol->name);
+      vps_id id = vps_id_get(jreq->vps,symbol->name);
+      inst = vps_ilabel(jreq->vps,id);
     } else {
       uabort("label inst error!");
       inst = NULL;

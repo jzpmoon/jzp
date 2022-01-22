@@ -1,5 +1,6 @@
 /*
  * define attribute defun
+ * (defun (args...) (body)...)
  */
 VDEFATTR(defun,"defun",{
     vps_closure_req* jreq;
@@ -12,12 +13,16 @@ VDEFATTR(defun,"defun",{
     vast_obj* args;
 
     jreq = (vps_closure_req*)req;
-    dreq = vast_req_dbl(jreq);
 
     closure = vclosure_new(jreq->vps);
     if (!closure) {
       uabort("new closure error!");
     }
+    closure->parent = jreq->closure;
+
+    dreq = vast_req_dbl(jreq);
+    dreq.closure = closure;
+    
     next = vast_cdr(jreq->ast_obj);
     if (vast_consp(next)) {
       uabort("not define funcion name!");
@@ -74,6 +79,9 @@ VDEFATTR(defun,"defun",{
     while (next) {
       vast_obj* car;
       vast_symbol* call_name;
+      vast_attr* attr;
+      vast_attr_res res;
+      
       if (vast_consp(next)) {
 	uabort("defun error!");
       }
@@ -86,12 +94,9 @@ VDEFATTR(defun,"defun",{
 	uabort("defun call invalid!");
       }
       call_name = (vast_symbol*)car;
-      if (call_name->attr) {
-	vast_attr_res res;
-	vast_attr* attr;
-
+      attr = call_name->attr;
+      if (attr) {
 	dreq.ast_obj = obj;
-	attr = call_name->attr;
 	(attr->action)((vast_attr_req*)&dreq,&res);
       } else {
 	uabort("symbol not define attribute!");
@@ -111,8 +116,166 @@ VDEFATTR(defun,"defun",{
   })
 
 /*
+ * define attribute if
+ * (if (cond) (then) (else))
+ */
+VDEFATTR(if,"if",{
+    vps_closure_req* jreq;
+    vps_closure_req dreq;
+    vast_attr_res res;
+    vast_attr* attr;
+    vast_symbol* sym;
+    vast_obj* obj;
+    vast_obj* next;
+    vast_obj* car;
+    vps_inst* inst;
+    vcfg_graph* grp;
+    vps_id then_id;
+    vps_id else_id;
+    vps_id exit_id;
+
+    jreq = (vps_closure_req*)req;
+    grp = jreq->closure->init;
+
+    then_id = vps_id_get(jreq->vps,NULL);
+    else_id = vps_id_get(jreq->vps,NULL);
+    exit_id = vps_id_get(jreq->vps,NULL);
+    
+    /* (cond...) */
+    next = vast_cdr(jreq->ast_obj);
+    if (vast_consp(next)) {
+      uabort("ast attr \"if\" has no cond!");
+    }
+    obj = vast_car(next);
+    if (vast_consp(obj)) {
+      uabort("ast attr \"if\" cond has no ()!");
+    }
+    car = vast_car(obj);
+    if (vast_symbolp(car)) {
+      uabort("cond car not a symbol!");
+    }
+    sym = (vast_symbol*)car;
+    dreq = vast_req_dbl(jreq);
+    dreq.ast_obj = obj;
+    attr = sym->attr;
+    if (attr) {
+      attr->action((vast_attr_req*)&dreq,&res);
+    } else {
+      uabort("cond car symbol has no attr!");
+    }
+    
+    inst = vps_ijmpilb(jreq->vps,then_id);
+    vcfg_grp_inst_apd(grp,inst);
+    inst = vps_ijmplb(jreq->vps,else_id);
+    vcfg_grp_inst_apd(grp,inst);
+    
+    /* (then...) */
+    inst = vps_ilabel(jreq->vps,then_id);
+    vcfg_grp_inst_apd(grp,inst);
+    
+    next = vast_cdr(jreq->ast_obj);
+    if (vast_consp(next)) {
+      uabort("ast attr \"if\" has no then!");
+    }
+    obj = vast_car(next);
+    if (vast_consp(obj)) {
+      uabort("ast attr \"if\" then has no ()!");
+    }
+    car = vast_car(obj);
+    if (vast_symbolp(car)) {
+      uabort("then car not a symbol!");
+    }
+    sym = (vast_symbol*)car;
+    dreq = vast_req_dbl(jreq);
+    dreq.ast_obj = obj;
+    attr = sym->attr;
+    if (attr) {
+      attr->action((vast_attr_req*)&dreq,&res);
+    } else {
+      uabort("then car symbol has no attr!");
+    }
+
+    inst = vps_ijmplb(jreq->vps,exit_id);
+    vcfg_grp_inst_apd(grp,inst);
+    
+    /* (else...) */
+    inst = vps_ilabel(jreq->vps,else_id);
+    vcfg_grp_inst_apd(grp,inst);
+
+    next = vast_cdr(jreq->ast_obj);
+    if (vast_consp(next)) {
+      uabort("ast attr \"if\" has no else!");
+    }
+    obj = vast_car(next);
+    if (vast_consp(obj)) {
+      uabort("ast attr \"if\" else has no ()!");
+    }
+    car = vast_car(obj);
+    if (vast_symbolp(car)) {
+      uabort("else car not a symbol!");
+    }
+    sym = (vast_symbol*)car;
+    dreq = vast_req_dbl(jreq);
+    dreq.ast_obj = obj;
+    attr = sym->attr;
+    if (attr) {
+      attr->action((vast_attr_req*)&dreq,&res);
+    } else {
+      uabort("else car symbol has no attr!");
+    }
+
+    inst = vps_ilabel(jreq->vps,exit_id);
+    vcfg_grp_inst_apd(grp,inst);
+    
+    VATTR_RETURN_VOID;
+  })
+
+/*
+ * define attribute add
+ * (+ num...)
+ */
+VDEFATTR(add,"+",{
+    vps_closure_req* jreq;
+    vast_obj* obj;
+    vast_obj* next;
+    vps_inst* inst;
+    vcfg_graph* grp;
+    int flag = 0;
+
+    jreq = (vps_closure_req*)req;
+    grp = jreq->closure->init;
+    next = vast_cdr(jreq->ast_obj);
+    while (1) {
+      obj = vast_car(next);
+      if (vast_numberp(obj)) {
+	vast_number* num = (vast_number*)obj;
+	inst = vps_ipushnum(jreq->vps,grp,num->name,num->value);
+      } else if (vast_integerp(obj)) {
+	vast_integer* inte = (vast_integer*)obj;
+	inst = vps_ipushint(jreq->vps,grp,inte->name,inte->value);
+      } else if (vast_symbolp(obj)) {
+	vast_symbol* sym = (vast_symbol*)obj;
+	inst = vps_ipushdt(jreq->vps,grp,sym->name);
+      } else {
+	uabort("added not a number or symbol!");
+      }
+      vcfg_grp_inst_apd(grp,inst);
+      if (flag) {
+	inst = vps_iadd(jreq->vps);
+	vcfg_grp_inst_apd(grp,inst);
+      } else {
+	flag = 1;
+      }
+    }
+    
+    VATTR_RETURN_VOID;
+  })
+
+/*
  * declare attribute
  */
 VATTRONLOAD(l5base,{
     VDECLATTR(defun);
+    VDECLATTR(if);
+    VDECLATTR(add);
 })

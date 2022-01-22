@@ -221,9 +221,9 @@ static int insts_concat(vgc_array* consts,
 	  uabort("vcfg_block have no parent!");
 	}
 	grp = (vcfg_graph*)cfg;
-	data = vcfg_grp_dtget(grp,pinst->ope[0].label);
+	data = vcfg_grp_dtget(grp,pinst->ope[0].id.name);
 	if(!data){
-	  uabort("local variable: %s not find",pinst->ope[0].label->value);
+	  uabort("local variable: %s not find",pinst->ope[0].id.name->value);
 	}
 	vps_inst_imm_set(pinst,data->idx);
 	ulist_vps_instp_append(insts,pinst);
@@ -248,7 +248,7 @@ static int insts_concat(vgc_array* consts,
       {
 	int insts_count;
 
-	insts_count = get_insts_count_by_name(cfgs,pinst->ope[0].label);
+	insts_count = get_insts_count_by_name(cfgs,pinst->ope[0].id.name);
 	vps_inst_imm_set(pinst,insts_count);
 	ulist_vps_instp_append(insts,pinst);
 	ulog("inst code");

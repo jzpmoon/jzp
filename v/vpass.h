@@ -28,6 +28,9 @@ enum vdtk{
   vdtk_code,
 };
 
+struct _vps_cntr;
+typedef struct _vps_cntr vps_cntr;
+
 typedef struct _vps_t{
   VPSHEADER;
 } vps_t,* vpsp;
@@ -48,6 +51,11 @@ typedef struct _vps_data{
     struct _vps_cfg* code;
   } u;
 } vps_data,*vps_datap;
+
+typedef struct _vps_id{
+  ustring* name;
+  int num;
+} vps_id;
 
 /*
  * instruction opcode kind
@@ -78,7 +86,7 @@ typedef struct _vps_opc{
 typedef struct _vps_ope{
   unsigned char iopek;
   usize_t operand;
-  ustring* label;
+  vps_id id;
   vps_data* data;
 } vps_ope;
 
@@ -121,10 +129,7 @@ typedef struct _vps_type{
   struct _vps_t* parent;			\
   vps_id id
 
-typedef struct _vps_id{
-  ustring* name;
-  int num;
-} vps_id;
+vps_id vps_id_get(vps_cntr* vps,ustring* name);
 
 int vps_id_comp(vps_id id1,vps_id id2);
 
@@ -187,12 +192,13 @@ typedef struct _vps_mod{
 
 uhstb_decl_tpl(vps_modp);
 
-typedef struct _vps_cntr{
+struct _vps_cntr
+{
   umem_pool mp;
   uhstb_vps_modp* mods;
   uhstb_vps_typep* types;
   int seqnum;
-} vps_cntr;
+};
 
 #define vps_cntr_alloc_get(vps) \
   &(vps)->mp.allocator
@@ -225,9 +231,7 @@ vps_inst*
 vps_inst_new(vps_cntr* vps,
 	     int iopck,
 	     int iopek,
-	     usize_t opcode,
-	     ustring* label,
-	     vps_data* data);
+	     usize_t opcode);
 
 vps_inst* vps_inop(vps_cntr* vps);
 
@@ -289,13 +293,13 @@ vps_inst* vps_ijmpiimm(vps_cntr* vps,
 		       int imm);
 
 vps_inst* vps_ijmpilb(vps_cntr* vps,
-		      ustring* label);
+		      vps_id id);
 
 vps_inst* vps_ijmpimm(vps_cntr* vps,
 		      int imm);
 
 vps_inst* vps_ijmplb(vps_cntr* vps,
-		     ustring* label);
+		     vps_id id);
 
 vps_inst* vps_ieq(vps_cntr* vps);
 
@@ -328,7 +332,7 @@ vps_inst* vps_isetdt(vps_cntr* vps,
 		     ustring* name);
 
 vps_inst* vps_ilabel(vps_cntr* vps,
-		     ustring* name);
+		     vps_id id);
 
 vps_data* vps_num_new(vps_cntr* vps,
 		      ustring* name,
@@ -353,7 +357,7 @@ vps_data* vps_dtcd_new(vps_cntr* vps,
 		       vps_cfg* code);
 
 vcfg_block* vcfg_block_new(vps_cntr* vps,
-			   ustring* name);
+			   vps_id id);
 
 void vcfg_blk_apd(vcfg_block* blk,
 		  vps_inst* inst);
