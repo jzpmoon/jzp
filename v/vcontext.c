@@ -9,11 +9,14 @@ uhstb_def_tpl(vsymbol);
 static void gdata_load(vcontext* ctx,vmod* mod,vps_data* data);
 static void ldata_load(vgc_heap* heap,vgc_array* consts,vps_data* data);
 static vslot data2data(vgc_heap* heap,vps_data* data);
-static int insts_concat(vgc_array* consts,
-			ulist_vps_cfgp* cfgs,
-			vcfg_block* blk,
-			vmod* mod,
-			ulist_vps_instp* insts);
+
+UDECLFUN(UFNAME insts_concat,
+	 UARGS (vgc_array* consts,
+		ulist_vps_cfgp* cfgs,
+		vcfg_block* blk,
+		vmod* mod,
+		ulist_vps_instp* insts),
+	 URET static int);
 
 UDEFUN(UFNAME vcontext_new,UARGS (vgc_heap* heap),URET vcontext*)
 UDECLARE
@@ -169,16 +172,18 @@ static int get_insts_count(ulist_vps_cfgp* cfgs,vps_id id)
   return insts_count;
 }
 
-static int insts_concat(vgc_array* consts,
-			ulist_vps_cfgp* cfgs,
-			vcfg_block* blk,
-			vmod* mod,
-			ulist_vps_instp* insts)
-{
+UDEFUN(UFNAME insts_concat,
+       UARGS (vgc_array* consts,
+	      ulist_vps_cfgp* cfgs,
+	      vcfg_block* blk,
+	      vmod* mod,
+	      ulist_vps_instp* insts),
+       URET static int)
+UDECLARE
   /*part insts*/
   ulist_vps_instp* pinsts;
   ucursor cursor;
-
+UBEGIN
   pinsts = blk->insts;
   insts->iterate(&cursor);
 
@@ -223,7 +228,8 @@ static int insts_concat(vgc_array* consts,
 	grp = (vcfg_graph*)cfg;
 	data = vcfg_grp_dtget(grp,pinst->ope[0].id.name);
 	if(!data){
-	  uabort("local variable: %s not find",pinst->ope[0].id.name->value);
+	  vps_id_log(pinst->ope[0].id);
+	  uabort("local variable: not find");
 	}
 	vps_inst_imm_set(pinst,data->idx);
 	ulist_vps_instp_append(insts,pinst);
@@ -269,7 +275,7 @@ static int insts_concat(vgc_array* consts,
     ulog("inst non operand");
   }
   return 0;
-}
+UEND
 
 static void ldata_load(vgc_heap* heap,vgc_array* consts,vps_data* data)
 {
@@ -316,8 +322,10 @@ static vslot data2data(vgc_heap* heap,vps_data* data)
   return slot;
 }
 
-vgc_subr* vcontext_graph_load(vcontext* ctx,vmod* mod,vcfg_graph* grp)
-{
+UDEFUN(UFNAME vcontext_graph_load,
+       UARGS (vcontext* ctx,vmod* mod,vcfg_graph* grp),
+       URET vgc_subr*)
+UDECLARE
   vgc_heap* heap;
   vgc_array* consts;
   uallocator* allocator;
@@ -327,7 +335,7 @@ vgc_subr* vcontext_graph_load(vcontext* ctx,vmod* mod,vcfg_graph* grp)
   vgc_string* bytecode;
   vgc_subr* subr;
   ucursor cursor;
-
+UBEGIN
   heap = ctx->heap;
   consts = vgc_array_new(heap,
 			 grp->imms->len,
@@ -370,7 +378,13 @@ vgc_subr* vcontext_graph_load(vcontext* ctx,vmod* mod,vcfg_graph* grp)
   if (!subr) {
     uabort("new subr error!");
   }
+  if (grp->scope == VPS_SCOPE_UNKNOW) {
+    uabort("graph scope unknow!");
+  }
   if (grp->scope != VPS_SCOPE_ENTRY) {
+    if (!grp->id.name) {
+      uabort("graph not a entry but has no name!");
+    }
     /*
      * add to local symbol table
      */
@@ -397,7 +411,7 @@ vgc_subr* vcontext_graph_load(vcontext* ctx,vmod* mod,vcfg_graph* grp)
   }
 
   return subr;
-}
+UEND
 
 void vcontext_mod_log(vcontext* ctx){
   uhstb_vmod* mods;
@@ -414,12 +428,17 @@ void vcontext_mod_log(vcontext* ctx){
   }
 }
 
-int vcontext_mod2mod(vcontext* ctx,vmod* dest_mod,vps_mod* src_mod)
-{
+UDEFUN(UFNAME vcontext_mod2mod,
+       UARGS (vcontext* ctx,vmod* dest_mod,vps_mod* src_mod),
+       URET int)
+UDECLARE
   ucursor cursor;
-  uhstb_vps_datap* data = src_mod->data;
-  uhstb_vcfg_graphp* code = src_mod->code;
-    
+  uhstb_vps_datap* data = NULL;
+  uhstb_vcfg_graphp* code = NULL;
+UBEGIN
+  data = src_mod->data;
+  code = src_mod->code;
+
   if (vps_mod_isload(src_mod)) {
     vmod_loaded(dest_mod);
   }
@@ -445,24 +464,29 @@ int vcontext_mod2mod(vcontext* ctx,vmod* dest_mod,vps_mod* src_mod)
       break;
     }
     g = *gp;
-    ulog("load vps graph name:%s",g->id.name->value);
+    ulog0("load vps graph name:");
+    vps_id_log(g->id);
     vcontext_graph_load(ctx,dest_mod,g);
   }
 
   if (src_mod->entry) {
+    ulog0("load vps entry graph");
+    vps_id_log(src_mod->entry->id);
     dest_mod->init = vcontext_graph_load(ctx,dest_mod,src_mod->entry);
   }
   return 0;
-}
+UEND
 
-int vcontext_mod_load(vcontext* ctx,vps_mod* mod)
-{
+UDEFUN(UFNAME vcontext_mod_load,
+       UARGS (vcontext* ctx,vps_mod* mod),
+       URET int)
+UDECLARE
   vmod* dest_mod;
-
+UBEGIN
   dest_mod = vcontext_mod_add(ctx,mod->name);
   vcontext_mod2mod(ctx,dest_mod,mod);
   return 0;
-}
+UEND
 
 static void vcontext_mod_init(vcontext* ctx)
 {
@@ -484,12 +508,13 @@ static void vcontext_mod_init(vcontext* ctx)
     }
   }
 }
-
-int vcontext_vps_load(vcontext* ctx,vps_cntr* vps)
-{
+UDEFUN(UFNAME vcontext_vps_load,
+       UARGS (vcontext* ctx,vps_cntr* vps),
+       URET int)
+UDECLARE
   ucursor cursor;
   uhstb_vps_modp* mods;
-
+UBEGIN
   mods = vps->mods;
   mods->iterate(&cursor);
   while (1) {
@@ -506,7 +531,7 @@ int vcontext_vps_load(vcontext* ctx,vps_cntr* vps)
   vcontext_relocate(ctx);
   vcontext_mod_init(ctx);
   return 0;
-}
+UEND
 
 static void gdata_load(vcontext* ctx,vmod* mod,vps_data* data)
 {

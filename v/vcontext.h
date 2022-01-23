@@ -135,11 +135,17 @@ UDECLFUN(UFNAME vcontext_new,UARGS (vgc_heap* heap),URET vcontext*);
 
 vslot vcontext_params_get(vcontext* ctx,int index);
 
-int vcontext_vps_load(vcontext* ctx,vps_cntr* vps);
+UDECLFUN(UFNAME vcontext_vps_load,
+	 UARGS (vcontext* ctx,vps_cntr* vps),
+	 URET int);
 
-int vcontext_mod_load(vcontext* ctx,vps_mod* mod);
+UDECLFUN(UFNAME vcontext_mod_load,
+	 UARGS (vcontext* ctx,vps_mod* mod),
+	 URET int);
 
-vgc_subr* vcontext_graph_load(vcontext* ctx,vmod* mod,vcfg_graph* grp);
+UDECLFUN(UFNAME vcontext_graph_load,
+	 UARGS (vcontext* ctx,vmod* mod,vcfg_graph* grp),
+	 URET vgc_subr*);
 
 void vcontext_execute(vcontext* ctx);
 
@@ -147,7 +153,9 @@ void vcontext_relocate(vcontext* ctx);
 
 vmod* vcontext_mod_add(vcontext* ctx,ustring* name);
 
-int vcontext_mod2mod(vcontext* ctx,vmod* dest_mod,vps_mod* src_mod);
+UDECLFUN(UFNAME vcontext_mod2mod,
+	 UARGS (vcontext* ctx,vmod* dest_mod,vps_mod* src_mod),
+	 URET int);
 
 void vmod_add_reloc(vmod* mod,vreloc reloc);
 

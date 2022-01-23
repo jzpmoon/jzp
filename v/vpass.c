@@ -159,6 +159,19 @@ int vps_id_comp(vps_id id1,vps_id id2)
   }
 }
 
+void vps_inst_log(vps_inst* inst)
+{
+#define DF(code,name,value,len,oct)				\
+  case code:							\
+    ulog4("inst log:%d:%s:%d:%d",code,name,len,oct);		\
+    break;
+  switch (inst->opc.opcode) {
+    VBYTECODE
+  default:break;
+#undef DF
+  }
+}
+
 vps_inst*
 vps_inst_new(vps_cntr* vps,
 	     int iopck,
@@ -729,6 +742,7 @@ vcfg_graph* vcfg_graph_new(vps_cntr* vps,ustring* name)
     g->entry = NULL;
     g->params_count = 0;
     g->locals_count = 0;
+    g->scope = VPS_SCOPE_UNKNOW;
   }
   return g;
 }

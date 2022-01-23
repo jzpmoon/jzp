@@ -268,7 +268,6 @@ int vtoken_lex_identify(vtoken_state* ts){
   ustring* str;
   int      c;
 
-  vtoken_mark(ts);
   while(1){
     c = vtoken_look_ahead(ts);
     switch(c){
@@ -299,23 +298,29 @@ int vtoken_next(vtoken_state* ts){
   int c;
   
   vtoken_skip(ts);
-  c = vtoken_next_char(ts);
+  c = vtoken_look_ahead(ts);
   switch(c){
   case '(':
+    vtoken_next_char(ts);
     return ts->token = vtk_left;
   case ')':
+    vtoken_next_char(ts);
     return ts->token = vtk_right;
   case '"':
+    vtoken_next_char(ts);
     return vtoken_lex_string(ts);
   case '\'':
+    vtoken_next_char(ts);
     return vtoken_lex_character(ts);
   case '+':
   case '-':
+    vtoken_mark(ts);
+    vtoken_next_char(ts);
     c = vtoken_look_ahead(ts);
     if(c < '0' || c > '9'){
       return vtoken_lex_identify(ts);
     }else{
-      goto lab_num;
+      return vtoken_lex_number(ts);
     }
   case '0':
   case '1':
@@ -327,7 +332,7 @@ int vtoken_next(vtoken_state* ts){
   case '7':
   case '8':
   case '9':
-  lab_num:
+    vtoken_next_char(ts);
     return vtoken_lex_number(ts);
   case VEOF:
     return ts->token = vtk_eof;

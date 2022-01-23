@@ -77,6 +77,7 @@ vgc_string* vps_inst_to_str(vgc_heap* heap,ulist_vps_instp* insts)
       break;
     }
     inst = *instp;
+    vps_inst_log(inst);
     switch (inst->opc.opcode) {
 #define DF(ocode,name,value,len,oct)				\
       case ocode: {						\

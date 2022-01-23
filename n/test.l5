@@ -1,3 +1,5 @@
 ;;test l5
 (defun inc (x)
   (+ x 1))
+
+(inc 1)

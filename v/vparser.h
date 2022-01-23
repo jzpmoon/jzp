@@ -106,18 +106,24 @@ vast_obj* vast_cdar(vast_obj* cons);
 #define vast_characterp(obj) vast_typeof(obj,vastk_character)
 
 #define VDEFATTR(aname,sname,body)			\
-  int							\
-  _vast_attr_action_##aname(vast_attr_req* req,		\
-			    vast_attr_res* res){	\
-    body						\
-      }							\
-  static vast_attr _vast_attr_infor_##aname =		\
+  UDEFUN(UFNAME _vast_attr_action_##aname,		\
+	 UARGS (vast_attr_req* req,vast_attr_res* res),	\
+	 URET int)					\
+    UDECLARE						\
+    UBEGIN						\
+      body						\
+    UEND						\
+ static vast_attr _vast_attr_infor_##aname =		\
     {sname,NULL,_vast_attr_action_##aname};
 
 #define VATTRONLOAD(afname,body)			\
-  void _vattr_file_init_##afname(vreader* reader){	\
-    body						\
-      }
+  UDEFUN(UFNAME _vattr_file_init_##afname,		\
+	 UARGS (vreader* reader),			\
+	 URET void)					\
+    UDECLARE						\
+    UBEGIN						\
+      body						\
+    UEND
 
 #define VATTR_RETURN(type,obj)			\
   do {						\

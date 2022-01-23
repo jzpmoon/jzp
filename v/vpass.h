@@ -96,6 +96,8 @@ typedef struct _vps_inst{
   vps_ope ope[1];
 } vps_inst,*vps_instp;
 
+void vps_inst_log(vps_inst* inst);
+
 #define vps_inst_opck_get(inst)			\
   (inst)->opc.iopck
 
@@ -157,6 +159,7 @@ typedef struct _vcfg_block{
   ulist_vps_instp* insts;
 } vcfg_block;
 
+#define VPS_SCOPE_UNKNOW -1
 #define VPS_SCOPE_GLOBAL 1
 #define VPS_SCOPE_LOCAL 2
 #define VPS_SCOPE_ENTRY 3

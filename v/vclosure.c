@@ -18,7 +18,7 @@ UBEGIN
   closure = allocator->alloc(allocator,sizeof(vclosure));
   if (closure) {
     fields = ulist_vps_datap_alloc(allocator);
-    if (!closure->fields) {
+    if (!fields) {
       goto err;
     }
     init = vcfg_graph_new(vps,NULL);
@@ -26,7 +26,7 @@ UBEGIN
       goto err;
     }
     childs = ulist_vclosurep_alloc(allocator);
-    if (!closure->childs) {
+    if (!childs) {
       goto err;
     }
     closure->fields = fields;
@@ -100,6 +100,8 @@ UDECLARE
   vclosure* closure;
   vps_closure_req req;
   vast_attr_res res;
+  vcfg_graph* init;
+  vps_inst* inst;
 UBEGIN
   mod_name = ustring_table_put(reader->symtb,file_path,-1);
   if (!mod_name) {
@@ -120,12 +122,19 @@ UBEGIN
   if (!closure) {
     uabort("closure new error!");
   }
+  init = closure->init;
+  init->scope = VPS_SCOPE_ENTRY;
   req.vps = vps;
   req.closure = closure;
   req.reader = reader;
   if (vfile2obj(reader,file_path,(vast_attr_req*)&req,&res)) {
     uabort("file2obj error!");
   }
+
+  inst = vps_iretvoid(vps);
+  vcfg_grp_inst_apd(init,inst);
+  vcfg_grp_build(vps,init);
+  vcfg_grp_connect(vps,init);
 
   vclosure2mod(closure,mod);
 

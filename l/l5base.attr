@@ -11,6 +11,7 @@ VDEFATTR(defun,"defun",{
     vast_symbol* fun_name;
     vcfg_graph* grp;
     vast_obj* args;
+    vps_inst* inst;
 
     jreq = (vps_closure_req*)req;
 
@@ -19,6 +20,8 @@ VDEFATTR(defun,"defun",{
       uabort("new closure error!");
     }
     closure->parent = jreq->closure;
+    grp = closure->init;
+    grp->scope = VPS_SCOPE_GLOBAL;
 
     dreq = vast_req_dbl(jreq);
     dreq.closure = closure;
@@ -33,17 +36,13 @@ VDEFATTR(defun,"defun",{
     }
     fun_name = (vast_symbol*)obj;
 
+    grp->id.name = fun_name->name;
+    
     next = vast_cdr(next);
     if(vast_consp(next)){
-      uabort("defun error!");
+      uabort("defun args error!");
     }
 
-    grp = vcfg_graph_new(jreq->vps,fun_name->name);
-    if(!grp){
-      uabort("defun new cfg error!");
-    }
-    grp->scope = VPS_SCOPE_GLOBAL;
-    
     obj = vast_car(next);
     if (obj) {
       int arg_idx = 0;
@@ -103,11 +102,12 @@ VDEFATTR(defun,"defun",{
       }
       next = vast_cdr(next);
     }
-
+    
+    inst = vps_ireturn(jreq->vps);
+    vcfg_grp_inst_apd(grp,inst);
     vcfg_grp_build(jreq->vps,grp);
     vcfg_grp_connect(jreq->vps,grp);
 
-    closure->init = grp;
     if (vclosure_child_add(jreq->closure,closure)) {
       uabort("add child closure error!");
     }
@@ -240,32 +240,38 @@ VDEFATTR(add,"+",{
     vast_obj* next;
     vps_inst* inst;
     vcfg_graph* grp;
-    int flag = 0;
+    int argc = 0;
 
     jreq = (vps_closure_req*)req;
     grp = jreq->closure->init;
     next = vast_cdr(jreq->ast_obj);
     while (1) {
+      if (!next) {
+	if (argc < 2) {
+	  uabort("attr \"+\" args less than 2!");
+	}
+	break;
+      }
       obj = vast_car(next);
-      if (vast_numberp(obj)) {
+      if (!vast_numberp(obj)) {
 	vast_number* num = (vast_number*)obj;
 	inst = vps_ipushnum(jreq->vps,grp,num->name,num->value);
-      } else if (vast_integerp(obj)) {
+      } else if (!vast_integerp(obj)) {
 	vast_integer* inte = (vast_integer*)obj;
 	inst = vps_ipushint(jreq->vps,grp,inte->name,inte->value);
-      } else if (vast_symbolp(obj)) {
+      } else if (!vast_symbolp(obj)) {
 	vast_symbol* sym = (vast_symbol*)obj;
-	inst = vps_ipushdt(jreq->vps,grp,sym->name);
+	inst = vps_iloaddt(jreq->vps,sym->name);
       } else {
 	uabort("added not a number or symbol!");
       }
       vcfg_grp_inst_apd(grp,inst);
-      if (flag) {
+      if (argc > 0) {
 	inst = vps_iadd(jreq->vps);
 	vcfg_grp_inst_apd(grp,inst);
-      } else {
-	flag = 1;
       }
+      argc++;
+      next = vast_cdr(next);
     }
     
     VATTR_RETURN_VOID;
