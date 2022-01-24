@@ -261,7 +261,17 @@ VDEFATTR(add,"+",{
 	inst = vps_ipushint(jreq->vps,grp,inte->name,inte->value);
       } else if (!vast_symbolp(obj)) {
 	vast_symbol* sym = (vast_symbol*)obj;
-	inst = vps_iloaddt(jreq->vps,sym->name);
+	vps_data* data = vclosure_field_get(jreq->closure,sym->name);
+	if (!data) {
+	  uabort("variable:%d,not define!",sym->name->value);
+	}
+	if (data->scope == VPS_SCOPE_LOCAL) {
+	  inst = vps_iloaddt(jreq->vps,sym->name);
+	} else if (data->scope == VPS_SCOPE_GLOBAL) {
+	  inst = vps_ipushdt(jreq->vps,grp,sym->name);
+	} else {
+	  uabort("variable:%d,scope error!",sym->name->value);
+	}
       } else {
 	uabort("added not a number or symbol!");
       }
@@ -278,10 +288,69 @@ VDEFATTR(add,"+",{
   })
 
 /*
+ * define attribute gt
+ * (> num1 num2)
+ */
+VDEFATTR(gt,">",{
+    vps_closure_req* jreq;
+    vast_obj* obj;
+    vast_obj* next;
+    vps_inst* inst;
+    vcfg_graph* grp;
+    int argc = 0;
+
+    jreq = (vps_closure_req*)req;
+    grp = jreq->closure->init;
+    next = vast_cdr(jreq->ast_obj);
+    if (vast_consp(next)) {
+      uabort("attr \">\" has no args!");
+    }
+  label:
+    obj = vast_car(next);
+    if (vast_numberp(obj)) {
+      vast_number* num = (vast_number*)obj;
+      inst = vps_ipushnum(jreq->vps,grp,num->name,num->value);
+    } else if (vast_integerp(obj)) {
+      vast_integer* inte = (vast_integer*)obj;
+      inst = vps_ipushint(jreq->vps,grp,inte->name,inte->value);      
+    } else if (vast_symbolp(obj)) {
+      vast_symbol* sym = (vast_symbol*)obj;
+      vps_data* data = vclosure_field_get(jreq->closure,sym->name);
+      if (!data) {
+	uabort("variable:%d,not define!",sym->name->value);
+      }
+      if (data->scope == VPS_SCOPE_LOCAL) {
+	inst = vps_iloaddt(jreq->vps,sym->name);
+      } else if (data->scope == VPS_SCOPE_GLOBAL) {
+	inst = vps_ipushdt(jreq->vps,grp,sym->name);
+      } else {
+	uabort("variable:%d,scope error!",sym->name->value);
+      }
+    } else {
+      uabort("compare args not a number or symbol!");
+    }
+    vcfg_grp_inst_apd(grp,inst);
+    argc++;
+    next = vast_cdr(next);
+    if (vast_consp(next)) {
+      if (argc == 2) {
+	uabort("attr \">\" too many args!");
+      } else {
+	goto label;
+      }
+    }
+    inst = vps_igt(jreq->vps);
+    vcfg_grp_inst_apd(grp,inst);
+    
+    VATTR_RETURN_VOID;
+  })
+
+/*
  * declare attribute
  */
 VATTRONLOAD(l5base,{
     VDECLATTR(defun);
     VDECLATTR(if);
     VDECLATTR(add);
+    VDECLATTR(gt);
 })

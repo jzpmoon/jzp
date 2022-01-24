@@ -35,4 +35,8 @@ UDECLFUN(UFNAME vclosure_child_add,
 	 UARGS (vclosure* closure,vclosure* child),
 	 URET int);
 
+UDECLFUN(UFNAME vclosure_field_get,
+	 UARGS (vclosure* closure,ustring* name),
+	 URET vps_data*);
+
 #endif

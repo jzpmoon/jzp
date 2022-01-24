@@ -12,7 +12,7 @@ u_somk=makefile
 CFLAGS=-std=c89 -Wall -Wextra -Wno-unused-parameter $(DEBUG_MODE)
 
 ATTR = l5base
-CFUN = l5base
+CFUN = l3base l5base
 
 define gen_attr_file
 	$(libv_path)/attr.sh --attr=$(ATTR) --out=$(temp_attr_file) \

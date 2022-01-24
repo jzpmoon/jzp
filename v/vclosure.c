@@ -143,6 +143,42 @@ UBEGIN
   return mod;
 UEND
 
+UDEFUN(UFNAME vclosure_field_get,
+       UARGS (vclosure* closure,ustring* name),
+       URET vps_data*)
+UDECLARE
+  uset* fields;
+  ucursor c;
+  vps_data* data;
+UBEGIN
+  /*find local fileds*/
+  data = vcfg_grp_dtget(closure->init,name);
+  if (data) {
+    return data;
+  }
+
+  /*find closure fields*/
+  fields = (uset*)closure->fields;
+  fields->iterate(&c);
+  while (1) {
+    vps_datap* dp = fields->next(fields,&c);
+    if (!dp) {
+      break;
+    }
+    data = *dp;
+    if (ustring_comp(name,data->name)) {
+      return data;
+    }
+  }
+
+  /*find parent fields*/
+  if (closure->parent) {
+    return vclosure_field_get(closure->parent,name);
+  } else {
+    return NULL;
+  }
+UEND
+
 UDEFUN(UFNAME symcall_action,
        UARGS (vast_attr_req* req,
 	      vast_attr_res* res),
