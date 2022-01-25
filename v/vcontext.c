@@ -138,15 +138,12 @@ static int vobjtb_key_comp(vsymbol* sym1,vsymbol* sym2){
   return ustring_comp(sym1->name, sym2->name);
 }
 
-#define get_insts_count_by_name(cfgs,name)	\
-  get_insts_count(cfgs,(vps_id){name,-1})
-
 static int get_insts_count(ulist_vps_cfgp* cfgs,vps_id id)
 {
   ucursor cursor;
   int find_flag = 0;
   int insts_count = 0;
-  
+
   cfgs->iterate(&cursor);
   while(1){
     vps_cfgp* cfgp = cfgs->next((uset*)cfgs,&cursor);
@@ -254,7 +251,7 @@ UBEGIN
       {
 	int insts_count;
 
-	insts_count = get_insts_count_by_name(cfgs,pinst->ope[0].id.name);
+	insts_count = get_insts_count(cfgs,pinst->ope[0].id);
 	vps_inst_imm_set(pinst,insts_count);
 	ulist_vps_instp_append(insts,pinst);
 	ulog("inst code");

@@ -386,7 +386,7 @@ UDECLFUN(UFNAME vcfg_grp_cdapd,
 	 URET void);
 
 UDECLFUN(UFNAME vcfg_grp_cdget,
-	 UARGS (vps_cntr* vps,vcfg_graph* grp,ustring* name),
+	 UARGS (vps_cntr* vps,vcfg_graph* grp,vps_id id),
 	 URET vps_data*);
 
 UDECLFUN(UFNAME vcfg_grp_build,

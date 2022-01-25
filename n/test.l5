@@ -2,4 +2,11 @@
 (defun inc (x)
   (+ x 1 1))
 
-(inc 1)
+(defun max (a b)
+  (if (> b a)
+    (a)
+    (b)))
+
+;(inc (+ 1 1))
+
+(stream-output (max 1 2) system-ostream)

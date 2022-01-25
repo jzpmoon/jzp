@@ -186,6 +186,8 @@ UDEFUN(UFNAME symcall_action,
 UDECLARE
   vast_obj* ast_obj;
   vps_closure_req* jreq;
+  vps_closure_req dreq;
+  vast_attr_res dres;
   vps_cntr* vps;
   vclosure* closure;
   vcfg_graph* grp;
@@ -208,20 +210,37 @@ UBEGIN
     if (obj->t == vastk_symbol) {
       vast_symbol* sym = (vast_symbol*)obj;
       inst = vps_ipushdt(vps,grp,sym->name);
-    }else if(obj->t == vastk_integer){
+      vcfg_grp_inst_apd(grp,inst);
+    } else if (obj->t == vastk_integer) {
       vast_integer* inte = (vast_integer*)obj;
       inst = vps_ipushint(vps,grp,inte->name,inte->value);
-    }else if(obj->t == vastk_number){
+      vcfg_grp_inst_apd(grp,inst);
+    } else if (obj->t == vastk_number) {
       vast_number* num = (vast_number*)obj;
       inst = vps_ipushnum(vps,grp,num->name,num->value);
-    }else if(obj->t == vastk_string){
+      vcfg_grp_inst_apd(grp,inst);
+    } else if (obj->t == vastk_string) {
       vast_string* str = (vast_string*)obj;
       inst = vps_ipushstr(vps,grp,str->value);
-    }else{
+      vcfg_grp_inst_apd(grp,inst);
+    } else if (!vast_consp(obj)) {
+      vast_obj* car = vast_car(obj);
+      if (!vast_symbolp(car)) {
+	vast_symbol* sym = (vast_symbol*)car;
+	vast_attr* attr = sym->attr;
+	if (attr) {
+	  dreq = vast_req_dbl(jreq);
+	  dreq.ast_obj = obj;
+	  attr->action((vast_attr_req*)&dreq,&dres);
+	} else {
+	  uabort("symbol has no attr!");
+	}
+      } else {
+	uabort("car not a symbol!");
+      }
+    } else {
       uabort("push inst error!");
-      inst = NULL;
     }
-    vcfg_grp_inst_apd(grp,inst);
     next = vast_cdr(next);
   }
   /* push subr name */
@@ -244,3 +263,46 @@ UDECLARE
 UBEGIN
   return ulist_vclosurep_append(closure->childs,child);
 UEND
+
+UDEFUN(UFNAME vclosure_cons_call,
+       UARGS (vclosure* closure,vps_closure_req* req,vast_obj* cons),
+       URET void)
+UDECLARE
+  vps_closure_req dreq;
+  vast_attr_res dres;
+  vast_obj* car;
+  vast_symbol* sym;
+  vps_data* data;
+  vps_inst* inst;
+  vcfg_graph* grp;
+  vast_attr* attr;
+UBEGIN
+  grp = closure->init;
+  car = vast_car(cons);
+  if (vast_symbolp(car)) {
+    uabort("cons car not a symbol!");
+  }
+  sym = (vast_symbol*)car;
+  data = vclosure_field_get(closure,sym->name);
+  if (data) {
+    if (data->scope == VPS_SCOPE_LOCAL) {
+      inst = vps_iloaddt(req->vps,sym->name);
+      vcfg_grp_inst_apd(grp,inst);
+    } else if (data->scope == VPS_SCOPE_GLOBAL) {
+      inst = vps_ipushdt(req->vps,grp,sym->name);
+      vcfg_grp_inst_apd(grp,inst);
+    } else {
+      uabort("variable:%s,scope error!",sym->name->value);
+    }
+  } else {
+    dreq = vast_req_dbl(req);
+    dreq.ast_obj = cons;
+    dreq.closure = closure;
+    attr = sym->attr;
+    if (attr) {
+      attr->action((vast_attr_req*)&dreq,&dres);
+    } else {
+      uabort("cons car symbol has no attr!");
+    }
+  }
+ UEND

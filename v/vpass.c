@@ -808,13 +808,13 @@ static int vcfg_grp_cd_get_comp(vps_datap* data1,
   vps_data* d2;
   vps_id id1;
   vps_id id2;
-  
+
   d1 = *data1;
   d2 = *data2;
   if (d2->dtk != vdtk_code) {
     return -1;
   }
-  id1.name = d1->name;
+  id1 = d1->u.code->id;
   id2 = d2->u.code->id;
   return vps_id_comp(id1,id2);
 }
@@ -846,7 +846,7 @@ UDEFUN(UFNAME vcfg_grp_cdapd,
 UDECLARE
   vps_data* data;
   vps_id id;
-  int hscd;
+  unsigned int hscd;
   int retval;
 UBEGIN
   id = cfg->id;
@@ -873,16 +873,20 @@ UBEGIN
 UEND
 
 UDEFUN(UFNAME vcfg_grp_cdget,
-       UARGS (vps_cntr* vps,vcfg_graph* grp,ustring* name),
+       UARGS (vps_cntr* vps,vcfg_graph* grp,vps_id id),
        URET vps_data*)
 UDECLARE
+  unsigned int hscd;
+  vps_cfg cfg;
   vps_data dt_in;
   vps_datap dt_ink = &dt_in;
-  vps_datap* dt_outk;
+  vps_datap* dt_outk = NULL;
 UBEGIN
-  dt_in.name = name;
+  dt_in.u.code = &cfg;
+  cfg.id = id;
+  hscd = vps_id_hscd(id);
   uhstb_vps_datap_get(grp->locals,
-		      name->hash_code,
+		      hscd,
 		      &dt_ink,
 		      &dt_outk,
 		      vcfg_grp_cd_get_comp);
@@ -969,14 +973,16 @@ UBEGIN
   cfgs->iterate(&cursor);
   while (1) {
     vps_cfgp* cfgp = cfgs->next(set,&cursor);
+    vps_cfg* cfg;
     vcfg_block* blk;
     if (!cfgp) {
       break;
     }
-    if ((*cfgp)->t != vcfgk_blk) {
+    cfg = *cfgp;
+    if (cfg->t != vcfgk_blk) {
       uabort("cfg type not a block");
     }
-    blk = (vcfg_block*)*cfgp;
+    blk = (vcfg_block*)cfg;
     inst = vcfg_blk_linst_get(blk);
     if (inst) {
       int iopck = vps_inst_opck_get(inst);
@@ -986,7 +992,7 @@ UBEGIN
 	vps_cfg* code;
 	vcfg_block* jmp_blk;
 
-	cd = vcfg_grp_cdget(vps,grp,inst->ope[0].id.name);
+	cd = vcfg_grp_cdget(vps,grp,inst->ope[0].id);
 	if (!cd) {
 	  uabort("get inst label error!");
 	}

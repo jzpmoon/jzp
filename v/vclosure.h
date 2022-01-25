@@ -39,4 +39,8 @@ UDECLFUN(UFNAME vclosure_field_get,
 	 UARGS (vclosure* closure,ustring* name),
 	 URET vps_data*);
 
+UDECLFUN(UFNAME vclosure_cons_call,
+	 UARGS (vclosure* closure,vps_closure_req* req,vast_obj* cons),
+	 URET void);
+
 #endif
