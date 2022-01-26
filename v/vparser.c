@@ -110,29 +110,23 @@ void vtoken_skip_block_comment(vtoken_state* ts)
 {
   int c;
   vtoken_next_char(ts);
-  c = vtoken_look_ahead(ts);
-  if (c == '*') {
-    vtoken_next_char(ts);
-    while (1) {
-      c = vtoken_look_ahead(ts);
-      if (c == '*') {
-	vtoken_next_char(ts);
-	c = vtoken_look_ahead(ts);
-	if (c == '/') {
-	  vtoken_next_char(ts);
-	  break;
-	} else {
-	  continue;
-	}
-      } else if (c == '\n') {
-	vtoken_new_line(ts);
-      } else if (c == VEOF) {
-	break;
-      }
+  while (1) {
+    c = vtoken_look_ahead(ts);
+    if (c == '*') {
       vtoken_next_char(ts);
+      c = vtoken_look_ahead(ts);
+      if (c == '/') {
+	vtoken_next_char(ts);
+	break;
+      } else {
+	continue;
+      }
+    } else if (c == '\n') {
+      vtoken_new_line(ts);
+    } else if (c == VEOF) {
+      break;
     }
-  } else {
-    uabort("not a block comment!");
+    vtoken_next_char(ts);
   }
 }
 
@@ -149,9 +143,6 @@ void vtoken_skip(vtoken_state* ts){
       break;
     case ';':
       vtoken_skip_comment(ts);
-      break;
-    case '/':
-      vtoken_skip_block_comment(ts);
       break;
     default:
       return;
@@ -334,6 +325,17 @@ int vtoken_next(vtoken_state* ts){
   case '9':
     vtoken_next_char(ts);
     return vtoken_lex_number(ts);
+  case '/':
+    vtoken_mark(ts);
+    vtoken_next_char(ts);
+    c = vtoken_look_ahead(ts);
+    if (c == '*') {
+      vtoken_skip_block_comment(ts);
+      vtoken_unmark(ts);
+      return vtoken_next(ts);
+    } else {
+      return vtoken_lex_identify(ts);
+    }
   case VEOF:
     return ts->token = vtk_eof;
   default:

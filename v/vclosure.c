@@ -179,6 +179,36 @@ UBEGIN
   }
 UEND
 
+UDEFUN(UFNAME vclosure_curr_field_get,
+	 UARGS (vclosure* closure,ustring* name),
+	 URET vps_data*)
+UDECLARE
+  uset* fields;
+  ucursor c;
+  vps_data* data;  
+UBEGIN
+  /*find local fileds*/
+  data = vcfg_grp_dtget(closure->init,name);
+  if (data) {
+    return data;
+  }
+
+  /*find closure fields*/
+  fields = (uset*)closure->fields;
+  fields->iterate(&c);
+  while (1) {
+    vps_datap* dp = fields->next(fields,&c);
+    if (!dp) {
+      break;
+    }
+    data = *dp;
+    if (ustring_comp(name,data->name)) {
+      return data;
+    }
+  }
+  return NULL;
+UEND
+  
 UDEFUN(UFNAME symcall_action,
        UARGS (vast_attr_req* req,
 	      vast_attr_res* res),
@@ -255,6 +285,15 @@ UEND
 
 vast_attr vclosure_attr_symcall = {NULL,NULL,symcall_action};
 
+UDEFUN(UFNAME vclosure_field_add,
+       UARGS (vclosure* closure,vps_data* field),
+       URET int)
+UDECLARE
+
+UBEGIN
+  return ulist_vps_datap_append(closure->fields,field);
+UEND
+
 UDEFUN(UFNAME vclosure_child_add,
 	 UARGS (vclosure* closure,vclosure* child),
 	 URET int)
@@ -279,30 +318,72 @@ UDECLARE
 UBEGIN
   grp = closure->init;
   car = vast_car(cons);
-  if (vast_symbolp(car)) {
-    uabort("cons car not a symbol!");
+  if (!vast_integerp(car)) {
+    vast_integer* inte = (vast_integer*)car;
+    inst = vps_ipushint(req->vps,grp,inte->name,inte->value);
+    vcfg_grp_inst_apd(grp,inst);
+  } else if (!vast_integerp(car)) {
+    vast_number* num = (vast_number*)car;
+    inst = vps_ipushnum(req->vps,grp,num->name,num->value);
+    vcfg_grp_inst_apd(grp,inst);
+  } else if (!vast_symbolp(car)) {
+    sym = (vast_symbol*)car;
+    data = vclosure_field_get(closure,sym->name);
+    if (data) {
+      if (data->scope == VPS_SCOPE_LOCAL) {
+	inst = vps_iloaddt(req->vps,sym->name);
+	vcfg_grp_inst_apd(grp,inst);
+      } else if (data->scope == VPS_SCOPE_GLOBAL) {
+	inst = vps_ipushdt(req->vps,grp,sym->name);
+	vcfg_grp_inst_apd(grp,inst);
+      } else {
+	uabort("variable:%s,scope error!",sym->name->value);
+      }
+    } else {
+      dreq = vast_req_dbl(req);
+      dreq.ast_obj = cons;
+      dreq.closure = closure;
+      attr = sym->attr;
+      if (attr) {
+	attr->action((vast_attr_req*)&dreq,&dres);
+      } else {
+	uabort("cons car symbol has no attr!");
+      }
+    }
   }
-  sym = (vast_symbol*)car;
-  data = vclosure_field_get(closure,sym->name);
-  if (data) {
+UEND
+
+UDEFUN(UFNAME vclosure_arit_arg,
+       UARGS (vclosure* closure,vps_cntr* vps,vast_obj* obj),
+       URET vps_inst*)
+UDECLARE
+  vps_inst* inst;
+  vcfg_graph* grp;
+UBEGIN
+  grp = closure->init;
+  if (!vast_numberp(obj)) {
+    vast_number* num = (vast_number*)obj;
+    inst = vps_ipushnum(vps,grp,num->name,num->value);
+  } else if (!vast_integerp(obj)) {
+     vast_integer* inte = (vast_integer*)obj;
+     inst = vps_ipushint(vps,grp,inte->name,inte->value);
+  } else if (!vast_symbolp(obj)) {
+    vast_symbol* sym = (vast_symbol*)obj;
+    vps_data* data = vclosure_field_get(closure,sym->name);
+    if (!data) {
+      uabort("variable:%s,not define!",sym->name->value);
+    }
     if (data->scope == VPS_SCOPE_LOCAL) {
-      inst = vps_iloaddt(req->vps,sym->name);
-      vcfg_grp_inst_apd(grp,inst);
+      inst = vps_iloaddt(vps,sym->name);
     } else if (data->scope == VPS_SCOPE_GLOBAL) {
-      inst = vps_ipushdt(req->vps,grp,sym->name);
-      vcfg_grp_inst_apd(grp,inst);
+      inst = vps_ipushdt(vps,grp,sym->name);
     } else {
       uabort("variable:%s,scope error!",sym->name->value);
+      inst = NULL;
     }
   } else {
-    dreq = vast_req_dbl(req);
-    dreq.ast_obj = cons;
-    dreq.closure = closure;
-    attr = sym->attr;
-    if (attr) {
-      attr->action((vast_attr_req*)&dreq,&dres);
-    } else {
-      uabort("cons car symbol has no attr!");
-    }
+    uabort("args not a number or symbol!");
+    inst = NULL;
   }
- UEND
+  return inst;
+UEND

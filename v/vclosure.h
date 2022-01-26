@@ -31,6 +31,10 @@ UDECLFUN(UFNAME vclosure2vps,
 	 UARGS (vreader* reader,char* file_path,vps_cntr* vps),
 	 URET vps_mod*);
 
+UDECLFUN(UFNAME vclosure_field_add,
+	 UARGS (vclosure* closure,vps_data* field),
+	 URET int);
+
 UDECLFUN(UFNAME vclosure_child_add,
 	 UARGS (vclosure* closure,vclosure* child),
 	 URET int);
@@ -39,8 +43,16 @@ UDECLFUN(UFNAME vclosure_field_get,
 	 UARGS (vclosure* closure,ustring* name),
 	 URET vps_data*);
 
+UDECLFUN(UFNAME vclosure_curr_field_get,
+	 UARGS (vclosure* closure,ustring* name),
+	 URET vps_data*);
+
 UDECLFUN(UFNAME vclosure_cons_call,
 	 UARGS (vclosure* closure,vps_closure_req* req,vast_obj* cons),
 	 URET void);
+
+UDECLFUN(UFNAME vclosure_arit_arg,
+	 UARGS (vclosure* closure,vps_cntr* vps,vast_obj* obj),
+	 URET vps_inst*);
 
 #endif
