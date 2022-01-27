@@ -105,6 +105,8 @@ vast_obj* vast_cdar(vast_obj* cons);
 
 #define vast_characterp(obj) vast_typeof(obj,vastk_character)
 
+#define vast_keywordp(obj) vast_typeof(obj,vastk_keyword)
+
 #define VDEFATTR(aname,sname,body)			\
   UDEFUN(UFNAME _vast_attr_action_##aname,		\
 	 UARGS (vast_attr_req* req,vast_attr_res* res),	\

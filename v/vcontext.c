@@ -310,6 +310,8 @@ static vslot data2data(vgc_heap* heap,vps_data* data)
     vslot_ref_set(slot,vstr);
   }else if(data->dtk == vdtk_char){
     vslot_char_set(slot,data->u.character);
+  }else if(data->dtk == vdtk_bool){
+    vslot_bool_set(slot,data->u.boolean);
   }else if(data->dtk == vdtk_any){
     vslot_null_set(slot);
   }else{

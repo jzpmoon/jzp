@@ -361,6 +361,24 @@ vps_inst* vps_ipushnil(vps_cntr* vps,
   return inst;
 }
 
+vps_inst* vps_ipushbool(vps_cntr* vps,
+			vcfg_graph* grp,
+			int bool)
+{
+  vps_inst* inst;
+  vps_data* data;
+
+  data = vps_bool_new(vps,bool);
+  if (!data) {
+    uabort("vps bool new error!");
+  }
+  data->scope = VPS_SCOPE_LOCAL;
+  data->idx = vcfg_grp_conts_put(grp,data);
+  inst = vps_inst_new(vps,viopck_non,vinstk_imm,Bpush);
+  inst->ope[0].data = data;
+  return inst;
+}
+
 vps_inst* vps_itop(vps_cntr* vps,
 		   int imm)
 {
@@ -684,6 +702,22 @@ vps_data* vps_dtcd_new(vps_cntr* vps,
     data->dtk = vdtk_code;
     data->name = name;
     data->u.code = code;
+  }
+  return data;
+}
+
+vps_data* vps_bool_new(vps_cntr* vps,
+		       int bool)
+{
+  uallocator* alloc;
+  vps_data* data;
+
+  alloc = vps_cntr_alloc_get(vps);
+  data = alloc->alloc(alloc,sizeof(vps_data));
+  if(data){
+    data->t = vpsk_dt;
+    data->dtk = vdtk_bool;
+    data->u.boolean = bool;
   }
   return data;
 }

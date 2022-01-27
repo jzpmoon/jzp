@@ -138,8 +138,10 @@ VDEFATTR(defvar,"defvar",{
       uabort("attr \"defvar\" add field error!");
     }
   }
+
   VATTR_RETURN_VOID;
 })
+
 /*
  * define attribute if
  * (if (cond) (then) (else))
@@ -212,7 +214,69 @@ VDEFATTR(if,"if",{
     vcfg_grp_inst_apd(grp,inst);
     
     VATTR_RETURN_VOID;
-  })
+})
+
+/*
+ * define attribute while
+ * (while (cond) (loop)...)
+ */
+VDEFATTR(while,"while",{
+    vps_closure_req* jreq;
+    vast_obj* obj;
+    vast_obj* next;
+    vps_inst* inst;
+    vcfg_graph* grp;
+    vps_id cond_id;
+    vps_id loop_id;
+    vps_id exit_id;
+
+    jreq = (vps_closure_req*)req;
+    grp = jreq->closure->init;
+
+    cond_id = vps_id_get(jreq->vps,NULL);
+    loop_id = vps_id_get(jreq->vps,NULL);
+    exit_id = vps_id_get(jreq->vps,NULL);
+
+    /* (cond...) */
+    inst = vps_ilabel(jreq->vps,cond_id);
+    vcfg_grp_inst_apd(grp,inst);
+    
+    next = vast_cdr(jreq->ast_obj);
+    if (vast_consp(next)) {
+      uabort("ast attr \"while\" has no cond!");
+    }
+    obj = vast_car(next);
+    if (vast_consp(obj)) {
+      uabort("ast attr \"while\" cond has no ()!");
+    }
+    vclosure_cons_call(jreq->closure,jreq,obj);
+
+    inst = vps_ijmpilb(jreq->vps,loop_id);
+    vcfg_grp_inst_apd(grp,inst);
+    inst = vps_ijmplb(jreq->vps,exit_id);
+    vcfg_grp_inst_apd(grp,inst);
+
+    /* (loop...) */
+    inst = vps_ilabel(jreq->vps,loop_id);
+    vcfg_grp_inst_apd(grp,inst);
+
+    next = vast_cdr(next);
+    if (vast_consp(next)) {
+      uabort("ast attr \"while\" has no loop!");
+    }
+    obj = vast_car(next);
+    if (vast_consp(obj)) {
+      uabort("ast attr \"while\" loop has no ()!");
+    }
+    vclosure_cons_call(jreq->closure,jreq,obj);
+    inst = vps_ijmplb(jreq->vps,cond_id);
+    vcfg_grp_inst_apd(grp,inst);
+    
+    inst = vps_ilabel(jreq->vps,exit_id);
+    vcfg_grp_inst_apd(grp,inst);
+
+    VATTR_RETURN_VOID;
+})
 
 /*
  * define attribute add
@@ -240,8 +304,7 @@ VDEFATTR(add,"+",{
       if (!vast_consp(obj)) {
 	vclosure_cons_call(jreq->closure,jreq,obj);
       } else {
-	inst = vclosure_arit_arg(jreq->closure,jreq->vps,obj);
-	vcfg_grp_inst_apd(grp,inst);
+        vclosure_arit_arg(jreq->closure,jreq->vps,obj);
       }
       if (argc > 0) {
 	inst = vps_iadd(jreq->vps);
@@ -252,7 +315,7 @@ VDEFATTR(add,"+",{
     }
     
     VATTR_RETURN_VOID;
-  })
+})
 
 /*
  * define attribute sub
@@ -286,22 +349,20 @@ VDEFATTR(sub,"-",{
     if (!vast_consp(obj_num1)) {
       vclosure_cons_call(jreq->closure,jreq,obj_num1);
     } else {
-      inst = vclosure_arit_arg(jreq->closure,jreq->vps,obj_num1);
-      vcfg_grp_inst_apd(grp,inst);
+      vclosure_arit_arg(jreq->closure,jreq->vps,obj_num1);
     }
 
     if (!vast_consp(obj_num2)) {
       vclosure_cons_call(jreq->closure,jreq,obj_num2);
     } else {
-      inst = vclosure_arit_arg(jreq->closure,jreq->vps,obj_num2);
-      vcfg_grp_inst_apd(grp,inst);
+      vclosure_arit_arg(jreq->closure,jreq->vps,obj_num2);
     }
 
     inst = vps_isub(jreq->vps);
     vcfg_grp_inst_apd(grp,inst);
 
     VATTR_RETURN_VOID;
-  })
+})
 
 /*
  * define attribute mul
@@ -331,8 +392,7 @@ VDEFATTR(mul,"*",{
       if (!vast_consp(obj)) {
 	vclosure_cons_call(jreq->closure,jreq,obj);
       } else {
-	inst = vclosure_arit_arg(jreq->closure,jreq->vps,obj);
-	vcfg_grp_inst_apd(grp,inst);
+	vclosure_arit_arg(jreq->closure,jreq->vps,obj);
       }
       if (argc > 0) {
 	inst = vps_imul(jreq->vps);
@@ -343,7 +403,7 @@ VDEFATTR(mul,"*",{
     }
     
     VATTR_RETURN_VOID;
-  })
+})
 
 /*
  * define attribute div
@@ -377,22 +437,20 @@ VDEFATTR(div,"/",{
     if (!vast_consp(obj_num1)) {
       vclosure_cons_call(jreq->closure,jreq,obj_num1);
     } else {
-      inst = vclosure_arit_arg(jreq->closure,jreq->vps,obj_num1);
-      vcfg_grp_inst_apd(grp,inst);
+      vclosure_arit_arg(jreq->closure,jreq->vps,obj_num1);
     }
 
     if (!vast_consp(obj_num2)) {
       vclosure_cons_call(jreq->closure,jreq,obj_num2);
     } else {
-      inst = vclosure_arit_arg(jreq->closure,jreq->vps,obj_num2);
-      vcfg_grp_inst_apd(grp,inst);
+      vclosure_arit_arg(jreq->closure,jreq->vps,obj_num2);
     }
     
     inst = vps_idiv(jreq->vps);
     vcfg_grp_inst_apd(grp,inst);
 
     VATTR_RETURN_VOID;
-  })
+})
 
 /*
  * define attribute gt
@@ -426,22 +484,20 @@ VDEFATTR(gt,">",{
     if (!vast_consp(obj_num1)) {
       vclosure_cons_call(jreq->closure,jreq,obj_num1);
     } else {
-      inst = vclosure_arit_arg(jreq->closure,jreq->vps,obj_num1);
-      vcfg_grp_inst_apd(grp,inst);
+      vclosure_arit_arg(jreq->closure,jreq->vps,obj_num1);
     }
 
     if (!vast_consp(obj_num2)) {
       vclosure_cons_call(jreq->closure,jreq,obj_num2);
     } else {
-      inst = vclosure_arit_arg(jreq->closure,jreq->vps,obj_num2);
-      vcfg_grp_inst_apd(grp,inst);
+      vclosure_arit_arg(jreq->closure,jreq->vps,obj_num2);
     }
     
     inst = vps_igt(jreq->vps);
     vcfg_grp_inst_apd(grp,inst);
     
     VATTR_RETURN_VOID;
-  })
+})
 
 /*
  * define attribute lt
@@ -475,22 +531,20 @@ VDEFATTR(lt,"<",{
     if (!vast_consp(obj_num1)) {
       vclosure_cons_call(jreq->closure,jreq,obj_num1);
     } else {
-      inst = vclosure_arit_arg(jreq->closure,jreq->vps,obj_num1);
-      vcfg_grp_inst_apd(grp,inst);
+      vclosure_arit_arg(jreq->closure,jreq->vps,obj_num1);
     }
 
     if (!vast_consp(obj_num2)) {
       vclosure_cons_call(jreq->closure,jreq,obj_num2);
     } else {
-      inst = vclosure_arit_arg(jreq->closure,jreq->vps,obj_num2);
-      vcfg_grp_inst_apd(grp,inst);
+      vclosure_arit_arg(jreq->closure,jreq->vps,obj_num2);
     }
     
     inst = vps_ilt(jreq->vps);
     vcfg_grp_inst_apd(grp,inst);
     
     VATTR_RETURN_VOID;
-  })
+})
 
 /*
  * define attribute eq
@@ -524,22 +578,20 @@ VDEFATTR(eq,"=",{
     if (!vast_consp(obj_num1)) {
       vclosure_cons_call(jreq->closure,jreq,obj_num1);
     } else {
-      inst = vclosure_arit_arg(jreq->closure,jreq->vps,obj_num1);
-      vcfg_grp_inst_apd(grp,inst);
+      vclosure_arit_arg(jreq->closure,jreq->vps,obj_num1);
     }
 
     if (!vast_consp(obj_num2)) {
       vclosure_cons_call(jreq->closure,jreq,obj_num2);
     } else {
-      inst = vclosure_arit_arg(jreq->closure,jreq->vps,obj_num2);
-      vcfg_grp_inst_apd(grp,inst);
+      vclosure_arit_arg(jreq->closure,jreq->vps,obj_num2);
     }
     
     inst = vps_ieq(jreq->vps);
     vcfg_grp_inst_apd(grp,inst);
     
     VATTR_RETURN_VOID;
-  })
+})
 
 /*
  * define attribute set
@@ -579,18 +631,22 @@ VDEFATTR(set,"set",{
     if (!vast_consp(obj)) {
       vclosure_cons_call(jreq->closure,jreq,obj);
     } else {
-      inst = vclosure_arit_arg(jreq->closure,jreq->vps,obj);
-      vcfg_grp_inst_apd(grp,inst);
+      vclosure_arit_arg(jreq->closure,jreq->vps,obj);
     }
 
     if (var->scope == VPS_SCOPE_LOCAL) {
       inst = vps_istoredt(jreq->vps,sym->name);
     } else if (var->scope == VPS_SCOPE_GLOBAL) {
       inst = vps_ipopdt(jreq->vps,grp,sym->name);
+    } else {
+      uabort("attr \"set\" var scope unknow!");
+      inst = NULL;
     }
     vcfg_grp_inst_apd(grp,inst);
+
     VATTR_RETURN_VOID;
-  })
+})
+
 /*
  * declare attribute
  */
@@ -598,6 +654,7 @@ VATTRONLOAD(l5base,{
     VDECLATTR(defun);
     VDECLATTR(defvar);
     VDECLATTR(if);
+    VDECLATTR(while);
     VDECLATTR(add);
     VDECLATTR(sub);
     VDECLATTR(mul);

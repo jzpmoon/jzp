@@ -26,6 +26,7 @@ enum vdtk{
   vdtk_str,
   vdtk_any,
   vdtk_code,
+  vdtk_bool,
 };
 
 struct _vps_cntr;
@@ -37,6 +38,9 @@ typedef struct _vps_t{
 
 ulist_decl_tpl(vpsp);
 
+#define vps_bool_true (1)
+#define vps_bool_false (0)
+
 typedef struct _vps_data{
   VPSHEADER;
   int dtk;
@@ -47,6 +51,7 @@ typedef struct _vps_data{
     double number;
     int integer;
     int character;
+    int boolean;
     ustring* string;
     struct _vps_cfg* code;
   } u;
@@ -275,6 +280,10 @@ vps_inst* vps_ipushstr(vps_cntr* vps,
 vps_inst* vps_ipushnil(vps_cntr* vps,
 		       vcfg_graph* grp);
 
+vps_inst* vps_ipushbool(vps_cntr* vps,
+			vcfg_graph* grp,
+			int bool);
+
 vps_inst* vps_itop(vps_cntr* vps,
 		   int imm);
 
@@ -358,6 +367,9 @@ vps_data* vps_any_new(vps_cntr* vps,
 vps_data* vps_dtcd_new(vps_cntr* vps,
 		       ustring* name,
 		       vps_cfg* code);
+
+vps_data* vps_bool_new(vps_cntr* vps,
+		       int bool);
 
 vcfg_block* vcfg_block_new(vps_cntr* vps,
 			   vps_id id);

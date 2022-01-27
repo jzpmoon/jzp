@@ -3,6 +3,12 @@
 
 #include "leval.h"
 
+enum l3kwk{
+  #define DF(no,str) no,
+  #include "l3kw.h"
+  #undef DF
+};
+
 leval* l3startup();
 
 #endif
