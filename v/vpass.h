@@ -226,14 +226,12 @@ typedef struct _vps_jzp_req{
   (parent->t == vcfgk_grp &&				\
    ((vcfg_graph*)parent)->scope != VPS_SCOPE_ENTRY)
 
-extern vast_attr vast_attr_symcall;
-
 typedef vps_mod* (*vps_prod_ft)(vreader* reader,char* file_path,
 				vps_cntr* vps);
 
 UDECLFUN(UFNAME vfile2vps,
 	 UARGS (vreader* reader,char* file_path,vps_cntr* vps),
-	 URET vps_mod*);
+	 URET vps_mod*)
 
 vps_inst*
 vps_inst_new(vps_cntr* vps,

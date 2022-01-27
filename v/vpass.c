@@ -14,67 +14,6 @@ ulist_def_tpl(vps_datap);
 ulist_def_tpl(vps_cfgp);
 ulist_def_tpl(vps_instp);
 
-static int symcall_action(vast_attr_req* req,
-			  vast_attr_res* res)
-{
-  vast_obj* ast_obj;
-  vps_jzp_req* jreq;
-  vps_cntr* vps;
-  vps_cfg* parent;
-  vcfg_graph* grp;
-  vps_inst* inst;
-  vast_obj* obj;
-  vast_obj* next;
-  vast_symbol* symbol;
-  
-  ast_obj = req->ast_obj;
-  jreq = (vps_jzp_req*)req;
-  vps = jreq->vps;
-  parent = jreq->parent;
-  
-  if (parent->t != vcfgk_grp) {
-    uabort("parent not a graph!");
-  }
-  grp = (vcfg_graph*)parent;
-  obj = vast_car(ast_obj);
-  symbol = (vast_symbol*)obj;
-
-  /* push params */
-  next = vast_cdr(ast_obj);
-  while (next) {
-    obj = vast_car(next);
-    if (obj->t == vastk_symbol) {
-      vast_symbol* sym = (vast_symbol*)obj;
-      inst = vps_ipushdt(vps,grp,sym->name);
-    }else if(obj->t == vastk_integer){
-      vast_integer* inte = (vast_integer*)obj;
-      inst = vps_ipushint(vps,grp,inte->name,inte->value);
-    }else if(obj->t == vastk_number){
-      vast_number* num = (vast_number*)obj;
-      inst = vps_ipushnum(vps,grp,num->name,num->value);
-    }else if(obj->t == vastk_string){
-      vast_string* str = (vast_string*)obj;
-      inst = vps_ipushstr(vps,grp,str->value);
-    }else{
-      uabort("push inst error!");
-      inst = NULL;
-    }
-    vcfg_grp_inst_apd(grp,inst);
-    next = vast_cdr(next);
-  }
-  /* push subr name */
-  inst = vps_ipushdt(vps,grp,symbol->name);
-  vcfg_grp_inst_apd(grp,inst);
-  /* call subr */
-  inst = vps_icall(vps);
-  vcfg_grp_inst_apd(grp,inst);
-
-  ulog0("symcall");
-  VATTR_RETURN_VOID;
-}
-
-vast_attr vast_attr_symcall = {NULL,NULL,symcall_action};
-
 UDEFUN(UFNAME vfile2vps,
        UARGS (vreader* reader,char* file_path,vps_cntr* vps),
        URET vps_mod*)

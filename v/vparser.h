@@ -26,8 +26,6 @@ enum vtk{
   vtk_eof,
 };
 
-extern vast_attr vast_attr_symcall;
-
 vast_obj* vparser_parse(vtoken_state* ts);
 
 typedef struct _vast_cons{

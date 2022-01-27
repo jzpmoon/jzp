@@ -167,6 +167,9 @@ VDEFATTR(g_var,"g-var",{
       vast_symbol* sym = (vast_symbol*)obj;
       vps_data* data;
       data = vps_any_new(jreq->vps,sym->name);
+      if(!data){
+	uabort("vps_any_new error!");
+      }
       data->scope = VPS_SCOPE_GLOBAL;
       vps_mod_data_put(jreq->top,data);
     }else{
@@ -202,6 +205,9 @@ VDEFATTR(var,"var",{
 	vast_symbol* sym = (vast_symbol*)obj;
 	vps_data* data;
 	data = vps_any_new(jreq->vps,sym->name);
+	if(!data){
+	  uabort("vps_any_new error!");
+	}
 	data->scope = VPS_SCOPE_LOCAL;
 	vps_mod_data_put(jreq->top,data);
       } else {
@@ -250,6 +256,9 @@ VDEFATTR(local,"local",{
 	  uabort("local name:%s already exists!",sym->name->value);
 	}
 	data = vps_any_new(jreq->vps,sym->name);
+	if(!data){
+	  uabort("vps_any_new error!");
+	}
 	data->idx = grp->locals->count;
 	data->scope = VPS_SCOPE_LOCAL;
 	vcfg_grp_locals_apd(grp,data);

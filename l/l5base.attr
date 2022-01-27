@@ -98,7 +98,7 @@ VDEFATTR(defun,"defun",{
 
 /*
  * define attribute defvar
- * (defvar var)
+ * (defvar var val)
  */
 VDEFATTR(defvar,"defvar",{
   vps_closure_req* jreq;
@@ -107,6 +107,7 @@ VDEFATTR(defvar,"defvar",{
   vast_symbol* sym;
   vps_data* var;
   vcfg_graph* grp;
+  vps_inst* inst;
   
   jreq = (vps_closure_req*)req;
   grp = jreq->closure->init;
@@ -125,6 +126,13 @@ VDEFATTR(defvar,"defvar",{
     uabort("variable already define!");
   }
 
+  next = vast_cdr(next);
+  if (vast_consp(next)) {
+    uabort("attr \"defvar\" has no enough args!");      
+  }
+  obj = vast_car(next);
+  vclosure_arg_call(jreq->closure,jreq,obj);
+  
   if (jreq->closure->parent) {
     var = vps_any_new(jreq->vps,sym->name);
     if (!var) {
@@ -134,10 +142,25 @@ VDEFATTR(defvar,"defvar",{
     var->scope = VPS_SCOPE_LOCAL;
     vcfg_grp_params_apd(grp,var);
   } else {
+    var = vps_any_new(jreq->vps,sym->name);
+    if (!var) {
+      uabort("vps_any_new error!");
+    }
+    var->scope = VPS_SCOPE_GLOBAL;
     if (vclosure_field_add(jreq->closure,var)) {
       uabort("attr \"defvar\" add field error!");
     }
   }
+
+  if (var->scope == VPS_SCOPE_LOCAL) {
+    inst = vps_istoredt(jreq->vps,sym->name);
+  } else if (var->scope == VPS_SCOPE_GLOBAL) {
+    inst = vps_ipopdt(jreq->vps,grp,sym->name);
+  } else {
+    uabort("attr \"defvar\" var scope unknow!");
+    inst = NULL;
+  }
+  vcfg_grp_inst_apd(grp,inst);
 
   VATTR_RETURN_VOID;
 })
@@ -295,22 +318,17 @@ VDEFATTR(add,"+",{
     next = vast_cdr(jreq->ast_obj);
     while (1) {
       if (!next) {
-	if (argc < 2) {
-	  uabort("attr \"+\" args less than 2!");
-	}
 	break;
       }
       obj = vast_car(next);
-      if (!vast_consp(obj)) {
-	vclosure_cons_call(jreq->closure,jreq,obj);
-      } else {
-        vclosure_arit_arg(jreq->closure,jreq->vps,obj);
-      }
+      vclosure_arg_call(jreq->closure,jreq,obj);
+
       if (argc > 0) {
 	inst = vps_iadd(jreq->vps);
 	vcfg_grp_inst_apd(grp,inst);
       }
       argc++;
+
       next = vast_cdr(next);
     }
     
@@ -346,17 +364,8 @@ VDEFATTR(sub,"-",{
     }
     obj_num1 = vast_car(next);
 
-    if (!vast_consp(obj_num1)) {
-      vclosure_cons_call(jreq->closure,jreq,obj_num1);
-    } else {
-      vclosure_arit_arg(jreq->closure,jreq->vps,obj_num1);
-    }
-
-    if (!vast_consp(obj_num2)) {
-      vclosure_cons_call(jreq->closure,jreq,obj_num2);
-    } else {
-      vclosure_arit_arg(jreq->closure,jreq->vps,obj_num2);
-    }
+    vclosure_arg_call(jreq->closure,jreq,obj_num1);
+    vclosure_arg_call(jreq->closure,jreq,obj_num2);
 
     inst = vps_isub(jreq->vps);
     vcfg_grp_inst_apd(grp,inst);
@@ -383,22 +392,17 @@ VDEFATTR(mul,"*",{
     next = vast_cdr(jreq->ast_obj);
     while (1) {
       if (!next) {
-	if (argc < 2) {
-	  uabort("attr \"*\" args less than 2!");
-	}
 	break;
       }
       obj = vast_car(next);
-      if (!vast_consp(obj)) {
-	vclosure_cons_call(jreq->closure,jreq,obj);
-      } else {
-	vclosure_arit_arg(jreq->closure,jreq->vps,obj);
-      }
+      vclosure_arg_call(jreq->closure,jreq,obj);
+
       if (argc > 0) {
 	inst = vps_imul(jreq->vps);
 	vcfg_grp_inst_apd(grp,inst);
       }
       argc++;
+
       next = vast_cdr(next);
     }
     
@@ -434,17 +438,8 @@ VDEFATTR(div,"/",{
     }
     obj_num1 = vast_car(next);
 
-    if (!vast_consp(obj_num1)) {
-      vclosure_cons_call(jreq->closure,jreq,obj_num1);
-    } else {
-      vclosure_arit_arg(jreq->closure,jreq->vps,obj_num1);
-    }
-
-    if (!vast_consp(obj_num2)) {
-      vclosure_cons_call(jreq->closure,jreq,obj_num2);
-    } else {
-      vclosure_arit_arg(jreq->closure,jreq->vps,obj_num2);
-    }
+    vclosure_arg_call(jreq->closure,jreq,obj_num1);
+    vclosure_arg_call(jreq->closure,jreq,obj_num2);
     
     inst = vps_idiv(jreq->vps);
     vcfg_grp_inst_apd(grp,inst);
@@ -481,17 +476,8 @@ VDEFATTR(gt,">",{
     }
     obj_num1 = vast_car(next);
 
-    if (!vast_consp(obj_num1)) {
-      vclosure_cons_call(jreq->closure,jreq,obj_num1);
-    } else {
-      vclosure_arit_arg(jreq->closure,jreq->vps,obj_num1);
-    }
-
-    if (!vast_consp(obj_num2)) {
-      vclosure_cons_call(jreq->closure,jreq,obj_num2);
-    } else {
-      vclosure_arit_arg(jreq->closure,jreq->vps,obj_num2);
-    }
+    vclosure_arg_call(jreq->closure,jreq,obj_num1);
+    vclosure_arg_call(jreq->closure,jreq,obj_num2);
     
     inst = vps_igt(jreq->vps);
     vcfg_grp_inst_apd(grp,inst);
@@ -528,17 +514,8 @@ VDEFATTR(lt,"<",{
     }
     obj_num1 = vast_car(next);
 
-    if (!vast_consp(obj_num1)) {
-      vclosure_cons_call(jreq->closure,jreq,obj_num1);
-    } else {
-      vclosure_arit_arg(jreq->closure,jreq->vps,obj_num1);
-    }
-
-    if (!vast_consp(obj_num2)) {
-      vclosure_cons_call(jreq->closure,jreq,obj_num2);
-    } else {
-      vclosure_arit_arg(jreq->closure,jreq->vps,obj_num2);
-    }
+    vclosure_arg_call(jreq->closure,jreq,obj_num1);
+    vclosure_arg_call(jreq->closure,jreq,obj_num2);
     
     inst = vps_ilt(jreq->vps);
     vcfg_grp_inst_apd(grp,inst);
@@ -575,17 +552,8 @@ VDEFATTR(eq,"=",{
     }
     obj_num1 = vast_car(next);
 
-    if (!vast_consp(obj_num1)) {
-      vclosure_cons_call(jreq->closure,jreq,obj_num1);
-    } else {
-      vclosure_arit_arg(jreq->closure,jreq->vps,obj_num1);
-    }
-
-    if (!vast_consp(obj_num2)) {
-      vclosure_cons_call(jreq->closure,jreq,obj_num2);
-    } else {
-      vclosure_arit_arg(jreq->closure,jreq->vps,obj_num2);
-    }
+    vclosure_arg_call(jreq->closure,jreq,obj_num1);
+    vclosure_arg_call(jreq->closure,jreq,obj_num2);
     
     inst = vps_ieq(jreq->vps);
     vcfg_grp_inst_apd(grp,inst);
@@ -628,11 +596,7 @@ VDEFATTR(set,"set",{
       uabort("attr \"set\" has no enough args!");      
     }
     obj = vast_car(next);
-    if (!vast_consp(obj)) {
-      vclosure_cons_call(jreq->closure,jreq,obj);
-    } else {
-      vclosure_arit_arg(jreq->closure,jreq->vps,obj);
-    }
+    vclosure_arg_call(jreq->closure,jreq,obj);
 
     if (var->scope == VPS_SCOPE_LOCAL) {
       inst = vps_istoredt(jreq->vps,sym->name);

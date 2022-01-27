@@ -90,7 +90,7 @@ UBEGIN
   VATTR_RETURN_VOID;
 UEND
 
-static vast_attr vclosure_attr_symcall = {NULL,NULL,symcall_action};
+static vast_attr lclosure_attr_symcall = {NULL,NULL,symcall_action};
 
 UDEFUN(UFNAME vclosure_cons_call,
        UARGS (vclosure* closure,vps_closure_req* req,vast_obj* cons),
@@ -159,7 +159,7 @@ UBEGIN
   }
 UEND
 
-UDEFUN(UFNAME vclosure_arit_arg,
+UDEFUN(UFNAME vclosure_atom_call,
        UARGS (vclosure* closure,vps_cntr* vps,vast_obj* obj),
        URET static void)
 UDECLARE
@@ -208,6 +208,19 @@ UBEGIN
   vcfg_grp_inst_apd(grp,inst);
 UEND
 
+UDEFUN(UFNAME vclosure_arg_call,
+       UARGS (vclosure* closure,vps_closure_req* req,vast_obj* obj),
+       URET static void)
+UDECLARE
+
+UBEGIN
+  if (!vast_consp(obj)) {
+    vclosure_cons_call(req->closure,req,obj);
+  } else {
+    vclosure_atom_call(req->closure,req->vps,obj);
+  }
+UEND
+
 #include "_l5temp.attr"
 #include "_l5temp.cfun"
 
@@ -236,16 +249,17 @@ UBEGIN
   #undef DF
 UEND
 
-leval* l5startup()
-{
+UDEFUN(UFNAME l5startup,
+       UARGS (),
+       URET leval*)
+UDECLARE
   leval* eval;
-
+UBEGIN
   eval = lstartup(l5attr_init,
 		  l5cfun_init,
 		  l5kw_init,
 		  vclosure2vps,
-		  &vclosure_attr_symcall);
-  ulog("l5startup");
+		  &lclosure_attr_symcall);
   
   return eval;
-}
+UEND
