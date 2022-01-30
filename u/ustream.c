@@ -5,6 +5,28 @@
 #define USTREAM_FILE_BUFF_GET(stream) ((stream)->u.s.dbuff)
 #define USTREAM_FILE_GET(stream) ((stream)->u.s.file)
 
+ufile* ufile_new(ustring* file_path,const char* mode)
+{
+  uallocator* allocator;
+  ufile* file;
+  
+  allocator = &u_global_allocator;
+  file = allocator->alloc(allocator,sizeof(ufile));
+  if (file) {
+    file->file_path = file_path;
+    file->file = fopen(file_path->value,mode);
+    if (!file) {
+      goto err;
+    }
+    file->directory = NULL;
+    file->file_name = NULL;
+  }
+  return file;
+ err:
+  allocator->free(allocator,file);
+  return NULL;
+}
+
 ustream* ustream_new_by_buff(int iot,ubuffer* buff,URI_DECL){
   uallocator* allocator;
   ustream* stream;

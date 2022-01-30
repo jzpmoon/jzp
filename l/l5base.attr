@@ -1,6 +1,6 @@
 /*
  * define attribute defun
- * (defun (args...) (body)...)
+ * (defun name (args...) (body)...)
  */
 VDEFATTR(defun,"defun",{
     vps_closure_req* jreq;
@@ -18,7 +18,10 @@ VDEFATTR(defun,"defun",{
     if (!closure) {
       uabort("new closure error!");
     }
-    closure->parent = jreq->closure;
+    closure->closure_type = VCLOSURE_TYPE_FUNC;
+    if (vclosure_child_add(jreq->closure,closure)) {
+      uabort("add child closure error!");
+    }
     grp = closure->init;
     grp->scope = VPS_SCOPE_GLOBAL;
 
@@ -89,10 +92,6 @@ VDEFATTR(defun,"defun",{
     vcfg_grp_build(jreq->vps,grp);
     vcfg_grp_connect(jreq->vps,grp);
 
-    if (vclosure_child_add(jreq->closure,closure)) {
-      uabort("add child closure error!");
-    }
-
     VATTR_RETURN_VOID;
   })
 
@@ -133,7 +132,7 @@ VDEFATTR(defvar,"defvar",{
   obj = vast_car(next);
   vclosure_arg_call(jreq->closure,jreq,obj);
   
-  if (jreq->closure->parent) {
+  if (!vclosure_isfile(jreq->closure)) {
     var = vps_any_new(jreq->vps,sym->name);
     if (!var) {
       uabort("vps_any_new error!");
@@ -155,6 +154,8 @@ VDEFATTR(defvar,"defvar",{
   if (var->scope == VPS_SCOPE_LOCAL) {
     inst = vps_istoredt(jreq->vps,sym->name);
   } else if (var->scope == VPS_SCOPE_GLOBAL) {
+    inst = vps_ipopdt(jreq->vps,grp,sym->name);
+  } else if (var->scope == VPS_SCOPE_DECL) {
     inst = vps_ipopdt(jreq->vps,grp,sym->name);
   } else {
     uabort("attr \"defvar\" var scope unknow!");
@@ -282,16 +283,20 @@ VDEFATTR(while,"while",{
     /* (loop...) */
     inst = vps_ilabel(jreq->vps,loop_id);
     vcfg_grp_inst_apd(grp,inst);
-
-    next = vast_cdr(next);
-    if (vast_consp(next)) {
-      uabort("ast attr \"while\" has no loop!");
+    while (1) {
+      next = vast_cdr(next);
+      if (!next) {
+	break;
+      }
+      if (vast_consp(next)) {
+	uabort("ast attr \"while\" loop not a cons!");
+      }
+      obj = vast_car(next);
+      if (vast_consp(obj)) {
+	uabort("ast attr \"while\" loop has no ()!");
+      }
+      vclosure_cons_call(jreq->closure,jreq,obj);
     }
-    obj = vast_car(next);
-    if (vast_consp(obj)) {
-      uabort("ast attr \"while\" loop has no ()!");
-    }
-    vclosure_cons_call(jreq->closure,jreq,obj);
     inst = vps_ijmplb(jreq->vps,cond_id);
     vcfg_grp_inst_apd(grp,inst);
     
@@ -602,6 +607,8 @@ VDEFATTR(set,"set",{
       inst = vps_istoredt(jreq->vps,sym->name);
     } else if (var->scope == VPS_SCOPE_GLOBAL) {
       inst = vps_ipopdt(jreq->vps,grp,sym->name);
+    } else if (var->scope == VPS_SCOPE_DECL) {
+      inst = vps_ipopdt(jreq->vps,grp,sym->name);
     } else {
       uabort("attr \"set\" var scope unknow!");
       inst = NULL;
@@ -609,6 +616,176 @@ VDEFATTR(set,"set",{
     vcfg_grp_inst_apd(grp,inst);
 
     VATTR_RETURN_VOID;
+})
+
+/*
+ * define attribute require
+ * (require file-path)
+ */
+VDEFATTR(require,"require",{
+    vps_closure_req* jreq;
+    vtoken_state* ts;
+    vast_obj* next;
+    vast_obj* obj;
+    vast_symbol* src_name;
+    vclosure* closure;
+
+    jreq = (vps_closure_req*)req;
+
+    if (!vclosure_isfile(jreq->closure)) {
+      uabort("attr \"require\" can not use here!");
+    }
+
+    next = vast_cdr(jreq->ast_obj);
+    if (vast_consp(next)) {
+      uabort("src load error because have no src name!");
+    }
+
+    obj = vast_car(next);
+    if (vast_symbolp(obj)) {
+      uabort("src name invalid!");
+    }
+    src_name = (vast_symbol*)obj;
+
+    ts = vreader_from(jreq->reader);
+    if (!ts) {
+      uabort("reader from error!");
+    }
+    
+    closure = vfile2closure(jreq->closure->parent,jreq->reader,
+			    src_name->name->value,
+			    jreq->vps,VCLOSURE_TYPE_FILE);
+    closure->closure_name = src_name->name;
+    
+    VATTR_RETURN_VOID;
+})
+
+/*
+ * define attribute decfun
+ * (decfun name (args..))
+ */
+VDEFATTR(decfun,"decfun",{
+    vps_closure_req* jreq;
+    vclosure* closure;
+    vast_obj* obj;
+    vast_obj* next;
+    vast_symbol* fun_name;
+    vcfg_graph* grp;
+    vast_obj* args;
+
+    jreq = (vps_closure_req*)req;
+    if (vclosure_ismain(jreq->closure)) {
+      uabort("attr \"decfun\" can not use in main module!");
+    }
+    if (!vclosure_isfile(jreq->closure)) {
+      uabort("attr \"decfun\" can not use here!");
+    }
+    jreq->closure->closure_type = VCLOSURE_TYPE_DECL;
+
+    closure = vclosure_new(jreq->vps);
+    if (!closure) {
+      uabort("new closure error!");
+    }
+    closure->closure_type = VCLOSURE_TYPE_DECL;
+    if (vclosure_child_add(jreq->closure,closure)) {
+      uabort("add child closure error!");
+    }    
+    grp = closure->init;
+    grp->scope = VPS_SCOPE_GLOBAL;
+
+    next = vast_cdr(jreq->ast_obj);
+    if (vast_consp(next)) {
+      uabort("not define funcion name!");
+    }
+    obj = vast_car(next);
+    if (vast_symbolp(obj)) {
+      uabort("has no function name!");
+    }
+    fun_name = (vast_symbol*)obj;
+
+    grp->id.name = fun_name->name;
+    
+    next = vast_cdr(next);
+    if (vast_consp(next)) {
+      uabort("decfun args error!");
+    }
+
+    /* (args...) */
+    obj = vast_car(next);
+    if (obj) {
+      int arg_idx = 0;
+      if (vast_consp(obj)) {
+	uabort("decfun args invalid!");
+      }
+      args = obj;
+      while (args != NULL) {
+	vast_obj* arg;
+	vast_symbol* sym;
+	vps_data* data;
+
+	arg = vast_car(args);
+	if (vast_symbolp(arg)) {
+	  uabort("arg not a symbol!");
+	}
+	sym = (vast_symbol*)arg;
+	data = vps_any_new(jreq->vps,sym->name);
+	if (!data) {
+	  uabort("vps_any_new error!");
+	}
+	data->idx = arg_idx;
+	data->scope = VPS_SCOPE_LOCAL;
+	vcfg_grp_params_apd(grp,data);
+	args = vast_cdr(args);
+	arg_idx++;
+      }
+    }
+    VATTR_RETURN_VOID;
+})
+
+/*
+ * define attribute decvar
+ * (decvar var)
+ */
+VDEFATTR(decvar,"decvar",{
+  vps_closure_req* jreq;
+  vast_obj* obj;
+  vast_obj* next;
+  vast_symbol* sym;
+  vps_data* var;
+
+    
+  jreq = (vps_closure_req*)req;
+  if (vclosure_ismain(jreq->closure)) {
+    uabort("attr \"decvar\" can not use in main module!");
+  }
+  if (!vclosure_isfile(jreq->closure)) {
+    uabort("attr \"decvar\" can not use here!");
+  }
+  jreq->closure->closure_type = VCLOSURE_TYPE_DECL;
+
+  next = vast_cdr(jreq->ast_obj);
+  if (vast_consp(next)) {
+      uabort("attr \"decvar\" has no args!");
+  }
+  obj = vast_car(next);
+  if (vast_symbolp(obj)) {
+    uabort("attr \"decvar\" variable not a symbol!");
+  }
+  sym = (vast_symbol*)obj;
+  var = vclosure_curr_field_get(jreq->closure,sym->name);
+  if (var) {
+    uabort("variable:%s already define!",sym->name->value);
+  }
+  var = vps_any_new(jreq->vps,sym->name);
+  if (!var) {
+    uabort("vps_any_new error!");
+  }
+  var->scope = VPS_SCOPE_DECL;
+  if (vclosure_field_add(jreq->closure,var)) {
+    uabort("attr \"decvar\" add field error!");
+  }
+
+  VATTR_RETURN_VOID;
 })
 
 /*
@@ -627,4 +804,7 @@ VATTRONLOAD(l5base,{
     VDECLATTR(lt);
     VDECLATTR(eq);
     VDECLATTR(set);
+    VDECLATTR(require);
+    VDECLATTR(decfun);
+    VDECLATTR(decvar);
 })

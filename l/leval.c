@@ -1,11 +1,13 @@
 #include "lobj.h"
 #include "leval.h"
 
-vps_mod* leval_vps_load(leval* eval,char* file_path)
-{
+UDEFUN(UFNAME leval_vps_load,
+       UARGS (leval* eval,char* file_path),
+       URET vps_mod*)
+UDECLARE
   vps_mod* mod;
   vps_prod_ft prod;
-
+UBEGIN
   prod = eval->loader.prod;
   if (prod) {
     mod = prod(eval->reader,file_path,&eval->vps);
@@ -14,26 +16,31 @@ vps_mod* leval_vps_load(leval* eval,char* file_path)
     mod = NULL;
   }
   return mod;
-}
+UEND
 
-int leval_load(leval* eval,char* file_path)
-{
+UDEFUN(UFNAME leval_load,
+       UARGS (leval* eval,char* file_path),
+       URET int)
+UDECLARE
   vps_mod* mod;
   vps_cntr* vps;
-  
+UBEGIN
   mod = leval_vps_load(eval,file_path);
   vps = &eval->vps;
   vcontext_vps_load(eval->ctx,vps);
   return 0;
-}
+UEND
 
-static int leval_loader_load(vmod_loader* loader,vmod* mod){
+UDEFUN(UFNAME leval_loader_load,
+       UARGS (vmod_loader* loader,vmod* mod),
+       URET static int)
+UDECLARE
   vmod* dest_mod;
   vps_mod* src_mod;
   char* file_path;
   leval_loader* eval_loader;
   leval* eval;
-
+UBEGIN
   dest_mod = mod;
   file_path = mod->name->value;
   eval_loader = (leval_loader*)loader;
@@ -41,9 +48,8 @@ static int leval_loader_load(vmod_loader* loader,vmod* mod){
   src_mod = leval_vps_load(eval,file_path);
   vcontext_mod2mod(eval->ctx,dest_mod,src_mod);
   vps_cntr_clean(&eval->vps);
-  ulog("leval_loader_load");
   return 0;
-}
+UEND
 
 UDEFUN(UFNAME lstartup,
        UARGS (vattr_init_ft attr_init,

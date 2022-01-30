@@ -2,6 +2,7 @@
 #define _USTREAM_H_
 
 #include "udbuffer.h"
+#include "ustring.h"
 
 #define USTREAM_INPUT  0
 #define USTREAM_OUTPUT 1
@@ -20,6 +21,17 @@ typedef struct _ustream{
     } s;
   } u;
 } ustream;
+
+typedef struct _ufile ufile;
+
+struct _ufile{
+  ustring* file_path;
+  ustring* directory;
+  ustring* file_name;
+  FILE* file;
+};
+
+ufile* ufile_new(ustring* file_path,const char* mode);
 
 ustream* ustream_new_by_buff(int iot,ubuffer* buff,URI_DECL);
 

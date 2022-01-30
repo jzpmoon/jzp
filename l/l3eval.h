@@ -9,6 +9,8 @@ enum l3kwk{
   #undef DF
 };
 
-leval* l3startup();
+UDECLFUN(UFNAME l3startup,
+	 UARGS (),
+	 URET leval*);
 
 #endif

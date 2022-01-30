@@ -1,0 +1,7 @@
+(decfun make-array (size))
+(decfun make-string (size))
+(decfun make-istream (file-path))
+(decfun make-ostream (file-path))
+(decfun stream-output (obj ostream))
+(decvar system-istream)
+(decvar system-ostream)

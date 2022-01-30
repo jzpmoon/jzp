@@ -1094,6 +1094,7 @@ vps_mod* vps_mod_new(vps_cntr* vps,
     mod->entry = NULL;
     mod->name = name;
     mod->status = VPS_MOD_STATUS_UNLOAD;
+    mod->mod_type = VPS_MOD_TYPE_NORMAL;
   }
   return mod;
 }
@@ -1103,13 +1104,8 @@ static int vps_mod_data_comp(vps_datap* data1,
 {
   vps_data* d1 = *data1;
   vps_data* d2 = *data2;
-  if(d1 > d2){
-    return 1;
-  }else if(d1 < d2){
-    return -1;
-  }else{
-    return 0;
-  }
+
+  return ustring_comp(d1->name,d2->name);
 }
 
 static int vps_mod_code_comp(vcfg_graphp* data1,
@@ -1117,13 +1113,8 @@ static int vps_mod_code_comp(vcfg_graphp* data1,
 {
   vcfg_graph* g1 = *data1;
   vcfg_graph* g2 = *data2;
-  if(g1 > g2){
-    return 1;
-  }else if(g1 < g2){
-    return -1;
-  }else{
-    return 0;
-  }
+
+  return vps_id_comp(g1->id,g2->id);
 }
 
 void vps_mod_data_put(vps_mod* mod,
@@ -1162,6 +1153,56 @@ void vps_mod_code_put(vps_mod* mod,
   }
 }
 
+UDEFUN(UFNAME vps_mod_data_get,
+       UARGS (vps_mod* mod,
+	      ustring* name),
+       URET vps_data*)
+UDECLARE
+  vps_data dtin;
+  vps_data* ink;
+  vps_datap* outk;
+UBEGIN
+  ink = &dtin;
+  dtin.name = name;
+  uhstb_vps_datap_get(mod->data,
+		      name->hash_code,
+		      &ink,
+		      &outk,
+		      vps_mod_data_comp);
+  if (outk) {
+    return *outk;
+  } else {
+    return NULL;
+  }
+UEND
+
+UDEFUN(UFNAME vps_mod_code_get,
+       UARGS (vps_mod* mod,
+	      ustring* name),
+       URET vcfg_graph*)
+UDECLARE
+  vps_id id;
+  unsigned int hscd;
+  vcfg_graph cdin;
+  vcfg_graph* ink;
+  vcfg_graphp* outk;
+UBEGIN
+  id.name = name;
+  cdin.id = id;
+  ink = &cdin;
+  hscd = vps_id_hscd(id);
+  uhstb_vcfg_graphp_get(mod->code,
+			hscd,
+			&ink,
+			&outk,
+			vps_mod_code_comp);
+  if (outk) {
+    return *outk;
+  } else {
+    return NULL;
+  }
+UEND
+
 void vps_cntr_init(vps_cntr* cntr)
 {
   uallocator* allocator;
@@ -1193,7 +1234,14 @@ int vps_cntr_load(vps_cntr* vps,
   ustring* name = mod->name;
   unsigned int hscd = name->hash_code;
   int retval;
-  
+
+  if (mod->mod_type == VPS_MOD_TYPE_ENTRY) {
+    if (!vps->entry) {
+      vps->entry = mod;
+    } else {
+      uabort("entry mod already exists!");
+    }
+  }
   mod->vps = vps;
   retval = uhstb_vps_modp_put(vps->mods,
 			      hscd,
@@ -1209,6 +1257,56 @@ int vps_cntr_load(vps_cntr* vps,
   return 0;
 }
 
+UDEFUN(UFNAME vps_cntr_data_get,
+       UARGS (vps_cntr* vps,ustring* name),
+       URET vps_data*)
+UDECLARE
+  vps_data* data;
+  uset* set;
+  ucursor c;
+UBEGIN
+  set = (uset*)vps->mods;
+  set->iterate(&c);
+  while (1) {
+    vps_modp* modp = set->next(set,&c);
+    vps_mod* mod;
+    if (!modp) {
+      break;
+    }
+    mod = *modp;
+    data = vps_mod_data_get(mod,name);
+    if (data) {
+      return data;
+    }
+  }
+  return NULL;
+UEND
+
+UDEFUN(UFNAME vps_cntr_code_get,
+       UARGS (vps_cntr* vps,ustring* name),
+       URET vcfg_graph*)
+UDECLARE
+  vcfg_graph* grp;
+  uset* set;
+  ucursor c;
+UBEGIN
+  set = (uset*)vps->mods;
+  set->iterate(&c);
+  while (1) {
+    vps_modp* modp = set->next(set,&c);
+    vps_mod* mod;
+    if (!modp) {
+      break;
+    }
+    mod = *modp;
+    grp = vps_mod_code_get(mod,name);
+    if (grp) {
+      return grp;
+    }
+  }
+  return NULL;
+UEND
+  
 void vps_cntr_clean(vps_cntr* vps)
 {
   uallocator* allocator;

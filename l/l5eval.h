@@ -10,6 +10,8 @@ enum l5kwk{
   #undef DF
 };
 
-leval* l5startup();
+UDECLFUN(UFNAME l5startup,
+	 UARGS (),
+	 URET leval*);
 
 #endif

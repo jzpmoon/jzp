@@ -168,6 +168,7 @@ typedef struct _vcfg_block{
 #define VPS_SCOPE_GLOBAL 1
 #define VPS_SCOPE_LOCAL 2
 #define VPS_SCOPE_ENTRY 3
+#define VPS_SCOPE_DECL 4
 
 typedef struct _vcfg_graph{
   VCFGHEADER;
@@ -187,6 +188,9 @@ uhstb_decl_tpl(vps_typep);
 #define VPS_MOD_STATUS_LOADED 1
 #define VPS_MOD_STATUS_UNLOAD 0
 
+#define VPS_MOD_TYPE_ENTRY 1
+#define VPS_MOD_TYPE_NORMAL 0
+
 typedef struct _vps_mod{
   VPSHEADER;
   struct _vps_cntr* vps;
@@ -196,6 +200,7 @@ typedef struct _vps_mod{
   vcfg_graph* entry;
   ustring* name;
   int status;
+  int mod_type;
 } vps_mod,*vps_modp;
 
 uhstb_decl_tpl(vps_modp);
@@ -204,6 +209,7 @@ struct _vps_cntr
 {
   umem_pool mp;
   uhstb_vps_modp* mods;
+  vps_mod* entry;
   uhstb_vps_typep* types;
   int seqnum;
 };
@@ -428,16 +434,40 @@ vps_mod* vps_mod_new(vps_cntr* vps,
 #define vps_mod_isload(mod)			\
   ((mod)->status == VPS_MOD_STATUS_LOADED)
 
+#define vps_mod_entry_set(mod)			\
+  ((mod)->mod_type = VPS_MOD_TYPE_ENTRY)
+
+#define vps_mod_normal_set(mod)			\
+  ((mod)->mod_type = VPS_MOD_TYPE_NORMAL)
+
 void vps_mod_data_put(vps_mod* mod,
 		      vps_data* data);
 
 void vps_mod_code_put(vps_mod* mod,
 		      vcfg_graph* code);
 
+UDECLFUN(UFNAME vps_mod_data_get,
+	 UARGS (vps_mod* mod,
+		ustring* name),
+	 URET vps_data*);
+
+UDECLFUN(UFNAME vps_mod_code_get,
+	 UARGS (vps_mod* mod,
+		ustring* name),
+	 URET vcfg_graph*);
+
 void vps_cntr_init(vps_cntr* cntr);
 
 int vps_cntr_load(vps_cntr* vps,
 		  vps_mod* mod);
+
+UDECLFUN(UFNAME vps_cntr_data_get,
+	 UARGS (vps_cntr* vps,ustring* name),
+	 URET vps_data*);
+
+UDECLFUN(UFNAME vps_cntr_code_get,
+	 UARGS (vps_cntr* vps,ustring* name),
+	 URET vcfg_graph*);
 
 void vps_cntr_clean(vps_cntr* vps);
 

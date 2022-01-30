@@ -31,8 +31,23 @@ UBEGIN
     obj = vast_car(next);
     if (obj->t == vastk_symbol) {
       vast_symbol* sym = (vast_symbol*)obj;
-      inst = vps_ipushdt(vps,grp,sym->name);
-      vcfg_grp_inst_apd(grp,inst);
+      vps_data* data = vclosure_field_get(closure,sym->name);
+      if (data) {
+	if (data->scope == VPS_SCOPE_LOCAL) {
+	  inst = vps_iloaddt(vps,sym->name);
+	  vcfg_grp_inst_apd(grp,inst);
+	} else if (data->scope == VPS_SCOPE_GLOBAL) {
+	  inst = vps_ipushdt(vps,grp,sym->name);
+	  vcfg_grp_inst_apd(grp,inst);
+	} else if (data->scope == VPS_SCOPE_DECL) {
+	  inst = vps_ipushdt(vps,grp,sym->name);
+	  vcfg_grp_inst_apd(grp,inst);
+	} else {
+	  uabort("variable:%s,scope error!",sym->name->value);
+	}
+      } else {
+	uabort("symbol:%s not a variable!",sym->name->value);
+      }
     } else if (obj->t == vastk_integer) {
       vast_integer* inte = (vast_integer*)obj;
       inst = vps_ipushint(vps,grp,inte->name,inte->value);
@@ -125,6 +140,9 @@ UBEGIN
       } else if (data->scope == VPS_SCOPE_GLOBAL) {
 	inst = vps_ipushdt(req->vps,grp,sym->name);
 	vcfg_grp_inst_apd(grp,inst);
+      } else if (data->scope == VPS_SCOPE_DECL) {
+	inst = vps_ipushdt(req->vps,grp,sym->name);
+	vcfg_grp_inst_apd(grp,inst);
       } else {
 	uabort("variable:%s,scope error!",sym->name->value);
       }
@@ -182,6 +200,8 @@ UBEGIN
     if (data->scope == VPS_SCOPE_LOCAL) {
       inst = vps_iloaddt(vps,sym->name);
     } else if (data->scope == VPS_SCOPE_GLOBAL) {
+      inst = vps_ipushdt(vps,grp,sym->name);
+    } else if (data->scope == VPS_SCOPE_DECL) {
       inst = vps_ipushdt(vps,grp,sym->name);
     } else {
       uabort("variable:%s,scope error!",sym->name->value);
