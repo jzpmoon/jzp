@@ -5,26 +5,62 @@
 #define USTREAM_FILE_BUFF_GET(stream) ((stream)->u.s.dbuff)
 #define USTREAM_FILE_GET(stream) ((stream)->u.s.file)
 
-ufile* ufile_new(ustring* file_path,const char* mode)
+ustring* ufile_path_name_get(uallocator* allocator,ustring* file_path)
 {
-  uallocator* allocator;
-  ufile* file;
-  
-  allocator = &u_global_allocator;
-  file = allocator->alloc(allocator,sizeof(ufile));
-  if (file) {
-    file->file_path = file_path;
-    file->file = fopen(file_path->value,mode);
-    if (!file) {
-      goto err;
-    }
-    file->directory = NULL;
-    file->file_name = NULL;
+  ustring* file_name;
+  int pos;
+  int len;
+
+  pos = ustring_char_at(file_path,UDIR_SEP,-1);
+  len = file_path->len - pos - 1;
+  if (pos < 0) {
+    pos = 0;
   }
-  return file;
+  file_name = usubstring(allocator,file_path,pos,len);
+  return file_name;
+}
+
+ustring* ufile_path_dir_get(uallocator* allocator,ustring* file_path)
+{
+  ustring* file_name;
+  int pos;
+  int len;
+
+  pos = 0;
+  len = ustring_char_at(file_path,UDIR_SEP,-1) + 1;
+  file_name = usubstring(allocator,file_path,pos,len);
+  return file_name;
+}
+
+ufile_infor* ufile_init(uallocator* allocator,ufile_infor* fi,
+			ustring* file_path)
+{
+  ustring* file_name = NULL;
+  ustring* dir_name = NULL;
+  
+  dir_name = ufile_path_dir_get(allocator,file_path);
+  file_name = ufile_path_name_get(allocator,file_path);
+  if (!file_name) {
+    goto err;
+  }
+  fi->file_path = file_path;
+  fi->dir_name = dir_name;
+  fi->file_name = file_name;
+  return fi;
  err:
-  allocator->free(allocator,file);
+  allocator->free(allocator,dir_name);
+  allocator->free(allocator,file_name);
   return NULL;
+}
+
+void ufile_log(ufile_infor* fi)
+{
+  if (fi->file_path)
+    ulog1("file path:%s",fi->file_path->value);
+  if (fi->dir_name)
+    ulog1("dir name:%s",fi->dir_name->value);
+  if (fi->file_name)
+    ulog1("file name:%s",fi->file_name->value);
 }
 
 ustream* ustream_new_by_buff(int iot,ubuffer* buff,URI_DECL){
@@ -32,40 +68,62 @@ ustream* ustream_new_by_buff(int iot,ubuffer* buff,URI_DECL){
   ustream* stream;
 
   allocator = &u_global_allocator;
-  stream = allocator->alloc(allocator,sizeof(ustream));
+  stream = ustream_alloc(allocator,iot,USTREAM_BUFF);
   if (!stream) {
     URI_RETVAL(UERR_OFM,NULL);
   }
-  stream->iot    = iot;
-  stream->dst    = USTREAM_BUFF;
-  stream->u.buff = buff;
   URI_RETVAL(UERR_SUCC,stream);
 }
 
-ustream* ustream_new_by_file(int iot,FILE* file,URI_DECL){
+ustream* ustream_new_by_file(int iot,ustring* file_path,URI_DECL)
+{
+  ustream* stream = NULL;
+  FILE* file = NULL;
+  char* mode;
   uallocator* allocator;
-  ustream* stream;
-  udbuffer* dbuff;
 
   allocator = &u_global_allocator;
-  stream = allocator->alloc(allocator,sizeof(ustream));
+  stream = ustream_alloc(allocator,iot,USTREAM_FILE);
   if (!stream) {
-    URI_RETVAL(UERR_OFM,NULL);
+    goto err;
   }
   if(iot == USTREAM_INPUT){
-    dbuff = udbuffer_alloc(allocator,USTREAM_FILE_BUFF_SIZE);
-    if(!dbuff){
-      allocator->free(allocator,stream);
-      URI_RETVAL(UERR_OFM,NULL);
-    }
+    mode = "r";
   } else {
-    dbuff = NULL;
+    mode = "w";
   }
-  stream->iot    = iot;
-  stream->dst    = USTREAM_FILE;
-  USTREAM_FILE_BUFF_GET(stream) = dbuff;
+  file = fopen(file_path->value,mode);
+  if (!file) {
+    goto err;
+  }
   USTREAM_FILE_GET(stream) = file;
   URI_RETVAL(UERR_SUCC,stream);
+ err:
+  ustream_dest(stream);
+  URI_RETVAL(UERR_OFM,NULL);
+}
+
+ustream* ustream_new_by_fd(int iot,FILE* fd,URI_DECL)
+{
+  ustream* stream = NULL;
+  char* mode;
+  uallocator* allocator;
+
+  allocator = &u_global_allocator;
+  stream = ustream_alloc(allocator,iot,USTREAM_FILE);
+  if (!stream) {
+    goto err;
+  }
+  if(iot == USTREAM_INPUT){
+    mode = "r";
+  } else {
+    mode = "w";
+  }
+  USTREAM_FILE_GET(stream) = fd;
+  URI_RETVAL(UERR_SUCC,stream);
+ err:
+  ustream_dest(stream);
+  URI_RETVAL(UERR_OFM,NULL);
 }
 
 ustream* ustream_new(int iot,int dst){
@@ -77,21 +135,21 @@ ustream* ustream_new(int iot,int dst){
 
 ustream* ustream_alloc(uallocator* allocator,int iot,int dst)
 {
-  ustream* stream;
-  udbuffer* dbuff;
+  ustream* stream = NULL;
+  udbuffer* dbuff = NULL;
 
   stream = allocator->alloc(allocator,sizeof(ustream));
   if (stream) {
     stream->iot = iot;
     stream->dst = dst;
+    stream->allocator = allocator;
     if (dst == USTREAM_BUFF) {
       stream->u.buff = NULL;
     } else if (dst == USTREAM_FILE) {
       if(stream->iot == USTREAM_INPUT){
 	dbuff = udbuffer_alloc(allocator,USTREAM_FILE_BUFF_SIZE);
 	if(!dbuff){
-	  allocator->free(allocator,stream);
-	  return NULL;
+	  goto err;
 	}
 	stream->u.s.dbuff = dbuff;
       } else {
@@ -100,23 +158,48 @@ ustream* ustream_alloc(uallocator* allocator,int iot,int dst)
       stream->u.s.file = NULL;
     }
   }
-  return stream;  
+  return stream;
+ err:
+  allocator->free(allocator,stream);
+  allocator->free(allocator,dbuff);
+  return NULL;
 }
 
-int ustream_open_by_file(ustream* stream,FILE* file){
+void ustream_dest(ustream* stream)
+{
+  uallocator* alloc = stream->allocator;
+
+  ustream_close(stream);
+  alloc->free(alloc,stream->u.s.dbuff);
+  alloc->free(alloc,stream);
+}
+
+int ustream_open_by_path(ustream* stream,
+			 ustring* file_path)
+{
   if (stream->dst == USTREAM_BUFF ||
       stream->iot == USTREAM_OUTPUT) {
     return -1;
   }
   udbuffer_empty(stream->u.s.dbuff);
-  stream->u.s.file = file;
-  return 0;
+  if (stream->u.s.file) {
+    ustream_close(stream);
+  }
+  stream->u.s.file = fopen(file_path->value,"r");
+  if (!stream->u.s.file) {
+    return -1;
+  } else {
+    return 0;
+  }
 }
 
-void ustream_close(ustream* stream){
+void ustream_close(ustream* stream)
+{
   if (stream->dst == USTREAM_FILE) {
-    if(stream->u.s.file){
-      fclose(stream->u.s.file);
+    FILE* file = stream->u.s.file;
+    if (file) {
+      fclose(file);
+      stream->u.s.file = NULL;
     }
   }
 }

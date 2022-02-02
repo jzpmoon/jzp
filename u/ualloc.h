@@ -27,11 +27,14 @@
 typedef size_t ualloc_size_t;
 typedef struct _uallocator uallocator;
 typedef void* (*ualloc_ft)(uallocator* allocator,ualloc_size_t size);
+typedef void* (*uallocx_ft)(uallocator* allocator,char* data,
+			   ualloc_size_t size);
 typedef void (*ufree_ft)(uallocator* allocator,void* ptr);
 typedef void (*uclean_ft)(uallocator* allocator);
 
 #define UALLOCATOR_HEADER \
   ualloc_ft alloc;	  \
+  uallocx_ft allocx;	  \
   ufree_ft free;	  \
   uclean_ft clean
 

@@ -6,10 +6,14 @@
 
 uhstb_decl_tpl(ustring);
 
-typedef uhstb_ustring ustring_table;
+typedef struct _ustring_table ustring_table;
 
-#define ustring_table_new(len)			\
-  uhstb_ustring_new(len)
+struct _ustring_table{
+  uallocator allocator;
+  uhstb_ustring* strtb;
+};
+
+ustring_table* ustring_table_new(int len);
 
 ustring* ustring_table_put(ustring_table* strtb,
 			   char*          charp,

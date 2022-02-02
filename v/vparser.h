@@ -162,7 +162,7 @@ int vast_attr_get_comp(vast_attr* k1,vast_attr* k2);
 int vast2obj(vast_attr_req* req,vast_attr_res* res);
 
 UDECLFUN(UFNAME vfile2obj,
-	 UARGS (vreader* reader,char* file_path,vast_attr_req* req,
+	 UARGS (vreader* reader,ustring* file_path,vast_attr_req* req,
 		vast_attr_res* res),
 	 URET int);
 #endif

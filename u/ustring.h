@@ -2,6 +2,7 @@
 #define _USTRING_H_
 
 #include "udef.h"
+#include "ualloc.h"
 
 typedef struct _ustring{
 	char* value;
@@ -23,6 +24,8 @@ int ustring_to_integer(ustring* str);
 double ustring_to_number(ustring* str);
 ustring* ustring_concat(ustring* str1,ustring* str2);
 ustring* ustring_concatx(ustring* str1,ustring* str2,char* separator);
+ustring* usubstring(uallocator* alloc,ustring* str,int pos,int len);
+int ustring_char_at(ustring* str,char c,int t);
 void uarrev(uui8* arr,usize_t len);
 void ustring_log(ustring* str);
 

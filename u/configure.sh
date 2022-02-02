@@ -31,4 +31,6 @@ echo "include ../u/env/env_"${envc}".mk" >> makefile
 
 cat libu.mk >> makefile
 
-cat $(echo "./env/thw_"${thw}".h") > umacro.h
+cat $(echo "./env/env_"${envc}".h") > umacro.h
+
+cat $(echo "./env/thw_"${thw}".h") >> umacro.h

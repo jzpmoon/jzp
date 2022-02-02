@@ -71,7 +71,7 @@ int virtb_load(vreader* reader,virtb* irtb)
 
 ulrgram* vfile2gram(vreader* reader,char* file_path)
 {
-  FILE* file;
+  ustring* file_path_str;
   vtoken_state* ts;
   vir_attr_req ireq;
   vast_attr_res res;
@@ -79,14 +79,14 @@ ulrgram* vfile2gram(vreader* reader,char* file_path)
   virtb* sirtb;
   virtb* dirtb;
   ulrgram* gram;
-  
+
   ts = vreader_from(reader);
   if (!ts) {
     uabort("reader from error!");
   }
-  file = fopen(file_path,"r");
-  if(!file){
-    uabort("open file error!");
+  file_path_str = ustring_table_put(reader->symtb,file_path,-1);
+  if (!file_path_str) {
+    uabort("file path put symtb error!");
   }
   sirtb = virtb_new();
   if (!sirtb) {
@@ -107,7 +107,7 @@ ulrgram* vfile2gram(vreader* reader,char* file_path)
   ireq.sirtb = sirtb;
   ireq.dirtb = dirtb;
   ireq.gram = gram;
-  vtoken_state_reset(ts,file);
+  vtoken_state_reset(ts,file_path_str);
   while (1) {
     ast_obj = vparser_parse(ts);
     if (!ast_obj){

@@ -65,7 +65,7 @@ VDEFUN(make_istream,"make-istream",VSCOPE_GLOBAL,1,VRETVAL_YES,{
       uabort("make-stream:not a string!");      
     }
     string = (vgc_string*)obj;
-    lstream = lobj_istream_new(ctx->heap,string);
+    lstream = lobj_istream_new(ctx,string);
     vcontext_obj_push(ctx,lstream);
     ulog("call make-stream");
     return 0;
@@ -89,7 +89,7 @@ VDEFUN(make_ostream,"make-ostream",VSCOPE_GLOBAL,1,VRETVAL_YES,{
       uabort("make-stream:not a string!");      
     }
     string = (vgc_string*)obj;
-    lstream = lobj_ostream_new(ctx->heap,string);
+    lstream = lobj_ostream_new(ctx,string);
     vcontext_obj_push(ctx,lstream);
     ulog("call make-stream");
     return 0;
@@ -153,12 +153,12 @@ VDEFUN(stream_output,"stream-output",VSCOPE_GLOBAL,2,VRETVAL_NO,{
   });
 
 VDEFVAR(system_istream,"system-istream",VSCOPE_GLOBAL,{
-    lobj_stream* lstream = lobj_istream_new_by_file(ctx->heap,stdin);
+    lobj_stream* lstream = lobj_istream_new_by_fd(ctx->heap,stdin);
     return (vgc_obj*)lstream;
   });
 
 VDEFVAR(system_ostream,"system-ostream",VSCOPE_GLOBAL,{
-    lobj_stream* lstream = lobj_ostream_new_by_file(ctx->heap,stdout);
+    lobj_stream* lstream = lobj_ostream_new_by_fd(ctx->heap,stdout);
     return (vgc_obj*)lstream;
   });
 

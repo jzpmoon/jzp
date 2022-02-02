@@ -42,7 +42,7 @@ UDECLFUN(UFNAME vclosure_new,
 	 URET vclosure*);
 
 UDECLFUN(UFNAME vfile2closure,
-	 UARGS (vclosure* closure,vreader* reader,char* file_path,
+	 UARGS (vclosure* closure,vreader* reader,ustring* file_path,
 		vps_cntr* vps,int closure_type),
 	 URET vclosure*);
 

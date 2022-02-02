@@ -2,7 +2,7 @@
 
 int main(int argc,char** args){
   URI_DEFINE;
-  FILE* f;
+  ustring* file_path;
   ustream* stream;
   int next;
   int b;
@@ -10,13 +10,12 @@ int main(int argc,char** args){
     ulog("no input file");
     return 0;
   }
-  f = fopen(args[1],"r");
-  if(!f){
-    ulog1("open file %s error!",args[1]);
-    return 0;
+  file_path = ustring_new_by_charp(args[1]);
+  if (!file_path) {
+    uabort("ustring new error!");
   }
   stream = ustream_new_by_file
-    (USTREAM_INPUT,f,URI_REF);
+    (USTREAM_INPUT,file_path,URI_REF);
   URI_ERROR;
   uabort(URI_DESC);
   URI_END;

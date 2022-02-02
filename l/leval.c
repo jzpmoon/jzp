@@ -22,9 +22,21 @@ UDEFUN(UFNAME leval_load,
        UARGS (leval* eval,char* file_path),
        URET int)
 UDECLARE
+  vreader* reader;
+  uallocator* alloc;
+  ustring* file_path_str;
   vps_mod* mod;
   vps_cntr* vps;
 UBEGIN
+  reader = eval->reader;
+  alloc = &reader->symtb->allocator;
+  file_path_str = ustring_table_put(reader->symtb,file_path,-1);
+  if (!file_path_str) {
+    uabort("file path put symtb error!");
+  }
+  if (!ufile_init(alloc,&reader->fi,file_path_str)) {
+    uabort("file infor init error!");
+  }
   mod = leval_vps_load(eval,file_path);
   vps = &eval->vps;
   vcontext_vps_load(eval->ctx,vps);

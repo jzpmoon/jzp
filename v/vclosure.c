@@ -113,21 +113,16 @@ UBEGIN
 UEND
 
 UDEFUN(UFNAME vfile2closure,
-       UARGS (vclosure* parent,vreader* reader,char* file_path,
+       UARGS (vclosure* parent,vreader* reader,ustring* file_path,
 	      vps_cntr* vps,int closure_type),
        URET vclosure*)
 UDECLARE
-  FILE* file;
   vclosure* closure;
   vps_closure_req req;
   vast_attr_res res;
   vcfg_graph* init;
   vps_inst* inst;
 UBEGIN
-  file = fopen(file_path,"r");
-  if(!file){
-    uabort("open file error!");
-  }
   closure = vclosure_new(vps);
   if (!closure) {
     uabort("closure new error!");
@@ -172,7 +167,7 @@ UBEGIN
     uabort("mod name put symtb error!");
   }
 
-  closure = vfile2closure(top_closure,reader,file_path,vps,
+  closure = vfile2closure(top_closure,reader,mod_name,vps,
 			  VCLOSURE_TYPE_MAIN);
   closure->closure_name = mod_name;
   vclosure2mod(top_closure,vps,NULL);

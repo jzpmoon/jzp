@@ -715,11 +715,11 @@ void vtoken_state_close(vtoken_state* ts)
   ulog0("stream close");
 }
 
-void vtoken_state_reset(vtoken_state* ts,FILE* file){
+void vtoken_state_reset(vtoken_state* ts,ustring* file_path){
   ustream* stream = ts->stream;
   ustream_close(stream);
   ulog0("stream close");
-  if(ustream_open_by_file(stream,file)){
+  if(ustream_open_by_path(stream,file_path)) {
     uabort("token state file stream open error!");
   }
   ulog0("stream open");
@@ -760,23 +760,18 @@ int vast2obj(vast_attr_req* req,vast_attr_res* res)
 }
 
 UDEFUN(UFNAME vfile2obj,
-       UARGS (vreader* reader,char* file_path,vast_attr_req* req,
+       UARGS (vreader* reader,ustring* file_path,vast_attr_req* req,
 	      vast_attr_res* res),
        URET int)
 UDECLARE
-  FILE* file;
   vtoken_state* ts;
   vast_obj* ast_obj;
 UBEGIN
   ts = vreader_from(reader);
   if (!ts) {
     return -1;
-  }  
-  file = fopen(file_path,"r");
-  if (!file) {
-    return -1;
   }
-  vtoken_state_reset(ts,file);
+  vtoken_state_reset(ts,file_path);
   while (1) {
     ast_obj = vparser_parse(ts);
     if (!ast_obj) {

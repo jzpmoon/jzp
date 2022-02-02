@@ -5,6 +5,38 @@
 
 uhstb_def_tpl(ustring);
 
+static void* alloc_impl(uallocator* allocator,ualloc_size_t size)
+{
+  return NULL;
+}
+
+static void* allocx_impl(uallocator* allocator,char* data,ualloc_size_t size);
+
+static void free_impl(uallocator* allocator,void* ptr){}
+
+static void clean_impl(uallocator* allocator){}
+
+ustring_table* ustring_table_new(int len)
+{
+  uallocator* alloc;
+  ustring_table* strtb;
+
+  alloc = &u_global_allocator;
+  strtb = alloc->alloc(alloc,sizeof(ustring_table));
+  if (strtb) {
+    strtb->strtb = uhstb_ustring_new(len);
+    if (!strtb->strtb) {
+      alloc->free(alloc,strtb);
+      return NULL;
+    }
+    strtb->allocator.alloc = alloc_impl;
+    strtb->allocator.allocx = allocx_impl;
+    strtb->allocator.free = free_impl;
+    strtb->allocator.clean = clean_impl;
+  }
+  return strtb;
+}
+
 static ustring ustrtb_key_put(ustring* key){
   ustring* str = key;
   char* charp;
@@ -32,7 +64,7 @@ ustring* ustring_table_put(ustring_table* strtb,
   ustring  str      = (ustring){charp,_len,hscd};
   ustring* new_str;
   int retval;
-  retval = uhstb_ustring_put(strtb,
+  retval = uhstb_ustring_put(strtb->strtb,
 			     hscd,
 			     &str,
 			     &new_str,
@@ -57,7 +89,7 @@ ustring* ustring_table_add(ustring_table* strtb,
   ustring  str      = (ustring){charp,_len,hscd};
   ustring* new_str;
   int retval;
-  retval = uhstb_ustring_put(strtb,
+  retval = uhstb_ustring_put(strtb->strtb,
 			     hscd,
 			     &str,
 			     &new_str,
@@ -68,4 +100,16 @@ ustring* ustring_table_add(ustring_table* strtb,
   }else{
     return NULL;
   }
+}
+
+static void* allocx_impl(uallocator* allocator,char* data,ualloc_size_t size)
+{
+  ustring_table* strtb;
+  ustring* str;
+
+  strtb = (ustring_table*)allocator;
+  str = ustring_table_put(strtb,
+			  data,
+			  size);
+  return str;
 }

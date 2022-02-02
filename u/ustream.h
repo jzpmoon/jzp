@@ -3,6 +3,7 @@
 
 #include "udbuffer.h"
 #include "ustring.h"
+#include "umacro.h"
 
 #define USTREAM_INPUT  0
 #define USTREAM_OUTPUT 1
@@ -10,9 +11,13 @@
 #define USTREAM_BUFF   0
 #define USTREAM_FILE   1
 
-typedef struct _ustream{
+typedef struct _ufile_infor ufile_infor;
+typedef struct _ustream ustream;
+
+struct _ustream{
   unsigned int iot:1;
   unsigned int dst:1;
+  uallocator* allocator;
   union {
     ubuffer* buff;
     struct {
@@ -20,28 +25,32 @@ typedef struct _ustream{
       FILE*     file;
     } s;
   } u;
-} ustream;
-
-typedef struct _ufile ufile;
-
-struct _ufile{
-  ustring* file_path;
-  ustring* directory;
-  ustring* file_name;
-  FILE* file;
 };
 
-ufile* ufile_new(ustring* file_path,const char* mode);
+struct _ufile_infor{
+  ustring* file_path;
+  ustring* dir_name;
+  ustring* file_name;
+};
+
+ufile_infor* ufile_init(uallocator* alloc,ufile_infor* fi,ustring* file_path);
+
+void ufile_log(ufile_infor* fi);
 
 ustream* ustream_new_by_buff(int iot,ubuffer* buff,URI_DECL);
 
-ustream* ustream_new_by_file(int iot,FILE* file,URI_DECL);
+ustream* ustream_new_by_file(int iot,ustring* file_path,URI_DECL);
+
+ustream* ustream_new_by_fd(int iot,FILE* fd,URI_DECL);
 
 ustream* ustream_new(int iot,int dst);
 
 ustream* ustream_alloc(uallocator* allocator,int iot,int dst);
 
-int ustream_open_by_file(ustream* stream,FILE* file);
+void ustream_dest(ustream* stream);
+
+int ustream_open_by_path(ustream* stream,
+			 ustring* file_path);
 
 void ustream_close(ustream* stream);
 

@@ -145,6 +145,76 @@ ustring* ustring_concatx(ustring* str1,ustring* str2,char* sep)
   return str;  
 }
 
+ustring* usubstring(uallocator* alloc,ustring* str,int pos,int len)
+{
+  ustring* substr;
+  int sublen;
+
+  if (len <= 0) {
+    return NULL;
+  }
+  if (str->len - 1 > pos) {
+    if (str->len - pos > len) {
+      sublen = len;
+    } else {
+      sublen = str->len - pos;
+    }
+  } else {
+    return NULL;
+  }
+  substr = alloc->allocx(alloc,str->value + pos,len);
+  if (!substr) {
+    return NULL;
+  }
+
+  return substr;
+}
+
+int ustring_char_at(ustring* str,char c,int t)
+{
+  char* value;
+  char tmp;
+  int i;
+  int j;
+  
+  value = str->value;
+  if (t > 0) {
+    i = 0;
+    j = 1;
+    while (1) {
+      tmp = value[i];
+      if (tmp == c) {
+	if (j == t) {
+	  return i;
+	} else {
+	  j++;
+	}
+      } else if (tmp == '\0') {
+	break;
+      }
+      i++;
+    }
+  } else if (t < 0) {
+    i = str->len - 1;
+    j = -1;
+    while (1) {
+      if (i == -1) {
+	break;
+      }
+      tmp = value[i];
+      if (tmp == c) {
+	if (j == t) {
+	  return i;
+	} else {
+	  j--;
+	}
+      }
+      i--;
+    }
+  }
+  return -1;
+}
+
 void uarrev(uui8* arr,usize_t len)
 {
   usize_t i = 0;

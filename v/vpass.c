@@ -18,7 +18,6 @@ UDEFUN(UFNAME vfile2vps,
        UARGS (vreader* reader,char* file_path,vps_cntr* vps),
        URET vps_mod*)
 UDECLARE
-  FILE* file;
   vps_mod* mod;
   ustring* mod_name;
   vcfg_graph* grp;
@@ -37,11 +36,6 @@ UBEGIN
   }
   vps_cntr_load(vps,mod);
   
-  file = fopen(file_path,"r");
-  if(!file){
-    uabort("open file error!");
-  }
-
   grp = vcfg_graph_new(vps,NULL);
   if(!grp){
     uabort("new grp error!");
@@ -53,7 +47,7 @@ UBEGIN
   req.top = mod;
   req.parent = (vps_cfg*)grp;
   req.reader = reader;
-  if (vfile2obj(reader,file_path,(vast_attr_req*)&req,&res)) {
+  if (vfile2obj(reader,mod_name,(vast_attr_req*)&req,&res)) {
     uabort("file2obj error!");
   }
   inst = vps_iretvoid(vps);

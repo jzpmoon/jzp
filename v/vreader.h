@@ -68,6 +68,7 @@ typedef struct _vreader{
   vattr_init_ft ainit;
   vast_attr* dattr;
   ulist_vast_kw* kws;
+  ufile_infor fi;
 } vreader;
 
 #define vreader_alloc_get(reader) \
@@ -119,7 +120,7 @@ void vtoken_state_init(vtoken_state* ts);
 
 void vtoken_state_close(vtoken_state* ts);
 
-void vtoken_state_reset(vtoken_state* ts,FILE* file);
+void vtoken_state_reset(vtoken_state* ts,ustring* file_path);
 
 void vtoken_log(vtoken_state* ts);
 

@@ -36,6 +36,9 @@ vreader* vreader_new(ustring_table* symtb,
   reader->ainit = ainit;
   reader->dattr = dattr;
   reader->kws = kws;
+  reader->fi.file_path = NULL;
+  reader->fi.file_name = NULL;
+  reader->fi.dir_name = NULL;
 
   if (ainit) ainit(reader);
   

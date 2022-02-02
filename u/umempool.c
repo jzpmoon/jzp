@@ -4,6 +4,12 @@
 
 static void* alloc_impl(uallocator* allocator,ualloc_size_t size);
 
+static void* allocx_impl(uallocator* allocator,char* data,
+			ualloc_size_t size)
+{
+  return NULL;
+}
+
 static void free_impl(uallocator* allocator,void* ptr){}
 
 static void clean_impl(uallocator* allocator);
@@ -29,6 +35,7 @@ umem_node* umem_node_new(int size){
 
 void umem_pool_init(umem_pool* pool,ualloc_size_t max_size) {
   pool->allocator.alloc = alloc_impl;
+  pool->allocator.allocx = allocx_impl;
   pool->allocator.free = free_impl;
   pool->allocator.clean = clean_impl;
   pool->now_count = 0;
