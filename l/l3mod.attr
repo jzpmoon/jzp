@@ -8,6 +8,8 @@ VDEFATTR(src_load,"src-load",{
     vast_obj* obj;
     vast_symbol* src_name;
     vps_mod* mod;
+    vreader* reader;
+    ustring* mod_name;
 
     jreq = (vps_jzp_req*)req;
 
@@ -25,10 +27,18 @@ VDEFATTR(src_load,"src-load",{
       uabort("src name invalid!");
     }
     src_name = (vast_symbol*)obj;
-
+    reader = jreq->reader;
     ts = vreader_from(jreq->reader);
     if (!ts) {
       uabort("reader from error!");
+    }
+    if (reader->fi.dir_name) {
+      mod_name = ustring_concat(reader->fi.dir_name,src_name->name);
+      if (!mod_name) {
+	uabort("mod name concat error!");
+      }
+    } else {
+      mod_name = src_name->name;
     }
     
     mod = vfile2vps(jreq->reader,src_name->name->value,jreq->vps);

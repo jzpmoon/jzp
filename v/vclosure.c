@@ -128,6 +128,7 @@ UBEGIN
     uabort("closure new error!");
   }
   closure->closure_type = closure_type;
+  closure->closure_name = file_path;
   if (parent) {
     if (vclosure_child_add(parent,closure)) {
       uabort("parent closure add child error!");
@@ -169,7 +170,6 @@ UBEGIN
 
   closure = vfile2closure(top_closure,reader,mod_name,vps,
 			  VCLOSURE_TYPE_MAIN);
-  closure->closure_name = mod_name;
   vclosure2mod(top_closure,vps,NULL);
 
   return vps->entry;

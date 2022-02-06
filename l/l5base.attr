@@ -664,7 +664,6 @@ VDEFATTR(require,"require",{
 
     closure = vfile2closure(jreq->closure->parent,reader,
 			    mod_name,jreq->vps,VCLOSURE_TYPE_FILE);
-    closure->closure_name = mod_name;
     
     VATTR_RETURN_VOID;
 })

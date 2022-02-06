@@ -42,5 +42,5 @@ echo "include ../u/env/env_"${envc}".mk" >> makefile
 cat l3.mk >> makefile
 
 cd ../l/
-./configure5.sh --prefix=$prefix --envc=$envc --thw=$thw
+./configure3.sh --prefix=$prefix --envc=$envc --thw=$thw
 cd $currdir
