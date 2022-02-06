@@ -21,9 +21,6 @@ $(bin):$(temp_attr_file) $(obj) $(sobj)
 $(temp_attr_file):
 	$(call gen_attr_file)
 $(sobj):
-	cd $(lib_path); \
-	./configure.sh --prefix=$(prefix) --envc=$(envc) --thw=$(thw); \
-	cd $(currdir); \
 	make -C $(lib_path) -f $(somk) DEBUG_MODE=$(DEBUG_MODE)
 install:
 	cp $(bin) $(prefix)/; \

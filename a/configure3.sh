@@ -2,6 +2,7 @@
 prefix=$(pwd)
 envc="unx"
 thw="arm64"
+currdir=$(pwd)
 
 old_ifs=$IFS
 for arg in $*
@@ -34,8 +35,12 @@ chmod 700 $entry_exec
 echo "prefix=$prefix" > makefile
 echo "envc=$envc" >> makefile
 echo "thw=$thw" >> makefile
-echo "currdir=$(pwd)" >> makefile
+echo "currdir=$currdir" >> makefile
 echo "entry_exec=$entry_exec" >> makefile
 echo "include ../u/env/env_"${envc}".mk" >> makefile
 
 cat l3.mk >> makefile
+
+cd ../l/
+./configure5.sh --prefix=$prefix --envc=$envc --thw=$thw
+cd $currdir

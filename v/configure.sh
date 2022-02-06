@@ -4,6 +4,7 @@ envc="unx"
 thw="arm64"
 smk="libv.mk"
 dmk="makefile"
+currdir=$(pwd)
 
 old_ifs=$IFS
 for arg in $*
@@ -34,8 +35,12 @@ done
 echo "prefix=$prefix" > $dmk
 echo "envc=$envc" >> $dmk
 echo "thw=$thw" >> $dmk
-echo "currdir=$(pwd)" >> $dmk
+echo "currdir=$currdir" >> $dmk
 
 echo "include ../u/env/env_"${envc}".mk" >> $dmk
 
 cat $smk >> $dmk
+
+cd ../u/
+./configure.sh --prefix=$prefix --envc=$envc --thw=$thw
+cd $currdir

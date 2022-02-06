@@ -34,9 +34,6 @@ $(temp_attr_file):
 $(temp_cfun_file):
 	$(call gen_cfun_file)
 $(v_sobj):
-	cd $(libv_path); \
-	./configure.sh --prefix=$(prefix) --envc=$(envc) --thw=$(thw); \
-	cd $(currdir); \
 	make -C $(libv_path) -f $(v_somk) DEBUG_MODE=$(DEBUG_MODE)
 install:
 	cp $(bin) $(prefix)/

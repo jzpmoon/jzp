@@ -6,7 +6,7 @@ ag_exec=vag$(suf_pg)
 lib_path=../u/
 sobj=u
 somk=makefile
-agmk=makefile1
+agmk=makefile_vag
 CFLAGS=-std=c89 -Wall -Wextra -Wno-unused-parameter $(DEBUG_MODE)
 
 define gen_ag_exec
@@ -25,9 +25,6 @@ $(bin):$(ag_exec) $(obj) $(sobj)
 $(ag_exec):
 	$(call gen_ag_exec)
 $(sobj):
-	cd $(lib_path); \
-	./configure.sh --prefix=$(prefix) --envc=$(envc) --thw=$(thw); \
-	cd $(currdir); \
 	make -C $(lib_path) -f $(somk) DEBUG_MODE=$(DEBUG_MODE)
 install:
 	cp $(bin) $(prefix)/

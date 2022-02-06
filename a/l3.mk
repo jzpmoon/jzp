@@ -19,9 +19,6 @@ CFLAGS   = -std=c89 -Wall $(DEBUG_MODE)
 .c.o:
 	$(CC) -c -o $@ $< -I $(libl_path) -I $(libv_path) -I $(libu_path) $(CFLAGS)
 $(l_lib):
-	cd $(libl_path); \
-	./configure3.sh --prefix=$(prefix) --envc=$(envc) --thw=$(thw); \
-	cd $(currdir); \
 	make -C $(libl_path) -f $(l_somk)
 install:
 	cp $(bin_name) $(prefix)/; \
