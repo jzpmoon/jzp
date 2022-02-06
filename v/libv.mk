@@ -10,7 +10,7 @@ agmk=makefile_vag
 CFLAGS=-std=c89 -Wall -Wextra -Wno-unused-parameter $(DEBUG_MODE)
 
 define gen_ag_exec
-	./configure.sh --prefix=$(currdir) --envc=$(envc) \
+	./vag.sh --prefix=$(currdir) --envc=$(envc) \
 	--thw=$(thw) --smk=vag.mk --dmk=$(agmk); \
 	make -f $(agmk); \
 	export LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):$(currdir)/$(lib_path); \

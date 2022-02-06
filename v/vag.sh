@@ -22,6 +22,12 @@ do
     elif [ $key = "--thw" ]
     then
 	thw=$val
+	elif [ $key = "--smk" ]
+    then
+	smk=$val
+	elif [ $key = "--dmk" ]
+    then
+	dmk=$val
     fi
     IFS=$old_ifs
 done
@@ -34,7 +40,3 @@ echo "currdir=$currdir" >> $dmk
 echo "include ../u/env/env_"${envc}".mk" >> $dmk
 
 cat $smk >> $dmk
-
-cd ../u/
-./configure.sh --prefix=$prefix --envc=$envc --thw=$thw
-cd $currdir
