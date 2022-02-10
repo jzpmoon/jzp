@@ -132,7 +132,7 @@ VDEFATTR(defvar,"defvar",{
   obj = vast_car(next);
   vclosure_arg_call(jreq->closure,jreq,obj);
   
-  if (!vclosure_isfile(jreq->closure)) {
+  if (!vclosure_ismain(jreq->closure) && !vclosure_isfile(jreq->closure)) {
     var = vps_any_new(jreq->vps,sym->name);
     if (!var) {
       uabort("vps_any_new error!");
@@ -634,7 +634,7 @@ VDEFATTR(require,"require",{
 
     jreq = (vps_closure_req*)req;
 
-    if (!vclosure_isfile(jreq->closure)) {
+    if (!vclosure_ismain(jreq->closure) && !vclosure_isfile(jreq->closure)) {
       uabort("attr \"require\" can not use here!");
     }
 
@@ -688,13 +688,13 @@ VDEFATTR(decfun,"decfun",{
     if (!vclosure_isfile(jreq->closure)) {
       uabort("attr \"decfun\" can not use here!");
     }
-    jreq->closure->closure_type = VCLOSURE_TYPE_DECL;
 
     closure = vclosure_new(jreq->vps);
     if (!closure) {
       uabort("new closure error!");
     }
-    closure->closure_type = VCLOSURE_TYPE_DECL;
+    closure->closure_type = VCLOSURE_TYPE_FUNC;
+    closure->store_type = VCLOSURE_STORE_DECL;
     if (vclosure_child_add(jreq->closure,closure)) {
       uabort("add child closure error!");
     }    
@@ -769,7 +769,6 @@ VDEFATTR(decvar,"decvar",{
   if (!vclosure_isfile(jreq->closure)) {
     uabort("attr \"decvar\" can not use here!");
   }
-  jreq->closure->closure_type = VCLOSURE_TYPE_DECL;
 
   next = vast_cdr(jreq->ast_obj);
   if (vast_consp(next)) {

@@ -8,11 +8,13 @@ typedef struct _vclosure vclosure,*vclosurep;
 
 ulist_decl_tpl(vclosurep);
 
-#define VCLOSURE_TYPE_FILE 1
-#define VCLOSURE_TYPE_FUNC 2
-#define VCLOSURE_TYPE_MAIN 3
-#define VCLOSURE_TYPE_NONE 4
-#define VCLOSURE_TYPE_DECL 5
+#define VCLOSURE_TYPE_FILE 0
+#define VCLOSURE_TYPE_FUNC 1
+#define VCLOSURE_TYPE_MAIN 2
+#define VCLOSURE_TYPE_NONE 3
+
+#define VCLOSURE_STORE_DECL 0
+#define VCLOSURE_STORE_IMPL 1
 
 struct _vclosure{
   ustring* closure_name;
@@ -20,7 +22,8 @@ struct _vclosure{
   vcfg_graph* init;
   vclosure* parent;
   ulist_vclosurep* childs;
-  int closure_type;
+  unsigned char closure_type;
+  unsigned char store_type;
 };
 
 typedef struct _vps_closure_req{
@@ -30,12 +33,13 @@ typedef struct _vps_closure_req{
 } vps_closure_req;
 
 #define vclosure_isfile(closure)			\
-  ((closure)->closure_type == VCLOSURE_TYPE_FILE ||	\
-   (closure)->closure_type == VCLOSURE_TYPE_MAIN ||	\
-   (closure)->closure_type == VCLOSURE_TYPE_DECL)
+  ((closure)->closure_type == VCLOSURE_TYPE_FILE)
 
 #define vclosure_ismain(closure)			\
   ((closure)->closure_type == VCLOSURE_TYPE_MAIN)
+
+#define vclosure_isdecl(closure)			\
+  ((closure)->store_type == VCLOSURE_STORE_DECL)
 
 UDECLFUN(UFNAME vclosure_new,
 	 UARGS (vps_cntr* vps),

@@ -35,6 +35,7 @@ UBEGIN
     closure->parent = NULL;
     closure->childs = childs;
     closure->closure_type = VCLOSURE_TYPE_NONE;
+    closure->store_type = VCLOSURE_STORE_IMPL;
   }
 
   return closure;
@@ -51,6 +52,9 @@ UDECLARE
   ucursor c;
   vps_mod* new_mod;
 UBEGIN
+  if (vclosure_isdecl(closure)) {
+    return;
+  }
   switch (closure->closure_type) {
   case VCLOSURE_TYPE_NONE:
     new_mod = NULL;
@@ -91,8 +95,6 @@ UBEGIN
     new_mod = mod;
     vps_mod_code_put(new_mod,closure->init);
     break;
-  case VCLOSURE_TYPE_DECL:
-    return;
   default:
     uabort("unknow closure type!");
   }
@@ -215,8 +217,7 @@ UBEGIN
       break;
     }
     child = *childp;
-    if (child->closure_type == VCLOSURE_TYPE_FILE ||
-	child->closure_type == VCLOSURE_TYPE_DECL) {
+    if (vclosure_ismain(child) || vclosure_isfile(child)) {
       /*find child fields*/
       fields = (uset*)child->fields;
       fields->iterate(&i);
