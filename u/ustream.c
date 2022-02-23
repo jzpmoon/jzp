@@ -5,7 +5,7 @@
 #define USTREAM_FILE_BUFF_GET(stream) ((stream)->u.s.dbuff)
 #define USTREAM_FILE_GET(stream) ((stream)->u.s.file)
 
-ustring* ufile_path_name_get(uallocator* allocator,ustring* file_path)
+ustring* ufile_name_get_by_strtb(ustring_table* strtb,ustring* file_path)
 {
   ustring* file_name;
   int pos;
@@ -16,11 +16,16 @@ ustring* ufile_path_name_get(uallocator* allocator,ustring* file_path)
   if (pos < 0) {
     pos = 0;
   }
-  file_name = usubstring(allocator,file_path,pos,len);
+  if (len <= 0) {
+    return NULL;
+  }
+  file_name = ustring_table_put(strtb,
+				file_path->value + pos,
+				len);
   return file_name;
 }
 
-ustring* ufile_path_dir_get(uallocator* allocator,ustring* file_path)
+ustring* ufile_dir_get_by_strtb(ustring_table* strtb,ustring* file_path)
 {
   ustring* file_name;
   int pos;
@@ -28,18 +33,23 @@ ustring* ufile_path_dir_get(uallocator* allocator,ustring* file_path)
 
   pos = 0;
   len = ustring_char_at(file_path,UDIR_SEP,-1) + 1;
-  file_name = usubstring(allocator,file_path,pos,len);
+  if (len <= 0) {
+    return NULL;
+  }
+  file_name = ustring_table_put(strtb,
+				file_path->value,
+				len);
   return file_name;
 }
 
-ufile_infor* ufile_init(uallocator* allocator,ufile_infor* fi,
+ufile_infor* ufile_init_by_strtb(ustring_table* strtb,ufile_infor* fi,
 			ustring* file_path)
 {
   ustring* file_name = NULL;
   ustring* dir_name = NULL;
   
-  dir_name = ufile_path_dir_get(allocator,file_path);
-  file_name = ufile_path_name_get(allocator,file_path);
+  dir_name = ufile_dir_get_by_strtb(strtb,file_path);
+  file_name = ufile_name_get_by_strtb(strtb,file_path);
   if (!file_name) {
     goto err;
   }
@@ -48,8 +58,6 @@ ufile_infor* ufile_init(uallocator* allocator,ufile_infor* fi,
   fi->file_name = file_name;
   return fi;
  err:
-  allocator->free(allocator,dir_name);
-  allocator->free(allocator,file_name);
   return NULL;
 }
 

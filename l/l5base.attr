@@ -654,7 +654,8 @@ VDEFATTR(require,"require",{
       uabort("reader from error!");
     }
     if (reader->fi.dir_name) {
-      mod_name = ustring_concat(reader->fi.dir_name,src_name->name);
+      mod_name = ustring_concat(NULL,reader->fi.dir_name,
+				src_name->name);
       if (!mod_name) {
 	uabort("mod name concat error!");
       }

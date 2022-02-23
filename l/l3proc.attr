@@ -46,7 +46,8 @@ VDEFATTR(g_struct,"g-struct",{
 	uabort("member not a symbol!");
       }
       member_name = (vast_symbol*)member;
-      type_name = ustring_concatx(struct_name->name,member_name->name,".");
+      type_name = ustring_concatx(NULL,struct_name->name,
+				  member_name->name,".");
       if (!type_name) {
 	uabort("string concatx error!");
       }
@@ -119,7 +120,8 @@ VDEFATTR(struct,"struct",{
 	uabort("member not a symbol!");
       }
       member_name = (vast_symbol*)member;
-      type_name = ustring_concatx(struct_name->name,member_name->name,".");
+      type_name = ustring_concatx(NULL,struct_name->name,
+				  member_name->name,".");
       if (!type_name) {
 	uabort("string concatx error!");
       }

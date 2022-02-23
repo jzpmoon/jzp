@@ -22,35 +22,66 @@ unsigned int ucharp_hscd(char* v){
 	return code;
 }
 
-char* ucharp_new(void* data,int len){
+char* ucharp_new(uallocator* alloc,void* data,int len){
+  uallocator* _alloc;
   char* charp;
-  unew(charp,len+1,return NULL;);
+  
+  _alloc = alloc;
+  if (!_alloc) {
+    _alloc = &u_global_allocator;
+  }
+  charp = _alloc->alloc(_alloc,len + 1);
+  if (!charp) {
+    return NULL;
+  }
   memcpy(charp,data,len);
   charp[len]='\0';
   return charp;
 }
 
-ustring* ustring_new(
-	void* value,int len,int hscd){
-	ustring* str=NULL;
-	char* v=NULL;
-	unew(str,sizeof(ustring),goto err;)
-        unew(v,len+1,goto err;)
-	memcpy(v,value,len);
-	v[len]='\0';
-	str->hash_code=hscd;
-	str->len=len;
-	str->value=v;
-	return str;
+ustring* ustring_new(uallocator* alloc,void* value,int len,int hscd)
+{
+  uallocator* _alloc;
+  ustring* str;
+  char* v;
+
+  _alloc = alloc;
+  if (!_alloc) {
+    _alloc = &u_global_allocator;
+  }
+  str = _alloc->alloc(_alloc,sizeof(ustring));
+  if (!str) {
+    goto err;
+  }
+  v = _alloc->alloc(_alloc,len + 1);
+  if (!v) {
+    goto err;
+  }
+  memcpy(v,value,len);
+  v[len] = '\0';
+  str->hash_code = hscd;
+  str->len = len;
+  str->value = v;
+  return str;
  err:
-	free(str);
-	return NULL;
+  _alloc->free(_alloc,str);
+  return NULL;
 }
 
-ustring* ustring_new_by_charp(char* charp){
-  unsigned int hscd = ucharp_hscd(charp);
-  int len = strlen(charp);
-  ustring* string = ustring_new(charp,len,hscd);
+ustring* ustring_new_by_charp(uallocator* alloc,char* charp)
+{
+  uallocator* _alloc;
+  unsigned int hscd;
+  int len;
+  ustring* string;
+
+  _alloc = alloc;
+  if (!_alloc) {
+    _alloc = &u_global_allocator;
+  }
+  hscd = ucharp_hscd(charp);
+  len = strlen(charp);
+  string = ustring_new(_alloc,charp,len,hscd);
   return string;
 }
 
@@ -90,19 +121,24 @@ double ustring_to_number(ustring* str){
   return atof(str->value);
 }
 
-ustring* ustring_concat(ustring* str1,ustring* str2)
+ustring* ustring_concat(uallocator* alloc,ustring* str1,ustring* str2)
 {
+  uallocator* _alloc;
   int len;
   char* charp;
   ustring* str;
 
-  str = ualloc(sizeof(ustring));
+  _alloc = alloc;
+  if (!_alloc) {
+    _alloc = &u_global_allocator;
+  }
+  str = _alloc->alloc(_alloc,sizeof(ustring));
   if (!str) {
     return NULL;
   }
   len = str1->len + str2->len;
-  charp = ualloc(len + 1);
-  if(!charp) {
+  charp = _alloc->alloc(_alloc,len + 1);
+  if (!charp) {
     ufree(str);
     return NULL;
   }
@@ -116,20 +152,26 @@ ustring* ustring_concat(ustring* str1,ustring* str2)
   return str;
 }
 
-ustring* ustring_concatx(ustring* str1,ustring* str2,char* sep)
+ustring* ustring_concatx(uallocator* alloc,ustring* str1,ustring* str2,
+			 char* sep)
 {
+  uallocator* _alloc;
   int len;
   int sep_len;
   char* charp;
   ustring* str;
 
-  str = ualloc(sizeof(ustring));
+  _alloc = alloc;
+  if (!_alloc) {
+    _alloc = &u_global_allocator;
+  }
+  str = _alloc->alloc(_alloc,sizeof(ustring));
   if (!str) {
     return NULL;
   }
   sep_len = strlen(sep);
   len = str1->len + str2->len + sep_len;
-  charp = ualloc(len + 1);
+  charp = _alloc->alloc(_alloc,len + 1);
   if(!charp) {
     ufree(str);
     return NULL;
@@ -147,9 +189,15 @@ ustring* ustring_concatx(ustring* str1,ustring* str2,char* sep)
 
 ustring* usubstring(uallocator* alloc,ustring* str,int pos,int len)
 {
+  uallocator* _alloc;
   ustring* substr;
   int sublen;
+  unsigned int hscd;
 
+  _alloc = alloc;
+  if (!_alloc) {
+    _alloc = &u_global_allocator;
+  }
   if (len <= 0) {
     return NULL;
   }
@@ -162,11 +210,9 @@ ustring* usubstring(uallocator* alloc,ustring* str,int pos,int len)
   } else {
     return NULL;
   }
-  substr = alloc->allocx(alloc,str->value + pos,len);
-  if (!substr) {
-    return NULL;
-  }
-
+  hscd = udata_hscd(str->value,sublen);
+  substr = ustring_new(_alloc,str->value + pos,sublen,hscd);
+  
   return substr;
 }
 

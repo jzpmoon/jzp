@@ -41,7 +41,8 @@ static ustring ustrtb_key_put(ustring* key){
   ustring* str = key;
   char* charp;
   ustring new_str;
-  charp = ucharp_new(str->value,
+  charp = ucharp_new(NULL,
+		     str->value,
 		     str->len);
   if(!charp){
     uabort("ucharp_new error!");
@@ -112,4 +113,19 @@ static void* allocx_impl(uallocator* allocator,char* data,ualloc_size_t size)
 			  data,
 			  size);
   return str;
+}
+
+ustring* ustring_concat_by_strtb(ustring_table* strtb,
+				 ustring* str1,
+				 ustring* str2)
+{
+  return NULL;
+}
+
+ustring* ustring_concatx_by_strtb(ustring_table* strtb,
+				  ustring* str1,
+				  ustring* str2,
+				  char* sep)
+{
+  return NULL;
 }

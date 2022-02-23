@@ -10,7 +10,7 @@ int main(int argc,char** args){
     ulog("no input file");
     return 0;
   }
-  file_path = ustring_new_by_charp(args[1]);
+  file_path = ustring_new_by_charp(NULL,args[1]);
   if (!file_path) {
     uabort("ustring new error!");
   }

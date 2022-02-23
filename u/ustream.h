@@ -2,7 +2,7 @@
 #define _USTREAM_H_
 
 #include "udbuffer.h"
-#include "ustring.h"
+#include "ustring_table.h"
 #include "umacro.h"
 
 #define USTREAM_INPUT  0
@@ -33,7 +33,8 @@ struct _ufile_infor{
   ustring* file_name;
 };
 
-ufile_infor* ufile_init(uallocator* alloc,ufile_infor* fi,ustring* file_path);
+ufile_infor* ufile_init_by_strtb(ustring_table* strtb,ufile_infor* fi,
+				 ustring* file_path);
 
 void ufile_log(ufile_infor* fi);
 
