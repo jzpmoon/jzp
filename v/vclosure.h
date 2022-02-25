@@ -70,4 +70,12 @@ UDECLFUN(UFNAME vclosure_curr_field_get,
 	 UARGS (vclosure* closure,ustring* name),
 	 URET vps_data*);
 
+UDECLFUN(UFNAME vclosure_func_get,
+	 UARGS (vclosure* closure,ustring* name),
+	 URET vclosure*);
+
+UDECLFUN(UFNAME vclosure_file_get,
+	 UARGS (vclosure* closure,ustring* name),
+	 URET vclosure*);
+
 #endif

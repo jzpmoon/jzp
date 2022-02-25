@@ -634,7 +634,8 @@ VDEFATTR(require,"require",{
 
     jreq = (vps_closure_req*)req;
 
-    if (!vclosure_ismain(jreq->closure) && !vclosure_isfile(jreq->closure)) {
+    if (!vclosure_ismain(jreq->closure) &&
+	!vclosure_isfile(jreq->closure)) {
       uabort("attr \"require\" can not use here!");
     }
 

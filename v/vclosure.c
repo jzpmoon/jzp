@@ -282,11 +282,69 @@ UBEGIN
 UEND
 
 UDEFUN(UFNAME vclosure_child_add,
-	 UARGS (vclosure* closure,vclosure* child),
-	 URET int)
+       UARGS (vclosure* closure,vclosure* child),
+       URET int)
 UDECLARE
 
 UBEGIN
   child->parent = closure;
   return ulist_vclosurep_append(closure->childs,child);
+UEND
+
+UDEFUN(UFNAME vclosure_func_get,
+       UARGS (vclosure* closure,ustring* name),
+       URET vclosure*)
+UDECLARE
+  uset* childs;
+  ucursor c;
+  vclosure* child;
+UBEGIN
+  childs = (uset*)closure->childs;
+  childs->iterate(&c);
+  while (1) {
+    unext next = childs->next(childs,&c);
+    if (!next) {
+      break;
+    }
+    child = unext_get(next);
+    if (child->closure_type != VCLOSURE_TYPE_FUNC) {
+      continue;
+    }
+    if (ustring_comp(name,child->closure_name)) {
+      return child;
+    }
+  }
+  if (closure->parent) {
+    return vclosure_func_get(closure->parent,name);
+  }
+  return NULL;
+UEND
+
+UDEFUN(UFNAME vclosure_file_get,
+       UARGS (vclosure* closure,ustring* name),
+       URET vclosure*)
+UDECLARE
+  uset* childs;
+  ucursor c;
+  vclosure* child;
+UBEGIN
+  childs = (uset*)closure->childs;
+  childs->iterate(&c);
+  while (1) {
+    unext next = childs->next(childs,&c);
+    if (!next) {
+      break;
+    }
+    child = unext_get(next);
+    if (child->closure_type != VCLOSURE_TYPE_FILE) {
+      continue;
+    }
+    if (ustring_comp(name,child->closure_name)) {
+      return child;
+    }
+  }
+  if (closure->parent) {
+    return vclosure_func_get(closure->parent,name);
+  }
+  return NULL;
 UEND

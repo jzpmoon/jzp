@@ -18,4 +18,7 @@ typedef struct _uset{
   USETHEADER;
 } uset;
 
+typedef void** unext;
+#define unext_get(next) *(next);
+
 #endif
