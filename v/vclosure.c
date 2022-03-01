@@ -61,13 +61,13 @@ UBEGIN
     new_mod = NULL;
     break;
   case VCLOSURE_TYPE_FILE:
-    new_mod = vps_mod_new(vps,closure->closure_name,closure->closure_name);
+    new_mod = vps_mod_new(vps,closure->closure_name,closure->closure_path);
     if (!new_mod) {
       uabort("mod new error!");
     }
     goto label;
   case VCLOSURE_TYPE_MAIN:
-    new_mod = vps_mod_new(vps,closure->closure_name,closure->closure_name);
+    new_mod = vps_mod_new(vps,closure->closure_name,closure->closure_path);
     if (!new_mod) {
       uabort("mod new error!");
     }

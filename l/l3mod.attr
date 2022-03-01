@@ -42,45 +42,8 @@ VDEFATTR(src_load,"src-load",{
   })
 
 /*
- * define attribute mod-load
- */
-VDEFATTR(mod_load,"mod-load",{
-    vps_jzp_req* jreq;
-    vast_obj* next;
-    vast_obj* obj;
-    vast_symbol* mod_name;
-    vps_mod* mod;
-
-    jreq = (vps_jzp_req*)req;
-
-    if (!VATTR_CONTEXT_FILE(jreq->parent)) {
-      uabort("subr inst can not use here!");
-    }
-
-    next = vast_cdr(jreq->ast_obj);
-    if(next == NULL || next->t != vastk_cons){
-      uabort("mod load error because have no src name!");
-    }
-
-    obj = vast_car(next);
-    if(obj->t != vastk_symbol){
-      uabort("mod name invalid!");
-    }
-    mod_name = (vast_symbol*)obj;
-    
-    mod = vps_mod_new(jreq->vps,mod_name->name,mod_name->name);
-    if (!mod) {
-      uabort("vps mod new error");
-    }
-    
-    ulog("mod-load");
-    VATTR_RETURN_VOID;
-  })
-
-/*
  * declare attribute
  */
 VATTRONLOAD(l3mod,{
     VDECLATTR(src_load);
-    VDECLATTR(mod_load);
   })
