@@ -2,7 +2,7 @@
 #include "leval.h"
 
 UDEFUN(UFNAME leval_vps_load,
-       UARGS (leval* eval,char* file_path),
+       UARGS (leval* eval,ustring* name,ustring* path),
        URET vps_mod*)
 UDECLARE
   vps_mod* mod;
@@ -10,7 +10,7 @@ UDECLARE
 UBEGIN
   prod = eval->loader.prod;
   if (prod) {
-    mod = prod(eval->reader,file_path,&eval->vps);
+    mod = prod(eval->reader,name,path,&eval->vps);
     vreader_clean(eval->reader);
   } else {
     mod = NULL;
@@ -25,7 +25,6 @@ UDECLARE
   vreader* reader;
   ustring* file_path_str;
   vps_mod* mod;
-  vps_cntr* vps;
 UBEGIN
   reader = eval->reader;
   file_path_str = ustring_table_put(reader->symtb,file_path,-1);
@@ -35,9 +34,8 @@ UBEGIN
   if (!ufile_init_by_strtb(reader->symtb,&reader->fi,file_path_str)) {
     uabort("file infor init error!");
   }
-  mod = leval_vps_load(eval,file_path);
-  vps = &eval->vps;
-  vcontext_vps_load(eval->ctx,vps);
+  mod = leval_vps_load(eval,reader->fi.file_name,file_path_str);
+  vcontext_vps_load(eval->ctx,&eval->vps);
   return 0;
 UEND
 
@@ -45,18 +43,14 @@ UDEFUN(UFNAME leval_loader_load,
        UARGS (vmod_loader* loader,vmod* mod),
        URET static int)
 UDECLARE
-  vmod* dest_mod;
   vps_mod* src_mod;
-  char* file_path;
   leval_loader* eval_loader;
   leval* eval;
 UBEGIN
-  dest_mod = mod;
-  file_path = mod->name->value;
   eval_loader = (leval_loader*)loader;
   eval = eval_loader->eval;
-  src_mod = leval_vps_load(eval,file_path);
-  vcontext_mod2mod(eval->ctx,dest_mod,src_mod);
+  src_mod = leval_vps_load(eval,mod->name,mod->path);
+  vcontext_mod2mod(eval->ctx,mod,src_mod);
   vps_cntr_clean(&eval->vps);
   return 0;
 UEND
@@ -99,7 +93,7 @@ UBEGIN
     uabort("mod name put symtb error!");
   }
   
-  mod = vcontext_mod_add(ctx,mod_name);
+  mod = vcontext_mod_add(ctx,mod_name,mod_name);
 
   reader = vreader_new(ctx->symtb,
 		       ctx->strtb,

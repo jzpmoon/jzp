@@ -18,6 +18,7 @@ ulist_decl_tpl(vclosurep);
 
 struct _vclosure{
   ustring* closure_name;
+  ustring* closure_path;
   ulist_vps_datap* fields;
   vcfg_graph* init;
   vclosure* parent;
@@ -46,12 +47,12 @@ UDECLFUN(UFNAME vclosure_new,
 	 URET vclosure*);
 
 UDECLFUN(UFNAME vfile2closure,
-	 UARGS (vclosure* closure,vreader* reader,ustring* file_path,
+	 UARGS (vclosure* closure,vreader* reader,ustring* name,ustring* path,
 		vps_cntr* vps,int closure_type),
 	 URET vclosure*);
 
 UDECLFUN(UFNAME vclosure2vps,
-	 UARGS (vreader* reader,char* file_path,vps_cntr* vps),
+	 UARGS (vreader* reader,ustring* name,ustring* path,vps_cntr* vps),
 	 URET vps_mod*);
 
 UDECLFUN(UFNAME vclosure_field_add,
@@ -77,5 +78,9 @@ UDECLFUN(UFNAME vclosure_func_get,
 UDECLFUN(UFNAME vclosure_file_get,
 	 UARGS (vclosure* closure,ustring* name),
 	 URET vclosure*);
+
+UDECLFUN(UFNAME vclosure_path_get,
+	 UARGS (vreader* reader,ustring* name),
+	 URET ustring*);
 
 #endif

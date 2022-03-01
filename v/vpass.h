@@ -199,6 +199,7 @@ typedef struct _vps_mod{
   uhstb_vps_typep* types;
   vcfg_graph* entry;
   ustring* name;
+  ustring* path;
   int status;
   int mod_type;
 } vps_mod,*vps_modp;
@@ -232,11 +233,11 @@ typedef struct _vps_jzp_req{
   (parent->t == vcfgk_grp &&				\
    ((vcfg_graph*)parent)->scope != VPS_SCOPE_ENTRY)
 
-typedef vps_mod* (*vps_prod_ft)(vreader* reader,char* file_path,
+typedef vps_mod* (*vps_prod_ft)(vreader* reader,ustring* name,ustring* path,
 				vps_cntr* vps);
 
 UDECLFUN(UFNAME vfile2vps,
-	 UARGS (vreader* reader,char* file_path,vps_cntr* vps),
+	 UARGS (vreader* reader,ustring* name,ustring* path,vps_cntr* vps),
 	 URET vps_mod*)
 
 vps_inst*
@@ -426,7 +427,8 @@ int vcfg_grp_conts_put(vcfg_graph* grp,
 		       vps_data* data);
 
 vps_mod* vps_mod_new(vps_cntr* vps,
-		     ustring* name);
+		     ustring* name,
+		     ustring* path);
 
 #define vps_mod_loaded(mod)			\
   ((mod)->status = VPS_MOD_STATUS_LOADED)

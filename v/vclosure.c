@@ -30,6 +30,7 @@ UBEGIN
       goto err;
     }
     closure->closure_name = NULL;
+    closure->closure_path = NULL;
     closure->fields = fields;
     closure->init = init;
     closure->parent = NULL;
@@ -60,13 +61,13 @@ UBEGIN
     new_mod = NULL;
     break;
   case VCLOSURE_TYPE_FILE:
-    new_mod = vps_mod_new(vps,closure->closure_name);
+    new_mod = vps_mod_new(vps,closure->closure_name,closure->closure_name);
     if (!new_mod) {
       uabort("mod new error!");
     }
     goto label;
   case VCLOSURE_TYPE_MAIN:
-    new_mod = vps_mod_new(vps,closure->closure_name);
+    new_mod = vps_mod_new(vps,closure->closure_name,closure->closure_name);
     if (!new_mod) {
       uabort("mod new error!");
     }
@@ -115,7 +116,7 @@ UBEGIN
 UEND
 
 UDEFUN(UFNAME vfile2closure,
-       UARGS (vclosure* parent,vreader* reader,ustring* file_path,
+       UARGS (vclosure* parent,vreader* reader,ustring* name,ustring* path,
 	      vps_cntr* vps,int closure_type),
        URET vclosure*)
 UDECLARE
@@ -130,7 +131,8 @@ UBEGIN
     uabort("closure new error!");
   }
   closure->closure_type = closure_type;
-  closure->closure_name = file_path;
+  closure->closure_name = name;
+  closure->closure_path = path;
   if (parent) {
     if (vclosure_child_add(parent,closure)) {
       uabort("parent closure add child error!");
@@ -141,7 +143,7 @@ UBEGIN
   req.vps = vps;
   req.closure = closure;
   req.reader = reader;
-  if (vfile2obj(reader,file_path,(vast_attr_req*)&req,&res)) {
+  if (vfile2obj(reader,path,(vast_attr_req*)&req,&res)) {
     uabort("file2obj error!");
   }
 
@@ -154,10 +156,9 @@ UBEGIN
 UEND
 
 UDEFUN(UFNAME vclosure2vps,
-       UARGS (vreader* reader,char* file_path,vps_cntr* vps),
+       UARGS (vreader* reader,ustring* name,ustring* path,vps_cntr* vps),
        URET vps_mod*)
 UDECLARE
-  ustring* mod_name;
   vclosure* top_closure;
   vclosure* closure;
 UBEGIN
@@ -165,12 +166,7 @@ UBEGIN
   if (!top_closure) {
     uabort("top closure new error!");
   }
-  mod_name = ustring_table_put(reader->symtb,file_path,-1);
-  if (!mod_name) {
-    uabort("mod name put symtb error!");
-  }
-
-  closure = vfile2closure(top_closure,reader,mod_name,vps,
+  closure = vfile2closure(top_closure,reader,name,path,vps,
 			  VCLOSURE_TYPE_MAIN);
   vclosure2mod(top_closure,vps,NULL);
 
@@ -347,4 +343,13 @@ UBEGIN
     return vclosure_func_get(closure->parent,name);
   }
   return NULL;
+UEND
+
+UDEFUN(UFNAME vclosure_path_get,
+       UARGS (vreader* reader,ustring* name),
+       URET ustring*)
+UDECLARE
+
+UBEGIN
+  return vreader_path_get(reader,name);
 UEND

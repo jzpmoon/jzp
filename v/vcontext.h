@@ -34,6 +34,7 @@ typedef struct _vmod{
   uhstb_vsymbol* lobjtb;
   struct _vgc_subr* init;
   ustring* name;
+  ustring* path;
   int status;
 } vmod;
 
@@ -151,7 +152,7 @@ void vcontext_execute(vcontext* ctx);
 
 void vcontext_relocate(vcontext* ctx);
 
-vmod* vcontext_mod_add(vcontext* ctx,ustring* name);
+vmod* vcontext_mod_add(vcontext* ctx,ustring* name,ustring* path);
 
 UDECLFUN(UFNAME vcontext_mod2mod,
 	 UARGS (vcontext* ctx,vmod* dest_mod,vps_mod* src_mod),

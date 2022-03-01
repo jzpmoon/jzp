@@ -109,6 +109,8 @@ vtoken_state* vreader_from(vreader* reader);
 
 void vreader_clean(vreader* reader);
 
+ustring* vreader_path_get(vreader* reader,ustring* name);
+
 vtoken_state* vtoken_state_new(ustream* stream,
 			       vreader* reader);
 

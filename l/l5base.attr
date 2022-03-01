@@ -630,8 +630,9 @@ VDEFATTR(require,"require",{
     vast_symbol* src_name;
     vclosure* closure;
     vreader* reader;
-    ustring* mod_name;
-
+    ustring* name;
+    ustring* path;
+    
     jreq = (vps_closure_req*)req;
 
     if (!vclosure_ismain(jreq->closure) &&
@@ -654,18 +655,13 @@ VDEFATTR(require,"require",{
     if (!ts) {
       uabort("reader from error!");
     }
-    if (reader->fi.dir_name) {
-      mod_name = ustring_concat(NULL,reader->fi.dir_name,
-				src_name->name);
-      if (!mod_name) {
-	uabort("mod name concat error!");
-      }
-    } else {
-      mod_name = src_name->name;
+    name = src_name->name;
+    if (vclosure_file_get(jreq->closure,name)) {
+      VATTR_RETURN_VOID;
     }
-
+    path = vclosure_path_get(reader,name);
     closure = vfile2closure(jreq->closure->parent,reader,
-			    mod_name,jreq->vps,VCLOSURE_TYPE_FILE);
+			    name,path,jreq->vps,VCLOSURE_TYPE_FILE);
     
     VATTR_RETURN_VOID;
 })

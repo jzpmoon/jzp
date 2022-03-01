@@ -92,3 +92,18 @@ void vreader_clean(vreader* reader)
   allocator = vreader_alloc_get(reader);
   allocator->clean(allocator);
 }
+
+ustring* vreader_path_get(vreader* reader,ustring* name)
+{
+  ustring* path;
+  
+  if (reader->fi.dir_name) {
+    path = ustring_concat(NULL,reader->fi.dir_name,name);
+    if (!path) {
+      uabort("mod name concat error!");
+    }
+  } else {
+    path = name;
+  }
+  return path;
+}

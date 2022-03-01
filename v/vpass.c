@@ -15,22 +15,16 @@ ulist_def_tpl(vps_cfgp);
 ulist_def_tpl(vps_instp);
 
 UDEFUN(UFNAME vfile2vps,
-       UARGS (vreader* reader,char* file_path,vps_cntr* vps),
+       UARGS (vreader* reader,ustring* name,ustring* path,vps_cntr* vps),
        URET vps_mod*)
 UDECLARE
   vps_mod* mod;
-  ustring* mod_name;
   vcfg_graph* grp;
   vps_inst* inst;
   vps_jzp_req req;
   vast_attr_res res;
 UBEGIN
-  mod_name = ustring_table_put(reader->symtb,file_path,-1);
-  if (!mod_name) {
-    uabort("mod name put symtb error!");
-  }
-
-  mod = vps_mod_new(vps,mod_name);
+  mod = vps_mod_new(vps,name,path);
   if (!mod) {
     uabort("new mod error!");
   }
@@ -47,7 +41,7 @@ UBEGIN
   req.top = mod;
   req.parent = (vps_cfg*)grp;
   req.reader = reader;
-  if (vfile2obj(reader,mod_name,(vast_attr_req*)&req,&res)) {
+  if (vfile2obj(reader,path,(vast_attr_req*)&req,&res)) {
     uabort("file2obj error!");
   }
   inst = vps_iretvoid(vps);
@@ -1063,7 +1057,8 @@ int vcfg_grp_conts_put(vcfg_graph* grp,
 }
 
 vps_mod* vps_mod_new(vps_cntr* vps,
-		     ustring* name)
+		     ustring* name,
+		     ustring* path)
 {
   vps_mod* mod;
   uallocator* allocator;
@@ -1087,6 +1082,7 @@ vps_mod* vps_mod_new(vps_cntr* vps,
     }
     mod->entry = NULL;
     mod->name = name;
+    mod->path = path;
     mod->status = VPS_MOD_STATUS_UNLOAD;
     mod->mod_type = VPS_MOD_TYPE_NORMAL;
   }

@@ -482,7 +482,7 @@ UDEFUN(UFNAME vcontext_mod_load,
 UDECLARE
   vmod* dest_mod;
 UBEGIN
-  dest_mod = vcontext_mod_add(ctx,mod->name);
+  dest_mod = vcontext_mod_add(ctx,mod->name,mod->path);
   vcontext_mod2mod(ctx,dest_mod,mod);
   return 0;
 UEND
@@ -646,7 +646,7 @@ static int vcontext_mod_comp(vmod* mod1,vmod* mod2){
   return ustring_comp(mod1->name,mod2->name);
 }
 
-void vmod_init(vmod* mod,ustring* name)
+static void vmod_init(vmod* mod,ustring* name,ustring* path)
 {
   ulist_vreloc* rells;
   uhstb_vsymbol* gobjtb;
@@ -672,16 +672,17 @@ void vmod_init(vmod* mod,ustring* name)
   mod->lobjtb = lobjtb;
   mod->init = NULL;
   mod->name = name;
+  mod->path = path;
   mod->status = VMOD_STATUS_UNLOAD;
 }
 
-vmod* vcontext_mod_add(vcontext* ctx,ustring* name)
+vmod* vcontext_mod_add(vcontext* ctx,ustring* name,ustring* path)
 {
   vmod in_mod;
   vmod* out_mod;
   int retval;
 
-  vmod_init(&in_mod,name);
+  vmod_init(&in_mod,name,path);
   retval = uhstb_vmod_put(ctx->mods,
 			  name->hash_code,
 			  &in_mod,
