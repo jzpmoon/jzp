@@ -19,6 +19,7 @@ struct _leval{
   vmod* mod;
   vps_cntr vps;
   vreader* reader;
+  vreader* conf_reader;
   leval_loader loader;
 };
 
@@ -26,6 +27,7 @@ typedef void(*lkw_init_ft)(vreader* reader);
 
 UDECLFUN(UFNAME lstartup,
 	 UARGS (vattr_init_ft attr_init,
+		vattr_init_ft conf_attr_init,
 		vcfun_init_ft cfun_init,
 		lkw_init_ft kw_init,
 		vps_prod_ft prod,
@@ -33,6 +35,10 @@ UDECLFUN(UFNAME lstartup,
 	 URET leval*);
 
 UDECLFUN(UFNAME leval_load,
+	 UARGS (leval* eval,char* file_path),
+	 URET int);
+
+UDECLFUN(UFNAME leval_conf_load,
 	 UARGS (leval* eval,char* file_path),
 	 URET int);
 

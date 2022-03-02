@@ -1,0 +1,38 @@
+/*
+ * define attribute sys-lib-bin-load
+ * (sys-lib-bin-load lib-name)
+ */
+VDEFATTR(sys_lib_bin_load,"sys-lib-bin-load",{
+    vast_obj* next;
+    vast_obj* obj;
+    vast_symbol* sym;
+    
+    next = vast_cdr(req->ast_obj);
+    if (vast_consp(next)) {
+      uabort("attr sys-lib-bin-load has no args");
+    }
+    obj = vast_car(next);
+    if (vast_symbolp(obj)) {
+      uabort("attr sys-lib-bin-load lib-name not a symbol!");
+    }
+    sym = (vast_symbol*)obj;
+    
+    VATTR_RETURN_VOID;
+})
+
+/*
+ * define attribute sys-lib-src-decl
+ * (sys-lib-src-decl lib-name)
+ */
+VDEFATTR(sys_lib_src_decl,"sys-lib-src-decl",{
+    
+  VATTR_RETURN_VOID;
+})
+
+/*
+ * declare attribute
+ */
+VATTRONLOAD(l5_conf,{
+    VDECLATTR(sys_lib_bin_load);
+    VDECLATTR(sys_lib_src_decl);
+})

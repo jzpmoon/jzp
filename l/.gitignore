@@ -2,3 +2,4 @@ _ltemp.attr
 _ltemp.cfun
 
 !configure*.sh
+!*.conf

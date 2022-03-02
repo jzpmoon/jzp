@@ -1,5 +1,11 @@
 #include "lobj.h"
 #include "l3eval.h"
+#include "l3.conf.attr"
+
+static void l3conf_init(vreader* reader)
+{
+  _vattr_file_init_l3_conf(reader);
+}
 
 UDEFUN(UFNAME symcall_action,
        UARGS (vast_attr_req* req,
@@ -98,8 +104,12 @@ UDEFUN(UFNAME l3startup,
 UDECLARE
   leval* eval;
 UBEGIN
-  eval = lstartup(l3attr_init,l3cfun_init,l3kw_init,
-		  vfile2vps,&last_attr_symcall);
+  eval = lstartup(l3attr_init,
+		  l3conf_init,
+		  l3cfun_init,
+		  l3kw_init,
+		  vfile2vps,
+		  &last_attr_symcall);
   
   return eval;
 UEND

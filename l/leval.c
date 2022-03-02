@@ -55,8 +55,33 @@ UBEGIN
   return 0;
 UEND
 
+UDEFUN(UFNAME leval_conf_load,
+       UARGS (leval* eval,char* file_path),
+       URET int)
+UDECLARE
+  vreader* reader;
+  ustring* file_path_str;
+  vast_attr_req req;
+  vast_attr_res res;
+UBEGIN
+  reader = eval->conf_reader;
+  file_path_str = ustring_table_put(reader->symtb,file_path,-1);
+  if (!file_path_str) {
+    uabort("file path put symtb error!");
+  }
+  if (!ufile_init_by_strtb(reader->symtb,&reader->fi,file_path_str)) {
+    uabort("file infor init error!");
+  }
+  req.reader = reader;
+  if (vfile2obj(reader,file_path_str,&req,&res)) {
+    uabort("file2obj error!");
+  }
+  return 0;
+UEND
+
 UDEFUN(UFNAME lstartup,
        UARGS (vattr_init_ft attr_init,
+	      vattr_init_ft conf_attr_init,
 	      vcfun_init_ft cfun_init,
 	      lkw_init_ft kw_init,
 	      vps_prod_ft prod,
@@ -69,6 +94,7 @@ UDECLARE
   vmod* mod;
   ustring* mod_name;
   vreader* reader;
+  vreader* conf_reader;
   leval_loader loader;
 UBEGIN
   eval = ualloc(sizeof(leval));
@@ -103,6 +129,14 @@ UBEGIN
     uabort("new reader error!");
   }
 
+  conf_reader = vreader_new(ctx->symtb,
+			    ctx->strtb,
+			    conf_attr_init,
+			    NULL);
+  if (!conf_reader) {
+    uabort("new configure reader error!");
+  }
+
   /*keyword init*/
   if (kw_init) {
     kw_init(reader);
@@ -114,7 +148,8 @@ UBEGIN
   eval->ctx = ctx;
   eval->mod = mod;
   eval->reader = reader;
-  
+  eval->conf_reader = conf_reader;
+
   loader.load = leval_loader_load;
   loader.eval = eval;
   loader.prod = prod;

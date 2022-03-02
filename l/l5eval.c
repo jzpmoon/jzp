@@ -1,5 +1,11 @@
 #include "lobj.h"
 #include "l5eval.h"
+#include "l5.conf.attr"
+
+static void l5conf_init(vreader* reader)
+{
+  _vattr_file_init_l5_conf(reader);
+}
 
 UDEFUN(UFNAME symcall_action,
        UARGS (vast_attr_req* req,
@@ -276,6 +282,7 @@ UDECLARE
   leval* eval;
 UBEGIN
   eval = lstartup(l5attr_init,
+		  l5conf_init,
 		  l5cfun_init,
 		  l5kw_init,
 		  vclosure2vps,
