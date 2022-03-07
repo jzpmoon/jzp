@@ -43,4 +43,5 @@ cat l5.mk >> makefile
 
 cd ../l/
 ./configure5.sh --prefix=$prefix --envc=$envc --thw=$thw
+./configure5m.sh --prefix=$prefix --envc=$envc --thw=$thw
 cd $currdir

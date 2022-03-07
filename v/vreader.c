@@ -107,3 +107,12 @@ ustring* vreader_path_get(vreader* reader,ustring* name)
   }
   return path;
 }
+
+int vast_attr_call(vast_attr* attr,vast_attr_req* req,vast_attr_res* res)
+{
+  if (!attr || !attr->action) {
+    return -1;
+  }
+  req->req_from = attr->action;
+  return attr->action(req,res);
+}

@@ -1,21 +1,74 @@
 /*
+ * define attribute lib-path
+ * (lib-path path)
+ */
+VDEFATTR(lib_path,"lib-path",{
+  
+  VATTR_RETURN_VOID;
+})
+
+/*
+ * define attribute init-cfun
+ * (init-cfun cfun-name)
+ */
+VDEFATTR(init_cfun,"init-cfun",{
+    
+  VATTR_RETURN_VOID;
+})
+
+/*
  * define attribute sys-lib-bin-load
  * (sys-lib-bin-load lib-name)
  */
 VDEFATTR(sys_lib_bin_load,"sys-lib-bin-load",{
     vast_obj* next;
     vast_obj* obj;
-    vast_symbol* sym;
-    
+    vast_obj* opt;
+    vast_attr_req dreq;
+    vast_symbol* opt_name;
+    vast_symbol* lib_path;
+    vast_symbol* init_cfun;
+    int retval;
+
+    dreq = vast_req_dbl(req);
     next = vast_cdr(req->ast_obj);
     if (vast_consp(next)) {
       uabort("attr sys-lib-bin-load has no args");
     }
-    obj = vast_car(next);
-    if (vast_symbolp(obj)) {
-      uabort("attr sys-lib-bin-load lib-name not a symbol!");
+    while (1) {
+      opt = vast_car(next);
+      if (vast_consp(opt)) {
+	uabort("unknow options!");
+      }
+      obj = vast_car(opt);
+      if (vast_symbolp(obj)) {
+	uabort("option name not a symbol!");
+      }
+      opt_name = (vast_symbol*)obj;
+      if (opt_name->attr) {
+	dreq.ast_obj = opt;
+	retval = vast_attr_call(opt_name->attr,&dreq,res);
+	if (retval == -1) {
+	  uabort("option error!");
+	} else if (retval == 0) {
+	  uabort("option error!");
+	}
+	obj = res->res_obj;
+	if (vast_res_from(lib_path)) {
+	  lib_path = (vast_symbol*)obj;
+	} else if (vast_res_from(init_cfun)){
+	  init_cfun = (vast_symbol*)obj;
+	} else {
+	  uabort("unknow options!");
+	}
+      } else {
+	uabort("option attr not define!");
+      }
+      next = vast_cdr(next);
+      if (!next) {
+	break;
+      }
     }
-    sym = (vast_symbol*)obj;
     
     VATTR_RETURN_VOID;
 })
@@ -35,4 +88,6 @@ VDEFATTR(sys_lib_src_decl,"sys-lib-src-decl",{
 VATTRONLOAD(l5_conf,{
     VDECLATTR(sys_lib_bin_load);
     VDECLATTR(sys_lib_src_decl);
+    VDECLATTR(lib_path);
+    VDECLATTR(init_cfun);
 })

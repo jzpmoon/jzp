@@ -740,7 +740,7 @@ int vast2obj(vast_attr_req* req,vast_attr_res* res)
 	vast_attr* attr;
 
 	attr = sym->attr;
-	return (attr->action)(req,res);
+	return vast_attr_call(attr,req,res);
       }
     }
   }
@@ -756,7 +756,7 @@ int vast2obj(vast_attr_req* req,vast_attr_res* res)
   default:
     uabort("unknow vast type!");
   }
-  VATTR_RETURN_VOID;
+  return 0;
 }
 
 UDEFUN(UFNAME vfile2obj,

@@ -8,20 +8,38 @@
 #include "umempool.h"
 #include "vgc_obj.h"
 
+typedef struct _vast_obj vast_obj;
+typedef struct _vast_attr_req vast_attr_req;
+typedef struct _vast_attr_res vast_attr_res;
+typedef struct _vast_attr vast_attr;
+typedef struct _vast_kw vast_kw;
+typedef struct _vreader vreader;
+typedef struct _vtoken_state vtoken_state;
+
+/*
+ * return value: 0 nothing res, 1 have res.
+ */
+typedef int(*vast_attr_ft)(vast_attr_req* req,
+			   vast_attr_res* res);
+
+typedef void (*vattr_init_ft)(vreader*);
+
+
 #define VASTHEADER \
   int t
 
-typedef struct _vast_obj{
+struct _vast_obj{
   VASTHEADER;
-} vast_obj;
+};
 
 #define VAST_ATTR_REQ_HEADER \
+  vast_attr_ft req_from;     \
   struct _vreader* reader;   \
   vast_obj* ast_obj
 
-typedef struct _vast_attr_req{
+struct _vast_attr_req{
   VAST_ATTR_REQ_HEADER;
-} vast_attr_req;
+};
 
 #define vast_req_dbl(req) *(req)
 
@@ -32,35 +50,30 @@ enum var_type{
 /*
  * field member "res_type" from above enum.
  */
-typedef struct _vast_attr_res{
+struct _vast_attr_res{
+  vast_attr_ft res_from;
   void* res_obj;
   int res_type;
-} vast_attr_res;
+};
 
-/*
- * return value: 0 nothing res, 1 have res.
- */
-typedef int(*vast_attr_ft)(vast_attr_req* req,
-			   vast_attr_res* res);
-
-typedef struct _vast_attr{
+struct _vast_attr{
   char* sname;
   ustring* name;
   vast_attr_ft action;
-} vast_attr;
+};
+
+int vast_attr_call(vast_attr* attr,vast_attr_req* req,vast_attr_res* res);
 
 uhstb_decl_tpl(vast_attr);
 
-typedef struct _vast_kw{
+struct _vast_kw{
   int kw_type;
   ucharp kw_str;
-} vast_kw;
+};
 
 ulist_decl_tpl(vast_kw);
 
-typedef void (*vattr_init_ft)(struct _vreader*);
-
-typedef struct _vreader{
+struct _vreader{
   umem_pool mp;
   ustring_table* symtb;
   ustring_table* strtb;
@@ -69,12 +82,12 @@ typedef struct _vreader{
   vast_attr* dattr;
   ulist_vast_kw* kws;
   ufile_infor fi;
-} vreader;
+};
 
 #define vreader_alloc_get(reader) \
   &(reader)->mp.allocator
 
-typedef struct _vtoken_state{
+struct _vtoken_state{
   uallocator* allocator;
   ustream* stream;
   ubuffer* buff;
@@ -92,7 +105,7 @@ typedef struct _vtoken_state{
     int x;
     int y;
   } coord;
-} vtoken_state;
+};
 
 #define VEOF (-1)
 

@@ -74,7 +74,7 @@ UBEGIN
 	if (attr) {
 	  dreq = vast_req_dbl(jreq);
 	  dreq.ast_obj = obj;
-	  attr->action((vast_attr_req*)&dreq,&dres);
+	  vast_attr_call(attr,(vast_attr_req*)&dreq,&dres);
 	} else {
 	  uabort("symbol has no attr!");
 	}
@@ -108,7 +108,7 @@ UBEGIN
   inst = vps_icall(vps);
   vcfg_grp_inst_apd(grp,inst);
 
-  VATTR_RETURN_VOID;
+  return 0;
 UEND
 
 static vast_attr lclosure_attr_symcall = {NULL,NULL,symcall_action};
@@ -158,7 +158,7 @@ UBEGIN
       dreq.closure = closure;
       attr = sym->attr;
       if (attr) {
-	attr->action((vast_attr_req*)&dreq,&dres);
+        vast_attr_call(attr,(vast_attr_req*)&dreq,&dres);
       } else {
 	uabort("cons car symbol has no attr!");
       }

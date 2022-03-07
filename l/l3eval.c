@@ -64,8 +64,7 @@ UBEGIN
   inst = vps_icall(vps);
   vcfg_grp_inst_apd(grp,inst);
 
-  ulog0("symcall");
-  VATTR_RETURN_VOID;
+  return 0;
 UEND
 
 static vast_attr last_attr_symcall = {NULL,NULL,symcall_action};
