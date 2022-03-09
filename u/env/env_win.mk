@@ -1,3 +1,3 @@
 suf_pg := .exe
-suf_so := dll
-suf_lb := lib
+suf_so := .dll
+suf_lb := .lib

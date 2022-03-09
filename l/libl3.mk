@@ -1,4 +1,4 @@
-bin = libl3.$(suf_so)
+bin = libl3$(suf_so)
 obj = lobj.o leval.o l3eval.o
 temp_attr_file = _l3temp.attr
 temp_cfun_file = _l3temp.cfun

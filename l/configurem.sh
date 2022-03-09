@@ -24,7 +24,7 @@ do
     IFS=$old_ifs
 done
 
-mk=makefile_5m
+mk=makefile_m
 
 echo "prefix=$prefix" > $mk
 echo "envc=$envc" >> $mk
@@ -33,7 +33,7 @@ echo "currdir=$currdir" >> $mk
 
 echo "include ../u/env/env_"${envc}".mk" >> $mk
 
-cat libl5mod.mk >> $mk
+cat liblmod.mk >> $mk
 
 cd ../v/
 ./configure.sh --prefix=$prefix --envc=$envc --thw=$thw

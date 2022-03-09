@@ -1,4 +1,4 @@
-lib_name := libi.$(suf_so)
+lib_name := libi$(suf_so)
 obj_list := ibmp.o
 
 libu_path := ../u/

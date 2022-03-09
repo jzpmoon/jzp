@@ -1,4 +1,4 @@
-bin_name = uc2mp3
+bin_name = uc2mp3$(suf_pg)
 obj_list = uc2mp3.o
 u_lib    = u
 libu_path = ../u/

@@ -1,4 +1,4 @@
-bin = libl5.$(suf_so)
+bin = libl5$(suf_so)
 obj = lobj.o leval.o l5eval.o
 temp_attr_file = _l5temp.attr
 temp_cfun_file = _l5temp.cfun

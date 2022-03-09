@@ -1,4 +1,4 @@
-lib_name := libu.$(suf_so)
+lib_name := libu$(suf_so)
 obj_list := ulist.o         \
             ustack.o        \
             ustring.o       \

@@ -1,6 +1,6 @@
-bin = libl5mod.$(suf_so)
-obj = l5mod.o lobj.o
-temp_cfun_file = _l5temp.cfun
+bin = liblmod$(suf_so)
+obj = lmod.o lobj.o
+temp_cfun_file = _ltemp.cfun
 
 libu_path=../u/
 libv_path=../v/
@@ -14,7 +14,7 @@ CFUN = l3base l5base
 
 define gen_cfun_file
 	$(libv_path)/cfun.sh --cfun=$(CFUN) --out=$(temp_cfun_file) \
-	--callback=l5cfun_file_concat_init
+	--callback=lcfun_file_concat_init
 endef
 
 $(bin):$(temp_attr_file) $(temp_cfun_file) $(obj) $(v_sobj)

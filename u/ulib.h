@@ -2,10 +2,29 @@
 #define _ULIB_H_
 
 #include "umacro.h"
+#include "ustring.h"
 
-ulib udlopen(ulibname name,int mode);
+#if UOS == WIN
 
-ulibsym udlsym(ulib handle,char* symbol);
+  #include <dlfcn.h>
+  #define URTLD_LAZY RTLD_LAZY
+
+  typedef void* ulib;
+  typedef void* ulibsym;
+
+#elif UOS == UNX
+
+  #include <dlfcn.h>
+  #define URTLD_LAZY RTLD_LAZY
+
+  typedef void* ulib;
+  typedef void* ulibsym;
+
+#endif
+
+ulib udlopen(ustring* name,int mode);
+
+ulibsym udlsym(ulib handle,ustring* symbol);
 
 int udlclose(ulib handle);
 

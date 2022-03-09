@@ -1,29 +1,21 @@
 #include "ulib.h"
 
-ulib udlopen(ulibname name,int mode)
+ulib udlopen(ustring* name,int mode)
 {
-  ulib ret;
-  UDLOPEN(ret,name,mode);
-  return ret;
+  return dlopen(name->value,mode);
 }
 
-ulibsym udlsym(ulib handle,char* symbol)
+ulibsym udlsym(ulib handle,ustring* symbol)
 {
-  ulibsym ret;
-  UDLSYM(ret,handle,symbol);
-  return ret;
+  return dlsym(handle,symbol->value);
 }
 
 int udlclose(ulib handle)
 {
-  int ret;
-  UDLCLOSE(ret,handle);
-  return ret;
+  return dlclose(handle);
 }
 
 const char* udlerror()
 {
-  const char* ret;
-  UDLERROR(ret);
-  return ret;
+  return dlerror();
 }

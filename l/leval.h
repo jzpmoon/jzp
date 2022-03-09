@@ -1,6 +1,7 @@
 #ifndef _LEVAL_H_
 #define _LEVAL_H_
 
+#include "ulib.h"
 #include "vm.h"
 #include "vparser.h"
 #include "vcfun.h"
@@ -23,6 +24,7 @@ struct _leval{
   leval_loader loader;
 };
 
+typedef void(*lmod_init_ft)(vcontext* ctx,vmod* mod);
 typedef void(*lkw_init_ft)(vreader* reader);
 
 UDECLFUN(UFNAME lstartup,
