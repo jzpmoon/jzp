@@ -1,4 +1,4 @@
-(require sysmod.l5)
+;(require sysmod.l5)
 
 ;;test l5
 (defun inc (x)

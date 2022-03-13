@@ -47,7 +47,7 @@ UEND
 
 UDEFUN(UFNAME vclosure2mod,
        UARGS (vclosure* closure,vps_cntr* vps,vps_mod* mod),
-       URET static void)
+       URET void)
 UDECLARE
   uset* set;
   ucursor c;
@@ -335,12 +335,12 @@ UBEGIN
     if (child->closure_type != VCLOSURE_TYPE_FILE) {
       continue;
     }
-    if (ustring_comp(name,child->closure_name)) {
+    if (!ustring_comp(name,child->closure_name)) {
       return child;
     }
   }
   if (closure->parent) {
-    return vclosure_func_get(closure->parent,name);
+    return vclosure_file_get(closure->parent,name);
   }
   return NULL;
 UEND

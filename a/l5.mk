@@ -1,6 +1,8 @@
 bin_name = l5$(suf_pg)
 obj_list = l5.o
 
+conf_name = l5.conf
+
 l_lib = l5
 v_lib = v
 u_lib = u
@@ -28,6 +30,7 @@ $(lmod_lib):
 	make -C $(liblmod_path) -f $(lmod_somk)
 install:
 	cp $(bin_name) $(prefix)/; 				\
+	cp $(conf_name) $(prefix)/; 				\
 	make -C $(libl_path) -f $(l_somk) install; 		\
 	make -C $(libv_path) -f $(v_somk) install; 		\
 	make -C $(libu_path) -f $(u_somk) install; 		\
@@ -35,6 +38,7 @@ install:
 	cp $(entry_exec) ~/../usr/bin/
 uninstall:
 	rm $(prefix)/$(bin_name); 				\
+	rm $(prefix)/$(conf_name); 				\
 	rm ~/../usr/bin/$(entry_exec); 				\
 	make -C $(libl_path) -f $(l_somk) uninstall; 		\
 	make -C $(libv_path) -f $(v_somk) uninstall; 		\

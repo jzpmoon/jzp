@@ -3,3 +3,4 @@ _ltemp.cfun
 
 !configure*.sh
 !*.conf
+!*.l5

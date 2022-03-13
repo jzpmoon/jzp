@@ -51,6 +51,10 @@ UDECLFUN(UFNAME vfile2closure,
 		vps_cntr* vps,int closure_type),
 	 URET vclosure*);
 
+UDECLFUN(UFNAME vclosure2mod,
+	 UARGS (vclosure* closure,vps_cntr* vps,vps_mod* mod),
+	 URET void);
+
 UDECLFUN(UFNAME vclosure2vps,
 	 UARGS (vreader* reader,ustring* name,ustring* path,vps_cntr* vps),
 	 URET vps_mod*);

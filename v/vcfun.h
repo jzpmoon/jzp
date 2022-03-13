@@ -28,18 +28,18 @@ typedef void (*vcfun_init_ft)(vcontext* ctx,vmod* mod);
 #define VRETVAL_YES 1
 #define VRETVAL_NO 0
 
-#define VDEFUN(FNAME,LNAME,SCOPE,PCOUNT,RETVAL,BODY)	\
-  int _vcfun_entry_##FNAME(vcontext* ctx){		\
-    BODY;						\
-  }							\
-  static struct _vcfun_infor _vcfun_infor_##FNAME =	\
+#define VDEFUN(FNAME,LNAME,SCOPE,PCOUNT,RETVAL,BODY)		\
+  int _vcfun_entry_##FNAME(vcontext* ctx){			\
+    BODY;							\
+  }								\
+  static struct _vcfun_infor _vcfun_infor_##FNAME =		\
     {LNAME,NULL,PCOUNT,RETVAL,SCOPE,_vcfun_entry_##FNAME};
 
 #define VDEFVAR(FNAME,LNAME,SCOPE,BODY)			\
   vgc_obj* _var_gen_##FNAME(vcontext* ctx){		\
     BODY;						\
   }							\
-  static struct _var_infor _var_infor_##FNAME =	\
+  static struct _var_infor _var_infor_##FNAME =		\
     {LNAME,NULL,SCOPE,_var_gen_##FNAME};  
 
 #define VFUNONLOAD(fname,body)					\

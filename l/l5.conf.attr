@@ -3,8 +3,19 @@
  * (lib-path path)
  */
 VDEFATTR(lib_path,"lib-path",{
+  vast_obj* next;
+  vast_obj* obj;
+
+  next = vast_cdr(req->ast_obj);
+  if (vast_consp(next)) {
+    uabort("lib-path has no args!");
+  }
+  obj = vast_car(next);
+  if (vast_symbolp(obj)) {
+    uabort("lib-path not a symbol!");
+  }
   
-  VATTR_RETURN_VOID;
+  VATTR_RETURN(var_apd,obj);
 })
 
 /*
@@ -12,8 +23,19 @@ VDEFATTR(lib_path,"lib-path",{
  * (init-cfun cfun-name)
  */
 VDEFATTR(init_cfun,"init-cfun",{
-    
-  VATTR_RETURN_VOID;
+  vast_obj* next;
+  vast_obj* obj;
+
+  next = vast_cdr(req->ast_obj);
+  if (vast_consp(next)) {
+    uabort("init_cfun has no args!");
+  }
+  obj = vast_car(next);
+  if (vast_symbolp(obj)) {
+    uabort("init_cfun not a symbol!");
+  }
+  
+  VATTR_RETURN(var_apd,obj);
 })
 
 /*
@@ -21,19 +43,24 @@ VDEFATTR(init_cfun,"init-cfun",{
  * (sys-lib-bin-load lib-name)
  */
 VDEFATTR(sys_lib_bin_load,"sys-lib-bin-load",{
+    vast_conf_req* creq;
+    l5eval* eval;
     vast_obj* next;
     vast_obj* obj;
     vast_obj* opt;
-    vast_attr_req dreq;
+    vast_conf_req dreq;
     vast_symbol* opt_name;
     vast_symbol* lib_path;
     vast_symbol* init_cfun;
     ulib handle;
     lmod_init_ft callback;
     int retval;
-
-    dreq = vast_req_dbl(req);
-    next = vast_cdr(req->ast_obj);
+    vmod* mod;
+    
+    creq = (vast_conf_req*)req;
+    eval = (l5eval*)creq->eval;
+    dreq = vast_req_dbl(creq);
+    next = vast_cdr(creq->ast_obj);
     if (vast_consp(next)) {
       uabort("attr sys-lib-bin-load has no args");
     }
@@ -49,7 +76,7 @@ VDEFATTR(sys_lib_bin_load,"sys-lib-bin-load",{
       opt_name = (vast_symbol*)obj;
       if (opt_name->attr) {
 	dreq.ast_obj = opt;
-	retval = vast_attr_call(opt_name->attr,&dreq,res);
+	retval = vast_attr_call(opt_name->attr,(vast_attr_req*)&dreq,res);
 	if (retval == -1) {
 	  uabort("option error!");
 	} else if (retval == 0) {
@@ -77,16 +104,19 @@ VDEFATTR(sys_lib_bin_load,"sys-lib-bin-load",{
     }
     handle = udlopen(lib_path->name,URTLD_LAZY);
     if (!handle) {
-      uabort("open lib error!");
+      uabort("open lib error:%s!",udlerror());
     }
-    if (init_cfun) {
+    if (!init_cfun) {
       uabort("init cfun not define!");
     }
     callback = (lmod_init_ft)udlsym(handle,init_cfun->name);
     if (!callback) {
-      uabort("get lib symbol error!");
+      uabort("get lib symbol error:%s!",udlerror());
     }
-
+    mod = vcontext_mod_add(eval->base_eval->ctx,lib_path->name,
+			   lib_path->name);
+    callback(eval->base_eval->ctx,mod);
+    vmod_loaded(mod);
     VATTR_RETURN_VOID;
 })
 
@@ -95,7 +125,60 @@ VDEFATTR(sys_lib_bin_load,"sys-lib-bin-load",{
  * (sys-lib-src-decl lib-name)
  */
 VDEFATTR(sys_lib_src_decl,"sys-lib-src-decl",{
+    vast_conf_req* creq;
+    l5eval* eval;
+    vast_obj* next;
+    vast_obj* obj;
+    vast_obj* opt;
+    vast_conf_req dreq;
+    vast_symbol* opt_name;
+    vast_symbol* lib_path;
+    int retval;
     
+    creq = (vast_conf_req*)req;
+    eval = (l5eval*)creq->eval;
+    dreq = vast_req_dbl(creq);
+    next = vast_cdr(creq->ast_obj);
+    if (vast_consp(next)) {
+      uabort("attr sys-lib-src-decl has no args");
+    }
+    while (1) {
+      opt = vast_car(next);
+      if (vast_consp(opt)) {
+	uabort("unknow options!");
+      }
+      obj = vast_car(opt);
+      if (vast_symbolp(obj)) {
+	uabort("option name not a symbol!");
+      }
+      opt_name = (vast_symbol*)obj;
+      if (opt_name->attr) {
+	dreq.ast_obj = opt;
+	retval = vast_attr_call(opt_name->attr,(vast_attr_req*)&dreq,res);
+	if (retval == -1) {
+	  uabort("option error!");
+	} else if (retval == 0) {
+	  uabort("option error!");
+	}
+	obj = res->res_obj;
+	if (vast_res_from(lib_path)) {
+	  lib_path = (vast_symbol*)obj;
+	} else {
+	  uabort("unknow options!");
+	}
+      } else {
+	uabort("option attr not define!");
+      }
+      next = vast_cdr(next);
+      if (!next) {
+	break;
+      }
+    }
+    /* load source library */
+    if (!lib_path) {
+      uabort("lib path not define!");
+    }
+    l5eval_lib_load(eval,lib_path->name->value);
   VATTR_RETURN_VOID;
 })
 

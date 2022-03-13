@@ -1,5 +1,5 @@
 bin = libl5$(suf_so)
-obj = lobj.o leval.o l5eval.o
+obj = leval.o l5eval.o
 temp_attr_file = _l5temp.attr
 temp_cfun_file = _l5temp.cfun
 
@@ -36,9 +36,9 @@ $(temp_cfun_file):
 $(v_sobj):
 	make -C $(libv_path) -f $(v_somk) DEBUG_MODE=$(DEBUG_MODE)
 install:
-	cp $(bin) $(prefix)/
+	cp $(bin) $(prefix)/;cp sysmod.l5 $(prefix)/
 uninstall:
-	rm $(prefix)/$(bin)
+	rm $(prefix)/$(bin);rm $(prefix)/sysmod.l5
 clean:
 	make -C $(libv_path) -f $(v_somk) clean; \
 	rm -f $(bin) $(obj) $(temp_attr_file) $(temp_cfun_file)

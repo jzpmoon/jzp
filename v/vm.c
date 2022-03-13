@@ -493,7 +493,7 @@ void bc_call(vcontext* ctx){
     int has_retval;
     usize_t after_base;
     usize_t before_base;
-    
+
     before_base = vcontext_stack_top_get(ctx);
     vcontext_obj_push(ctx,calling);
     vcontext_obj_push(ctx,obj);

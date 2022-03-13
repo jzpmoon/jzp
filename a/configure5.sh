@@ -29,7 +29,7 @@ echo '#!/usr/bin/bash' > $entry_exec
 echo "prefix=$prefix" >> $entry_exec
 echo 'export PATH=$PATH:$prefix' >> $entry_exec
 echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$prefix' >> $entry_exec
-echo '$prefix/l5 $*' >> $entry_exec
+echo '$prefix/l5 $* $prefix/ l5.conf' >> $entry_exec
 chmod 700 $entry_exec
 
 echo "prefix=$prefix" > makefile

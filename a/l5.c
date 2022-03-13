@@ -3,14 +3,20 @@
 
 UDEFUN(UFNAME jzpl,UARGS (int argc,char** args),URET int)
 UDECLARE
-  leval* eval;
+  l5eval* eval;
+  char* path;
+  char* conf;
+  char* script;
 UBEGIN
-  if (argc == 1) {
-    ulog("no input file!");
-    return 0;
+  if (argc != 4) {
+    uabort("args not enough!");
   }
-  eval = l5startup();
-  leval_load(eval,args[1]);
+  script = args[1];
+  path = args[2];
+  conf = args[3];
+  eval = l5startup(path);
+  l5eval_conf_load(eval,conf);
+  l5eval_src_load(eval,script);
   return 0;	
 UEND
 

@@ -248,12 +248,6 @@ UBEGIN
 UEND
 
 #include "_l5temp.attr"
-#include "_l5temp.cfun"
-
-static void l5cfun_init(vcontext* ctx,vmod* mod)
-{
-  l5cfun_file_concat_init(ctx,mod);
-}
 
 static void l5attr_init(vreader* reader)
 {
@@ -276,17 +270,91 @@ UBEGIN
 UEND
 
 UDEFUN(UFNAME l5startup,
-       UARGS (),
-       URET leval*)
+       UARGS (char* self_path),
+       URET l5eval*)
 UDECLARE
-  leval* eval;
+  l5eval* eval;
+  leval* base_eval;
+  vclosure* top_closure;
 UBEGIN
-  eval = lstartup(l5attr_init,
-		  l5conf_init,
-		  l5cfun_init,
-		  l5kw_init,
-		  vclosure2vps,
-		  &lclosure_attr_symcall);
-  
+  base_eval = lstartup(self_path,
+		       l5attr_init,
+		       l5conf_init,
+		       l5kw_init,
+		       vclosure2vps,
+		       &lclosure_attr_symcall);
+  if (!base_eval) {
+    uabort("startup base eval error!");
+  }
+  top_closure = vclosure_new(&base_eval->vps);
+  if (!top_closure) {
+    uabort("top closure new error!");
+  }
+  eval = ualloc(sizeof(l5eval));
+  if (!eval) {
+    uabort("new eval error!");
+  }
+  eval->base_eval = base_eval;
+  eval->top_closure = top_closure;
   return eval;
+UEND
+
+UDEFUN(UFNAME l5eval_src_load,
+       UARGS (l5eval* eval,char* file_path),
+       URET int)
+UDECLARE
+  vreader* reader;
+  leval* base_eval;
+UBEGIN
+  base_eval = eval->base_eval;
+  reader = base_eval->src_reader;
+  leval_src_load(base_eval,file_path);
+  vfile2closure(eval->top_closure,
+	        reader,
+		reader->fi.file_name,
+	        reader->fi.file_path,
+		&base_eval->vps,
+		VCLOSURE_TYPE_MAIN);
+  vclosure2mod(eval->top_closure,&base_eval->vps,NULL);
+  vreader_clean(reader);
+  vcontext_vps_load(base_eval->ctx,&base_eval->vps);
+  return 0;
+UEND
+
+UDEFUN(UFNAME l5eval_lib_load,
+       UARGS (l5eval* eval,char* file_path),
+       URET int)
+UDECLARE
+  vreader* reader;
+  leval* base_eval;
+UBEGIN
+  base_eval = eval->base_eval;
+  reader = base_eval->lib_reader;
+  leval_lib_load(base_eval,file_path);
+  vfile2closure(eval->top_closure,
+		reader,
+		reader->fi.file_name,
+		reader->fi.file_path,
+		&base_eval->vps,
+		VCLOSURE_TYPE_FILE);
+  vreader_clean(reader);
+  return 0;
+UEND
+
+UDEFUN(UFNAME l5eval_conf_load,
+       UARGS (l5eval* eval,char* file_path),
+       URET int)
+UDECLARE
+  vreader* reader;
+  vast_conf_req req;
+  vast_attr_res res;
+UBEGIN
+  reader = eval->base_eval->conf_reader;
+  leval_conf_load(eval->base_eval,file_path);
+  req.reader = reader;
+  req.eval = (leval*)eval;
+  if (vfile2obj(reader,reader->fi.file_path,(vast_attr_req*)&req,&res)) {
+    uabort("file2obj error!");
+  }
+  return 0;
 UEND
