@@ -1,4 +1,5 @@
 #include "uerror.h"
+#include "ustring.h"
 #include "l5eval.h"
 
 UDEFUN(UFNAME jzpl,UARGS (int argc,char** args),URET int)
@@ -7,13 +8,17 @@ UDECLARE
   char* path;
   char* conf;
   char* script;
+  int i;
 UBEGIN
-  if (argc != 4) {
-    uabort("args not enough!");
+  for (i = 0; i < argc;i++) {
+    if (!ustrcmp(args[i],"--self-path")) {
+      path = args[++i];
+    } else if (!ustrcmp(args[i],"--conf")) {
+      conf = args[++i];
+    } else {
+      script = args[++i];
+    }
   }
-  script = args[1];
-  path = args[2];
-  conf = args[3];
   eval = l5startup(path);
   l5eval_conf_load(eval,conf);
   l5eval_src_load(eval,script);

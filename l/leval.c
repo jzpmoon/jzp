@@ -30,7 +30,7 @@ UBEGIN
   if (!file_path_str) {
     uabort("file path put symtb error!");
   }
-  if (!ufile_init_by_strtb(reader->symtb,&reader->fi,file_path_str)) {
+  if (vreader_fi_init_01(reader,file_path_str)) {
     uabort("file infor init error!");
   }
   return 0;
@@ -42,18 +42,31 @@ UDEFUN(UFNAME leval_lib_load,
 UDECLARE
   vreader* reader;
   ustring* file_path_str;
-  ustring* file_full_path;
 UBEGIN
   reader = eval->lib_reader;
   file_path_str = ustring_table_put(reader->symtb,file_path,-1);
   if (!file_path_str) {
     uabort("file path put symtb error!");
   }
-  file_full_path = ustring_concat(NULL,eval->self_path,file_path_str);
-  if (!file_full_path) {
-    uabort("concat path error");
+  if (vreader_fi_init_02(reader,eval->self_path,file_path_str)) {
+    uabort("file infor init error!");
   }
-  if (!ufile_init_by_strtb(reader->symtb,&reader->fi,file_full_path)) {
+  return 0;
+UEND
+
+UDEFUN(UFNAME leval_conf_load,
+       UARGS (leval* eval,char* file_path),
+       URET int)
+UDECLARE
+  vreader* reader;
+  ustring* file_path_str;
+UBEGIN
+  reader = eval->conf_reader;
+  file_path_str = ustring_table_put(reader->symtb,file_path,-1);
+  if (!file_path_str) {
+    uabort("file path put symtb error!");
+  }
+  if (vreader_fi_init_02(reader,eval->self_path,file_path_str)) {
     uabort("file infor init error!");
   }
   return 0;
@@ -72,29 +85,6 @@ UBEGIN
   src_mod = leval_vps_load(eval,mod->name,mod->path);
   vcontext_mod2mod(eval->ctx,mod,src_mod);
   vps_cntr_clean(&eval->vps);
-  return 0;
-UEND
-
-UDEFUN(UFNAME leval_conf_load,
-       UARGS (leval* eval,char* file_path),
-       URET int)
-UDECLARE
-  vreader* reader;
-  ustring* file_path_str;
-  ustring* file_full_path;
-UBEGIN
-  reader = eval->conf_reader;
-  file_path_str = ustring_table_put(reader->symtb,file_path,-1);
-  if (!file_path_str) {
-    uabort("file path put symtb error!");
-  }
-  file_full_path = ustring_concat(NULL,eval->self_path,file_path_str);
-  if (!file_full_path) {
-    uabort("concat path error");
-  }
-  if (!ufile_init_by_strtb(reader->symtb,&reader->fi,file_full_path)) {
-    uabort("file infor init error!");
-  }
   return 0;
 UEND
 

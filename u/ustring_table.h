@@ -19,4 +19,7 @@ ustring* ustring_table_add(ustring_table* strtb,
 			   char*          charp,
 			   int            len);
 
+ustring* ustring_concat_by_strtb(ustring_table* strtb,
+				 ustring* str1,
+				 ustring* str2);
 #endif

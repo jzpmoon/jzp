@@ -70,3 +70,78 @@ ustring* ustring_table_add(ustring_table* strtb,
     return NULL;
   }
 }
+
+static ustring ustrtb_concat_key_put(ustring* key)
+{
+  ustring** dstr;
+  char* charp;
+  ustring new_str;
+  dstr = (ustring**)key->value;
+  charp = ucharp_concat(dstr[0]->value,
+			dstr[0]->len,
+			dstr[1]->value,
+			dstr[1]->len);
+  if(!charp){
+    uabort("ucharp_new error!");
+  }
+  new_str.value = charp;
+  new_str.len = key->len;
+  new_str.hash_code = key->hash_code;
+  return new_str;
+}
+
+static int ustrtb_concat_key_comp(ustring* k1,ustring* k2)
+{
+  ustring** dstr;
+  int retval;
+  if (k1->len > k2->len) {
+    return 1;
+  } if (k1->len < k2->len) {
+    return -1;
+  } else {
+    dstr = (ustring**)k1->value;
+    retval = memcmp(dstr[0]->value,k2->value,dstr[0]->len);
+    if (!retval) {
+      retval = memcmp(dstr[1]->value,
+		      k2->value + dstr[0]->len,
+		      dstr[1]->len);
+      return retval;
+    } else {
+      return retval;
+    }
+  }
+}
+
+ustring* ustring_concat_by_strtb(ustring_table* strtb,
+				 ustring* str1,
+				 ustring* str2)
+{
+  ustring* new_str;
+  int retval;
+  ustring str;
+  ustring* dstr[2];
+  unsigned int hscd;
+  int i;
+  hscd = str1->hash_code;
+  for (i = 0;i < str2->len;i++) {
+    hscd *= 31;
+  }
+  hscd += str2->hash_code;
+  str.hash_code = hscd;
+  str.len = str1->len + str2->len;
+  dstr[0] = str1;
+  dstr[1] = str2;
+  str.value = (char*)&dstr;
+
+  retval = uhstb_ustring_put(strtb,
+			     hscd,
+			     &str,
+			     &new_str,
+			     ustrtb_concat_key_put,
+			     ustrtb_concat_key_comp);
+  if (retval != -1){
+    return new_str;
+  }else{
+    return NULL;
+  }
+}

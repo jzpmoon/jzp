@@ -1,5 +1,5 @@
-_ltemp.attr
-_ltemp.cfun
+_l*.attr
+_l*.cfun
 
 !configure*.sh
 !*.conf

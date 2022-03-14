@@ -98,7 +98,8 @@ ustring* vreader_path_get(vreader* reader,ustring* name)
   ustring* path;
   
   if (reader->fi.dir_name) {
-    path = ustring_concat(NULL,reader->fi.dir_name,name);
+    path = ustring_concat_by_strtb(reader->symtb,
+				   reader->fi.dir_name,name);
     if (!path) {
       uabort("mod name concat error!");
     }
@@ -106,6 +107,28 @@ ustring* vreader_path_get(vreader* reader,ustring* name)
     path = name;
   }
   return path;
+}
+
+int vreader_fi_init_01(vreader* reader,ustring* file_full_path)
+{
+  if (!ufile_init_by_strtb(reader->symtb,&reader->fi,file_full_path)) {
+    return -1;
+  }
+  return 0;
+}
+
+int vreader_fi_init_02(vreader* reader,ustring* file_path,ustring* file_name)
+{
+  ustring* file_full_path;
+  file_full_path = ustring_concat_by_strtb(reader->symtb,
+					   file_path,file_name);
+  if (!file_full_path) {
+    return -1;
+  }
+  if (!ufile_init_by_strtb(reader->symtb,&reader->fi,file_full_path)) {
+    return -1;
+  }
+  return 0;
 }
 
 int vast_attr_call(vast_attr* attr,vast_attr_req* req,vast_attr_res* res)

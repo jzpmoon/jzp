@@ -1,5 +1,4 @@
 #include <stddef.h>
-#include <string.h>
 #include <stdlib.h>
 #include "uerror.h"
 #include "ualloc.h"
@@ -119,6 +118,19 @@ int ustring_to_integer(ustring* str){
 
 double ustring_to_number(ustring* str){
   return atof(str->value);
+}
+
+char* ucharp_concat(char* c1,int len1,char* c2,int len2)
+{
+  int len = len1 + len2;
+  char* c = ualloc(len + 1);
+  if (!c) {
+    return NULL;
+  }
+  memcpy(c,c1,len1);
+  memcpy(c + len1,c2,len2);
+  c[len] = '\0';
+  return c;
 }
 
 ustring* ustring_concat(uallocator* alloc,ustring* str1,ustring* str2)

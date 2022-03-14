@@ -1,6 +1,7 @@
 #ifndef _USTRING_H_
 #define _USTRING_H_
 
+#include <string.h>
 #include "udef.h"
 #include "ualloc.h"
 
@@ -20,6 +21,7 @@ unsigned int ucharp_hscd(char* v);
 void ustring_dest(ustring* str);
 int ustring_to_integer(ustring* str);
 double ustring_to_number(ustring* str);
+char* ucharp_concat(char* c1,int len1,char* c2,int len2);
 ustring* ustring_concat(uallocator* alloc,ustring* str1,ustring* str2);
 ustring* ustring_concatx(uallocator* alloc,ustring* str1,ustring* str2,
 			 char* separator);
@@ -27,5 +29,7 @@ ustring* usubstring(uallocator* alloc,ustring* str,int pos,int len);
 int ustring_char_at(ustring* str,char c,int t);
 void uarrev(uui8* arr,usize_t len);
 void ustring_log(ustring* str);
+
+#define ustrcmp(cs,ct) strcmp(cs,ct)
 
 #endif

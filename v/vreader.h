@@ -124,6 +124,10 @@ void vreader_clean(vreader* reader);
 
 ustring* vreader_path_get(vreader* reader,ustring* name);
 
+int vreader_fi_init_01(vreader* reader,ustring* file_full_path);
+
+int vreader_fi_init_02(vreader* reader,ustring* file_path,ustring* file_name);
+
 vtoken_state* vtoken_state_new(ustream* stream,
 			       vreader* reader);
 
