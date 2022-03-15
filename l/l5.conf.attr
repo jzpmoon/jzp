@@ -60,42 +60,36 @@ VDEFATTR(sys_lib_bin_load,"sys-lib-bin-load",{
     creq = (vast_conf_req*)req;
     eval = (l5eval*)creq->eval;
     dreq = vast_req_dbl(creq);
-    next = vast_cdr(creq->ast_obj);
-    if (vast_consp(next)) {
-      uabort("attr sys-lib-bin-load has no args");
-    }
+    next = creq->ast_obj;
     while (1) {
+      next = vast_cdr(next);
+      if (!next) {
+	break;
+      }
       opt = vast_car(next);
       if (vast_consp(opt)) {
-	uabort("unknow options!");
+	uabort("has no options!");
       }
       obj = vast_car(opt);
       if (vast_symbolp(obj)) {
 	uabort("option name not a symbol!");
       }
       opt_name = (vast_symbol*)obj;
-      if (opt_name->attr) {
-	dreq.ast_obj = opt;
+      dreq.ast_obj = opt;
+      if (vast_attr_of(opt_name->attr,lib_path)) {
 	retval = vast_attr_call(opt_name->attr,(vast_attr_req*)&dreq,res);
-	if (retval == -1) {
-	  uabort("option error!");
-	} else if (retval == 0) {
+	if (retval != 1) {
 	  uabort("option error!");
 	}
-	obj = res->res_obj;
-	if (vast_res_from(lib_path)) {
-	  lib_path = (vast_symbol*)obj;
-	} else if (vast_res_from(init_cfun)){
-	  init_cfun = (vast_symbol*)obj;
-	} else {
-	  uabort("unknow options!");
+	lib_path = (vast_symbol*)res->res_obj;
+      } else if (vast_attr_of(opt_name->attr,init_cfun)) {
+	retval = vast_attr_call(opt_name->attr,(vast_attr_req*)&dreq,res);
+	if (retval != 1) {
+	  uabort("option error!");
 	}
+        init_cfun = (vast_symbol*)res->res_obj;
       } else {
-	uabort("option attr not define!");
-      }
-      next = vast_cdr(next);
-      if (!next) {
-	break;
+	uabort("unknow options!");
       }
     }
     /* try to init mod */
@@ -121,10 +115,10 @@ VDEFATTR(sys_lib_bin_load,"sys-lib-bin-load",{
 })
 
 /*
- * define attribute sys-lib-src-decl
- * (sys-lib-src-decl lib-name)
+ * define attribute sys-lib-src-load
+ * (sys-lib-src-load lib-name)
  */
-VDEFATTR(sys_lib_src_decl,"sys-lib-src-decl",{
+VDEFATTR(sys_lib_src_decl,"sys-lib-src-load",{
     vast_conf_req* creq;
     l5eval* eval;
     vast_obj* next;
@@ -138,40 +132,30 @@ VDEFATTR(sys_lib_src_decl,"sys-lib-src-decl",{
     creq = (vast_conf_req*)req;
     eval = (l5eval*)creq->eval;
     dreq = vast_req_dbl(creq);
-    next = vast_cdr(creq->ast_obj);
-    if (vast_consp(next)) {
-      uabort("attr sys-lib-src-decl has no args");
-    }
+    next = creq->ast_obj;
     while (1) {
+      next = vast_cdr(next);
+      if (!next) {
+	break;
+      }
       opt = vast_car(next);
       if (vast_consp(opt)) {
-	uabort("unknow options!");
+	uabort("has no options!");
       }
       obj = vast_car(opt);
       if (vast_symbolp(obj)) {
 	uabort("option name not a symbol!");
       }
       opt_name = (vast_symbol*)obj;
-      if (opt_name->attr) {
-	dreq.ast_obj = opt;
+      dreq.ast_obj = opt;
+      if (vast_attr_of(opt_name->attr,lib_path)) {
 	retval = vast_attr_call(opt_name->attr,(vast_attr_req*)&dreq,res);
-	if (retval == -1) {
-	  uabort("option error!");
-	} else if (retval == 0) {
+	if (retval != 1) {
 	  uabort("option error!");
 	}
-	obj = res->res_obj;
-	if (vast_res_from(lib_path)) {
-	  lib_path = (vast_symbol*)obj;
-	} else {
-	  uabort("unknow options!");
-	}
+	lib_path = (vast_symbol*)res->res_obj;
       } else {
-	uabort("option attr not define!");
-      }
-      next = vast_cdr(next);
-      if (!next) {
-	break;
+	uabort("unknow options!");
       }
     }
     /* load source library */

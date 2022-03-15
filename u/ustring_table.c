@@ -5,7 +5,8 @@
 
 uhstb_def_tpl(ustring);
 
-static ustring ustrtb_key_put(ustring* key){
+static ustring ustrtb_key_put(ustring* key)
+{
   ustring* str = key;
   char* charp;
   ustring new_str;
@@ -21,13 +22,15 @@ static ustring ustrtb_key_put(ustring* key){
   return new_str;
 }
 
-static int ustrtb_key_comp(ustring* k1,ustring* k2){
+static int ustrtb_key_comp(ustring* k1,ustring* k2)
+{
   return ustring_comp(k1,k2);
 }
 
 ustring* ustring_table_put(ustring_table* strtb,
 			   char*          charp,
-			   int            len){
+			   int            len)
+{
   unsigned int hscd = len > 0 ? udata_hscd(charp,len) : ucharp_hscd(charp);
   int      _len     = len > 0 ? len : strlen(charp);
   ustring  str      = (ustring){charp,_len,hscd};
@@ -46,13 +49,15 @@ ustring* ustring_table_put(ustring_table* strtb,
   }
 }
 
-static int ustrtb_key_comp_greater(ustring* k1,ustring* k2){
+static int ustrtb_key_comp_greater(ustring* k1,ustring* k2)
+{
   return 1;
 }
 
 ustring* ustring_table_add(ustring_table* strtb,
 			   char*          charp,
-			   int            len){
+			   int            len)
+{
   unsigned int hscd = len > 0 ? udata_hscd(charp,len) : ucharp_hscd(charp);
   int      _len     = len > 0 ? len : strlen(charp);
   ustring  str      = (ustring){charp,_len,hscd};

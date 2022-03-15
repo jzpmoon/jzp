@@ -80,7 +80,7 @@ UDECLFUN(UFNAME vclosure_func_get,
 	 URET vclosure*);
 
 UDECLFUN(UFNAME vclosure_file_get,
-	 UARGS (vclosure* closure,ustring* name),
+	 UARGS (vclosure* closure,ustring* path),
 	 URET vclosure*);
 
 UDECLFUN(UFNAME vclosure_path_get,

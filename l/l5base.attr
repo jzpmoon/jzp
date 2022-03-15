@@ -223,17 +223,16 @@ VDEFATTR(if,"if",{
     /* (else...) */
     inst = vps_ilabel(jreq->vps,else_id);
     vcfg_grp_inst_apd(grp,inst);
-
+    
     next = vast_cdr(next);
-    if (vast_consp(next)) {
-      uabort("ast attr \"if\" has no else!");
+    if (!vast_consp(next)) {
+      obj = vast_car(next);
+      if (vast_consp(obj)) {
+	uabort("ast attr \"if\" else has no ()!");
+      }
+      vclosure_cons_call(jreq->closure,jreq,obj);
     }
-    obj = vast_car(next);
-    if (vast_consp(obj)) {
-      uabort("ast attr \"if\" else has no ()!");
-    }
-    vclosure_cons_call(jreq->closure,jreq,obj);
-
+    
     inst = vps_ilabel(jreq->vps,exit_id);
     vcfg_grp_inst_apd(grp,inst);
     
@@ -656,10 +655,10 @@ VDEFATTR(require,"require",{
       uabort("reader from error!");
     }
     name = src_name->name;
-    if (vclosure_file_get(jreq->closure,name)) {
+    path = vclosure_path_get(reader,name);
+    if (vclosure_file_get(jreq->closure,path)) {
       VATTR_RETURN_VOID;
     }
-    path = vclosure_path_get(reader,name);
     closure = vfile2closure(jreq->closure->parent,reader,
 			    name,path,jreq->vps,VCLOSURE_TYPE_FILE);
     

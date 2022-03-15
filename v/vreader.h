@@ -64,6 +64,9 @@ struct _vast_attr{
 
 int vast_attr_call(vast_attr* attr,vast_attr_req* req,vast_attr_res* res);
 
+#define vast_attr_of(attr,of)			\
+  (attr && attr->action == _vast_attr_action_##of)
+
 uhstb_decl_tpl(vast_attr);
 
 struct _vast_kw{

@@ -1,0 +1,3 @@
+;;print message on system output stream
+(defun print (message)
+  (stream-output message system-ostream))

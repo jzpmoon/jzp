@@ -61,13 +61,13 @@ UBEGIN
     new_mod = NULL;
     break;
   case VCLOSURE_TYPE_FILE:
-    new_mod = vps_mod_new(vps,closure->closure_name,closure->closure_path);
+    new_mod = vps_mod_new(vps,closure->closure_path,closure->closure_path);
     if (!new_mod) {
       uabort("mod new error!");
     }
     goto label;
   case VCLOSURE_TYPE_MAIN:
-    new_mod = vps_mod_new(vps,closure->closure_name,closure->closure_path);
+    new_mod = vps_mod_new(vps,closure->closure_path,closure->closure_path);
     if (!new_mod) {
       uabort("mod new error!");
     }
@@ -317,7 +317,7 @@ UBEGIN
 UEND
 
 UDEFUN(UFNAME vclosure_file_get,
-       UARGS (vclosure* closure,ustring* name),
+       UARGS (vclosure* closure,ustring* path),
        URET vclosure*)
 UDECLARE
   uset* childs;
@@ -332,15 +332,15 @@ UBEGIN
       break;
     }
     child = unext_get(next);
-    if (child->closure_type != VCLOSURE_TYPE_FILE) {
+    if (!vclosure_ismain(child) && !vclosure_isfile(child)) {
       continue;
     }
-    if (!ustring_comp(name,child->closure_name)) {
+    if (!ustring_comp(path,child->closure_path)) {
       return child;
     }
   }
   if (closure->parent) {
-    return vclosure_file_get(closure->parent,name);
+    return vclosure_file_get(closure->parent,path);
   }
   return NULL;
 UEND
@@ -349,7 +349,6 @@ UDEFUN(UFNAME vclosure_path_get,
        UARGS (vreader* reader,ustring* name),
        URET ustring*)
 UDECLARE
-
 UBEGIN
   return vreader_path_get(reader,name);
 UEND

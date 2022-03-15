@@ -28,9 +28,13 @@ $(temp_attr_file):
 $(v_sobj):
 	make -C $(libv_path) -f $(v_somk) DEBUG_MODE=$(DEBUG_MODE)
 install:
-	cp $(bin) $(prefix)/;cp sysmod.l5 $(prefix)/
+	cp $(bin) $(prefix)/;    \
+	cp sysmod.l5 $(prefix)/; \
+	cp usrmod.l5 $(prefix)/
 uninstall:
-	rm $(prefix)/$(bin);rm $(prefix)/sysmod.l5
+	rm $(prefix)/$(bin);    \
+	rm $(prefix)/sysmod.l5; \
+	rm $(prefix)/usrmod.l5
 clean:
 	make -C $(libv_path) -f $(v_somk) clean; \
 	rm -f $(bin) $(obj) $(temp_attr_file)

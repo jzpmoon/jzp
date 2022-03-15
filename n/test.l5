@@ -1,6 +1,5 @@
-;(require sysmod.l5)
+;;;l5 test
 
-;;test l5
 (defun inc (x)
   (+ x 1 1))
 
@@ -14,8 +13,5 @@
       (+ (fib (- x 1))
 	 (fib (- x 2)))
     (1)))
-
-(defun print (message)
-  (stream-output message system-ostream))
 
 (print (fib 6))
