@@ -12,3 +12,5 @@
 !configure.sh
 !readme.txt
 !.gitignore
+!*.sln
+!*.vcxproj
