@@ -85,7 +85,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
+    <None Include="configure5.sh" />
     <None Include="l5.conf" />
+    <None Include="l5.mk" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="readme.txt" />

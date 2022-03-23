@@ -126,6 +126,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include=".gitignore" />
+    <None Include="configure.sh" />
+    <None Include="env\env_unx.mk" />
+    <None Include="env\env_win.mk" />
+    <None Include="libu.mk" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
