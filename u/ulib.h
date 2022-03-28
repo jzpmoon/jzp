@@ -6,6 +6,14 @@
 
 #if UOS == WIN
 
+  #include <Windows.h>
+  #define URTLD_LAZY
+
+  typedef HMODULE ulib;
+  typedef FARPROC ulibsym;
+
+#elif UOS == CYGWIN
+
   #include <dlfcn.h>
   #define URTLD_LAZY RTLD_LAZY
 
