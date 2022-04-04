@@ -38,3 +38,6 @@ cd ../v/
 cd $currdir
 
 echo "/*auto create*/" > l5macro.h
+
+cat ../u/uexport.h | sed 's:xapi:l5api:g' | sed 's:xcall:l5call:g' | \
+    sed 's:_UEXPORT_H_:_UEXPORT_LIBL5_H_:g' >> l5macro.h

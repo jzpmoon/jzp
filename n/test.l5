@@ -14,4 +14,4 @@
 	 (fib (- x 2)))
     (1)))
 
-(print (fib 6))
+(print (fib 8))

@@ -34,3 +34,6 @@ cat libu.mk >> makefile
 cat $(echo "./env/env_"${envc}".h") > umacro.h
 
 cat $(echo "./env/thw_"${thw}".h") >> umacro.h
+
+cat ./uexport.h | sed 's:xapi:uapi:g' | sed 's:xcall:ucall:g' | \
+    sed 's:_UEXPORT_H_:_UEXPORT_LIBU_H_:g' >> umacro.h

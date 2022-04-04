@@ -40,3 +40,6 @@ cd ../u/
 cd $currdir
 
 echo "/*auto create*/" > vmacro.h
+
+cat ../u/uexport.h | sed 's:xapi:vapi:g' | sed 's:xcall:vcall:g' | \
+    sed 's:_UEXPORT_H_:_UEXPORT_LIBV_H_:g' >> vmacro.h

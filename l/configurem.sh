@@ -40,3 +40,6 @@ cd ../v/
 cd $currdir
 
 echo "/*auto create*/" > lmmacro.h
+
+cat ../u/uexport.h | sed 's:xapi:lmapi:g' | sed 's:xcall:lmcall:g' | \
+    sed 's:_UEXPORT_H_:_UEXPORT_LIBLM_H_:g' >> lmmacro.h
