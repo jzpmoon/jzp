@@ -1,6 +1,7 @@
 #ifndef _USTACK_TPL_H_
 #define _USTACK_TPL_H_
 
+#include "umacro.h"
 #include "ualloc.h"
 
 #define ublock_tpl(t)				\
@@ -22,28 +23,28 @@
 #define BLOCK_SIZE 4*1024
 
 #define ustack_log_decl_tpl(t)			\
-  void ustack_##t##_log(ustack_##t* stack);
+  uapi_tpl void ucall ustack_##t##_log(ustack_##t* stack);
 
 #define ustack_push_decl_tpl(t)				\
-  int ustack_##t##_push(ustack_##t* stack,t data);
+  uapi_tpl int ucall ustack_##t##_push(ustack_##t* stack,t data);
 
 #define ustack_pushv_decl_tpl(t)			\
-  int ustack_##t##_pushv(ustack_##t* stack);
+  uapi_tpl int ucall ustack_##t##_pushv(ustack_##t* stack);
 
 #define ustack_pop_decl_tpl(t)				\
-  int ustack_##t##_pop(ustack_##t* stack,t* data);
+  uapi_tpl int ucall ustack_##t##_pop(ustack_##t* stack,t* data);
 
 #define ustack_set_decl_tpl(t)				\
-  int ustack_##t##_set(ustack_##t* stack,int index,t data);
+  uapi_tpl int ucall ustack_##t##_set(ustack_##t* stack,int index,t data);
 
 #define ustack_get_decl_tpl(t)				\
-  int ustack_##t##_get(ustack_##t* stack,int index,t* data);
+  uapi_tpl int ucall ustack_##t##_get(ustack_##t* stack,int index,t* data);
 
 #define ustack_top_set_decl_tpl(t)			\
-  int ustack_##t##_top_set(ustack_##t* stack,int index);
+  uapi_tpl int ucall ustack_##t##_top_set(ustack_##t* stack,int index);
 
 #define ustack_top_get_decl_tpl(t)			\
-  int ustack_##t##_top_get(ustack_##t* stack);
+  uapi_tpl int ucall ustack_##t##_top_get(ustack_##t* stack);
 
 #define UBLOCK_SIZE_GET(SIZE)			\
   SIZE > 0 ? SIZE : BLOCK_SIZE

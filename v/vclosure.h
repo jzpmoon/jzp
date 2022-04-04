@@ -2,6 +2,7 @@
 #define _VCLOSURE_H_
 
 #include "ulist_tpl.h"
+#include "vmacro.h"
 #include "vpass.h"
 
 typedef struct _vclosure vclosure,*vclosurep;
@@ -44,47 +45,47 @@ typedef struct _vps_closure_req{
 
 UDECLFUN(UFNAME vclosure_new,
 	 UARGS (vps_cntr* vps),
-	 URET vclosure*);
+	 URET vapi vclosure* vcall);
 
 UDECLFUN(UFNAME vfile2closure,
 	 UARGS (vclosure* closure,vreader* reader,ustring* name,ustring* path,
 		vps_cntr* vps,int closure_type),
-	 URET vclosure*);
+	 URET vapi vclosure* vcall);
 
 UDECLFUN(UFNAME vclosure2mod,
 	 UARGS (vclosure* closure,vps_cntr* vps,vps_mod* mod),
-	 URET void);
+	 URET vapi void vcall);
 
 UDECLFUN(UFNAME vclosure2vps,
 	 UARGS (vreader* reader,ustring* name,ustring* path,vps_cntr* vps),
-	 URET vps_mod*);
+	 URET vapi vps_mod* vcall);
 
 UDECLFUN(UFNAME vclosure_field_add,
 	 UARGS (vclosure* closure,vps_data* field),
-	 URET int);
+	 URET vapi int vcall);
 
 UDECLFUN(UFNAME vclosure_child_add,
 	 UARGS (vclosure* closure,vclosure* child),
-	 URET int);
+	 URET vapi int vcall);
 
 UDECLFUN(UFNAME vclosure_field_get,
 	 UARGS (vclosure* closure,ustring* name),
-	 URET vps_data*);
+	 URET vapi vps_data* vcall);
 
 UDECLFUN(UFNAME vclosure_curr_field_get,
 	 UARGS (vclosure* closure,ustring* name),
-	 URET vps_data*);
+	 URET vapi vps_data* vcall);
 
 UDECLFUN(UFNAME vclosure_func_get,
 	 UARGS (vclosure* closure,ustring* name),
-	 URET vclosure*);
+	 URET vapi vclosure* vcall);
 
 UDECLFUN(UFNAME vclosure_file_get,
 	 UARGS (vclosure* closure,ustring* path),
-	 URET vclosure*);
+	 URET vapi vclosure* vcall);
 
 UDECLFUN(UFNAME vclosure_path_get,
 	 UARGS (vreader* reader,ustring* name),
-	 URET ustring*);
+	 URET vapi ustring* vcall);
 
 #endif

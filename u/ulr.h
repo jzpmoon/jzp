@@ -1,6 +1,7 @@
 #ifndef _ULR_H_
 #define _ULR_H_
 
+#include "umacro.h"
 #include "ulist_tpl.h"
 #include "uhstb_tpl.h"
 #include "ugraph.h"
@@ -52,10 +53,10 @@ typedef struct _ulrcoll{
   uhstb_ulrsetp* sets;
 } ulrcoll;
 
-ulrprod* ulrprod_new(int bdylen);
+uapi ulrprod* ucall ulrprod_new(int bdylen);
 
-ulrgram* ulrgram_new();
+uapi ulrgram* ucall ulrgram_new();
 
-ulrcoll* ulr0auto(ulrgram* gram);
+uapi ulrcoll* ucall ulr0auto(ulrgram* gram);
 
 #endif

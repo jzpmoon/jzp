@@ -3,6 +3,7 @@
 
 #include <malloc.h>
 #include <stdlib.h>
+#include "umacro.h"
 
 #define uif(test,t,e)				\
   if(test){t}else{e}
@@ -26,11 +27,11 @@
 
 typedef size_t ualloc_size_t;
 typedef struct _uallocator uallocator;
-typedef void* (*ualloc_ft)(uallocator* allocator,ualloc_size_t size);
-typedef void* (*uallocx_ft)(uallocator* allocator,char* data,
+typedef void* (ucall *ualloc_ft)(uallocator* allocator,ualloc_size_t size);
+typedef void* (ucall *uallocx_ft)(uallocator* allocator,char* data,
 			   ualloc_size_t size);
-typedef void (*ufree_ft)(uallocator* allocator,void* ptr);
-typedef void (*uclean_ft)(uallocator* allocator);
+typedef void (ucall *ufree_ft)(uallocator* allocator,void* ptr);
+typedef void (ucall *uclean_ft)(uallocator* allocator);
 
 #define UALLOCATOR_HEADER \
   ualloc_ft alloc;	  \
@@ -42,6 +43,6 @@ struct _uallocator{
   UALLOCATOR_HEADER;
 };
 
-extern uallocator u_global_allocator;
+extern uapi uallocator u_global_allocator;
 
 #endif

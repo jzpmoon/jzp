@@ -1,6 +1,7 @@
 #ifndef _UHSTB_TPL_H_
 #define _UHSTB_TPL_H_
 
+#include "umacro.h"
 #include "uset.h"
 #include "ualloc.h"
 
@@ -22,25 +23,25 @@
     uallocator* allocator;			\
     uhsnd_##t* ndar[1];				\
   } uhstb_##t;					\
-  typedef int(*uhstb_##t##_dest_ft)(t)
+  typedef int(ucall *uhstb_##t##_dest_ft)(t)
 
 #define uhstb_key_ft_tpl(t)			\
-  typedef t(*uhstb_##t##_key_ft)(t*)
+  typedef t(ucall *uhstb_##t##_key_ft)(t*)
 
 #define uhstb_comp_ft_tpl(t)			\
-  typedef int(*uhstb_##t##_comp_ft)(t*,t*)
+  typedef int(ucall *uhstb_##t##_comp_ft)(t*,t*)
 
 #define uhstb_new_decl_tpl(t)			\
-  uhstb_##t* uhstb_##t##_new(int len)
+  uapi_tpl uhstb_##t* ucall uhstb_##t##_new(int len)
 
 #define uhstb_alloc_decl_tpl(t)					\
-  uhstb_##t* uhstb_##t##_alloc(uallocator* allocator,int len)
+  uapi_tpl uhstb_##t* ucall uhstb_##t##_alloc(uallocator* allocator,int len)
 
 #define uhstb_dest_decl_tpl(t)						\
-  void uhstb_##t##_dest(uhstb_##t* hstb,uhstb_##t##_dest_ft dest)
+  uapi_tpl void ucall uhstb_##t##_dest(uhstb_##t* hstb,uhstb_##t##_dest_ft dest)
 
 #define uhstb_put_decl_tpl(t)				\
-  int uhstb_##t##_put(uhstb_##t*          hstb,		\
+  uapi_tpl int ucall uhstb_##t##_put(uhstb_##t*          hstb,		\
 		      unsigned int        hscd,		\
 		      t*                  ink,		\
 		      t**                 outk,		\
@@ -48,7 +49,7 @@
 		      uhstb_##t##_comp_ft comp)
 
 #define uhstb_get_decl_tpl(t)				\
-  int uhstb_##t##_get(uhstb_##t*          hstb,		\
+  uapi_tpl int ucall uhstb_##t##_get(uhstb_##t*          hstb,		\
 		      unsigned int        hscd,		\
 		      t*                  ink,		\
 		      t**                 outk,		\

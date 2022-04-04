@@ -6,6 +6,7 @@
 #include "ulist_tpl.h"
 #include "uhstb_tpl.h"
 #include "umempool.h"
+#include "vmacro.h"
 #include "vgc_obj.h"
 
 typedef struct _vast_obj vast_obj;
@@ -19,10 +20,10 @@ typedef struct _vtoken_state vtoken_state;
 /*
  * return value: 0 nothing res, 1 have res.
  */
-typedef int(*vast_attr_ft)(vast_attr_req* req,
+typedef int(vcall *vast_attr_ft)(vast_attr_req* req,
 			   vast_attr_res* res);
 
-typedef void (*vattr_init_ft)(vreader*);
+typedef void (vcall *vattr_init_ft)(vreader*);
 
 
 #define VASTHEADER \
@@ -62,7 +63,8 @@ struct _vast_attr{
   vast_attr_ft action;
 };
 
-int vast_attr_call(vast_attr* attr,vast_attr_req* req,vast_attr_res* res);
+vapi int vcall
+vast_attr_call(vast_attr* attr,vast_attr_req* req,vast_attr_res* res);
 
 #define vast_attr_of(attr,of)			\
   (attr && attr->action == _vast_attr_action_##of)
@@ -112,38 +114,52 @@ struct _vtoken_state{
 
 #define VEOF (-1)
 
-vreader* vreader_new(ustring_table* symtb,
+vapi vreader* vcall
+vreader_new(ustring_table* symtb,
 		     ustring_table* strtb,
 		     vattr_init_ft ainit,
 		     vast_attr* dattr);
 
-vreader* vreader_easy_new(vattr_init_ft ainit);
+vapi vreader* vcall
+vreader_easy_new(vattr_init_ft ainit);
 
-int vreader_keyword_put(vreader* reader,vast_kw keyword);
+vapi int vcall
+vreader_keyword_put(vreader* reader,vast_kw keyword);
 
-vtoken_state* vreader_from(vreader* reader);
+vapi vtoken_state* vcall
+vreader_from(vreader* reader);
 
-void vreader_clean(vreader* reader);
+vapi void vcall
+vreader_clean(vreader* reader);
 
-ustring* vreader_path_get(vreader* reader,ustring* name);
+vapi ustring* vcall
+vreader_path_get(vreader* reader,ustring* name);
 
-int vreader_fi_init_01(vreader* reader,ustring* file_full_path);
+vapi int vcall
+vreader_fi_init_01(vreader* reader,ustring* file_full_path);
 
-int vreader_fi_init_02(vreader* reader,ustring* file_path,ustring* file_name);
+vapi int vcall
+vreader_fi_init_02(vreader* reader,ustring* file_path,ustring* file_name);
 
-vtoken_state* vtoken_state_new(ustream* stream,
+vapi vtoken_state* vcall
+vtoken_state_new(ustream* stream,
 			       vreader* reader);
 
-vtoken_state* vtoken_state_alloc(uallocator* allocator,
+vapi vtoken_state* vcall
+vtoken_state_alloc(uallocator* allocator,
 				 ustream* stream,
 				 vreader* reader);
 
-void vtoken_state_init(vtoken_state* ts);
+vapi void vcall
+vtoken_state_init(vtoken_state* ts);
 
-void vtoken_state_close(vtoken_state* ts);
+vapi void vcall
+vtoken_state_close(vtoken_state* ts);
 
-void vtoken_state_reset(vtoken_state* ts,ustring* file_path);
+vapi void vcall
+vtoken_state_reset(vtoken_state* ts,ustring* file_path);
 
-void vtoken_log(vtoken_state* ts);
+vapi void vcall
+vtoken_log(vtoken_state* ts);
 
 #endif

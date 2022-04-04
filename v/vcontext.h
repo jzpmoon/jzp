@@ -2,6 +2,7 @@
 #define _VCONTEXT_H_
 
 #include "ustring.h"
+#include "vmacro.h"
 #include "vgc_obj.h"
 #include "vpass.h"
 #include "vgenbc.h"
@@ -47,10 +48,10 @@ uhstb_decl_tpl(vmod);
 
 typedef struct _vmod_loader vmod_loader;
 
-typedef int(*vmod_load_ft)(vmod_loader* loader,vmod* mod);
+typedef int(vcall *vmod_load_ft)(vmod_loader* loader,vmod* mod);
 
 #define VMOD_LOADER_HEADER \
-  vmod_load_ft load;	   \
+  vmod_load_ft load
 
 struct _vmod_loader{
   VMOD_LOADER_HEADER;
@@ -97,9 +98,6 @@ typedef struct _vgc_cfun{
   vcfun_ft entry;
   int params_count;
   int has_retval;
-  vslot_define_begin
-  /*void member*/
-  vslot_define_end
 } vgc_cfun;
 
 vgc_cfun* vgc_cfun_new(vgc_heap* heap,
@@ -132,17 +130,19 @@ vgc_call* vgc_call_new(vcontext* ctx,
 #define vgc_call_is_cfun(call)				\
   ((call)->call_type == vgc_call_type_cfun)
 
-UDECLFUN(UFNAME vcontext_new,UARGS (vgc_heap* heap),URET vcontext*);
+UDECLFUN(UFNAME vcontext_new,
+         UARGS (vgc_heap* heap),
+         URET vapi vcontext* vcall);
 
-vslot vcontext_params_get(vcontext* ctx,int index);
+vapi vslot vcall vcontext_params_get(vcontext* ctx,int index);
 
 UDECLFUN(UFNAME vcontext_vps_load,
 	 UARGS (vcontext* ctx,vps_cntr* vps),
-	 URET int);
+	 URET vapi int vcall);
 
 UDECLFUN(UFNAME vcontext_mod_load,
 	 UARGS (vcontext* ctx,vps_mod* mod),
-	 URET int);
+	 URET vapi int vcall);
 
 UDECLFUN(UFNAME vcontext_graph_load,
 	 UARGS (vcontext* ctx,vmod* mod,vcfg_graph* grp),
@@ -152,11 +152,11 @@ void vcontext_execute(vcontext* ctx);
 
 void vcontext_relocate(vcontext* ctx);
 
-vmod* vcontext_mod_add(vcontext* ctx,ustring* name,ustring* path);
+vapi vmod* vcall vcontext_mod_add(vcontext* ctx,ustring* name,ustring* path);
 
 UDECLFUN(UFNAME vcontext_mod2mod,
 	 UARGS (vcontext* ctx,vmod* dest_mod,vps_mod* src_mod),
-	 URET int);
+	 URET vapi int vcall);
 
 void vmod_add_reloc(vmod* mod,vreloc reloc);
 

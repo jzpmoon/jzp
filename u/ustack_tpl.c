@@ -15,9 +15,9 @@
   (!(S)->curr_block)
 
 #define ustack_log_tpl(t)					\
-  void ustack_##t##_log(ustack_##t* stack){			\
-    ulog1("ustack curr_block: %ld",(long)stack->curr_block);	\
-    ulog1("ustack cache_block:%ld",(long)stack->cache_block);	\
+  uapi_tpl void ucall ustack_##t##_log(ustack_##t* stack){	\
+    ulog1("ustack curr_block: %p",stack->curr_block);		\
+    ulog1("ustack cache_block:%p",stack->cache_block);		\
     ulog1("ustack block_pos:  %d",stack->block_pos);		\
     ulog1("ustack block_count:%d",stack->block_count);		\
     ulog1("ustack block_limit:%d",stack->block_limit);		\
@@ -55,29 +55,30 @@
     return stack->curr_block;					\
   }
 
-#define ustack_push_tpl(t)			\
-  int ustack_##t##_push(ustack_##t* stack,	\
-			t data){		\
-    ublock_##t* block;				\
-    if((block=ublock_##t##_push(stack))!=NULL){	\
-      block->ptr[stack->block_pos++]=data;	\
-      return 0;					\
-    }						\
-    return -1;					\
+#define ustack_push_tpl(t)					\
+  uapi_tpl int ucall ustack_##t##_push(ustack_##t* stack,	\
+				       t data){			\
+    ublock_##t* block;						\
+    if((block=ublock_##t##_push(stack))!=NULL){			\
+      block->ptr[stack->block_pos++]=data;			\
+      return 0;							\
+    }								\
+    return -1;							\
   }
 
-#define ustack_pushv_tpl(t)			\
-  int ustack_##t##_pushv(ustack_##t* stack){	\
-    ublock_##t* block;				\
-    if((block=ublock_##t##_push(stack))!=NULL){	\
-      stack->block_pos++;			\
-      return 0;					\
-    }						\
-    return -1;					\
+#define ustack_pushv_tpl(t)					\
+  uapi_tpl int ucall ustack_##t##_pushv(ustack_##t* stack){	\
+    ublock_##t* block;						\
+    if((block=ublock_##t##_push(stack))!=NULL){			\
+      stack->block_pos++;					\
+      return 0;							\
+    }								\
+    return -1;							\
   }
 
 #define ustack_set_tpl(t)					\
-  int ustack_##t##_set(ustack_##t* stack,int index,t data){	\
+  uapi_tpl int ucall ustack_##t##_set(ustack_##t* stack,	\
+				      int index,t data){	\
     if(index < 0 || index >= stack->block_pos){			\
       return -1;						\
     }								\
@@ -86,7 +87,8 @@
   }
 
 #define ustack_get_tpl(t)					\
-  int ustack_##t##_get(ustack_##t* stack,int index,t* data){	\
+  uapi_tpl int ucall ustack_##t##_get(ustack_##t* stack,	\
+				      int index,t* data){	\
     int top = index;						\
     if(top < 0){						\
       top += stack->block_pos;					\
@@ -99,7 +101,8 @@
   }
 
 #define ustack_top_set_tpl(t)					\
-  int ustack_##t##_top_set(ustack_##t* stack,int index){	\
+  uapi_tpl int ucall ustack_##t##_top_set(ustack_##t* stack,	\
+					  int index){		\
     int top = index;						\
     if(top < 0){						\
       top += stack->block_pos;					\
@@ -111,9 +114,9 @@
     return 0;							\
   }
 
-#define ustack_top_get_tpl(t)			\
-  int ustack_##t##_top_get(ustack_##t* stack){	\
-    return stack->block_pos;			\
+#define ustack_top_get_tpl(t)					\
+  uapi_tpl int ucall ustack_##t##_top_get(ustack_##t* stack){	\
+    return stack->block_pos;					\
   }
 
 #define ublock_pop_tpl(t)					\
@@ -136,16 +139,16 @@
     return stack->curr_block;					\
   }
 
-#define ustack_pop_tpl(t)			\
-  int ustack_##t##_pop(ustack_##t* stack,	\
-		    t* data){			\
-    ublock_##t* block;				\
-    if((block=ublock_##t##_pop(stack))!=NULL){	\
-      *data=					\
-	block->ptr[--(stack->block_pos)];	\
-      return 0;					\
-    }						\
-    return -1;					\
+#define ustack_pop_tpl(t)					\
+  uapi_tpl int ucall ustack_##t##_pop(ustack_##t* stack,	\
+				      t* data){			\
+    ublock_##t* block;						\
+    if((block=ublock_##t##_pop(stack))!=NULL){			\
+      *data=							\
+	block->ptr[--(stack->block_pos)];			\
+      return 0;							\
+    }								\
+    return -1;							\
   }
 
 #define ustack_def_tpl(t)			\

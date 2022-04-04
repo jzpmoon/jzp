@@ -1,3 +1,5 @@
+#include "uerror.h"
+#include "ualloc.h"
 #include "uhstb_tpl.c"
 #include "ulist_tpl.c"
 #include "vgenbc.h"
@@ -9,7 +11,7 @@ uhstb_def_tpl(vir);
 uhstb_def_tpl(vag_tplp);
 ulist_def_tpl(vir_nterm);
 
-void vattr_init(vreader* reader)
+void vcall vattr_init(vreader* reader)
 {
   vattr_file_concat_init(reader);
 }
@@ -21,7 +23,7 @@ virtb* virtb_new()
   return irtb;
 }
 
-int vir_comp(vir* ir1,vir* ir2)
+int ucall vir_comp(vir* ir1,vir* ir2)
 {
   return (int)(ir1->ir_str - ir2->ir_str);
 }
@@ -170,15 +172,16 @@ int main(int argc,char** args)
 {
   ulrgram* gram;
   vreader* reader;
-  
+
   ulog_init("vag.log",UTRUE);
   if(argc == 1){
     ulog("no input file!");
     return 0;
   }
+ 
   reader = vreader_easy_new(vattr_init);
   if (!reader) {
-	  uabort("reader new error!");
+    uabort("reader new error!");
   }
   gram = vfile2gram(reader,args[1]);
   return 0;

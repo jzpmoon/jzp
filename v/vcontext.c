@@ -18,7 +18,9 @@ UDECLFUN(UFNAME insts_concat,
 		ulist_vps_instp* insts),
 	 URET static int);
 
-UDEFUN(UFNAME vcontext_new,UARGS (vgc_heap* heap),URET vcontext*)
+UDEFUN(UFNAME vcontext_new,
+       UARGS (vgc_heap* heap),
+       URET vapi vcontext* vcall)
 UDECLARE
   vcontext* ctx;
   uhstb_vmod* mods;
@@ -89,10 +91,11 @@ vgc_cfun* vgc_cfun_new(vgc_heap* heap,
   if(params_count < 0){
     return NULL;
   }
-  cfun = vgc_heap_obj_new(heap,
-			  vgc_cfun,
-			  vgc_obj_type_cfun,
-			  area_type);
+  cfun = (vgc_cfun*)vgc_heap_data_new(heap,
+				      sizeof(vgc_cfun),
+				      0,
+				      vgc_obj_type_cfun,
+				      area_type);
   if(cfun){
     cfun->entry = entry;
     cfun->params_count = params_count;
@@ -134,7 +137,7 @@ vgc_call* vgc_call_new(vcontext* ctx,
   return call;
 }
 
-static int vobjtb_key_comp(vsymbol* sym1,vsymbol* sym2){
+static int ucall vobjtb_key_comp(vsymbol* sym1,vsymbol* sym2){
   return ustring_comp(sym1->name, sym2->name);
 }
 
@@ -429,7 +432,7 @@ void vcontext_mod_log(vcontext* ctx){
 
 UDEFUN(UFNAME vcontext_mod2mod,
        UARGS (vcontext* ctx,vmod* dest_mod,vps_mod* src_mod),
-       URET int)
+       URET vapi int vcall)
 UDECLARE
   ucursor cursor;
   uhstb_vps_datap* data = NULL;
@@ -478,7 +481,7 @@ UEND
 
 UDEFUN(UFNAME vcontext_mod_load,
        UARGS (vcontext* ctx,vps_mod* mod),
-       URET int)
+       URET vapi int vcall)
 UDECLARE
   vmod* dest_mod;
 UBEGIN
@@ -509,7 +512,7 @@ static void vcontext_mod_init(vcontext* ctx)
 }
 UDEFUN(UFNAME vcontext_vps_load,
        UARGS (vcontext* ctx,vps_cntr* vps),
-       URET int)
+       URET vapi int vcall)
 UDECLARE
   ucursor cursor;
   uhstb_vps_modp* mods;
@@ -619,7 +622,7 @@ void vcontext_relocate(vcontext* ctx){
   }
 }
 
-vslot vcontext_params_get(vcontext* ctx,int index){
+vapi vslot vcall vcontext_params_get(vcontext* ctx,int index){
   vgc_call* calling;
   vgc_cfun* cfun;
   int count;
@@ -642,7 +645,7 @@ vslot vcontext_params_get(vcontext* ctx,int index){
   return slot;
 }
 
-static int vcontext_mod_comp(vmod* mod1,vmod* mod2){
+static int ucall vcontext_mod_comp(vmod* mod1,vmod* mod2){
   return ustring_comp(mod1->name,mod2->name);
 }
 
@@ -676,7 +679,9 @@ static void vmod_init(vmod* mod,ustring* name,ustring* path)
   mod->status = VMOD_STATUS_UNLOAD;
 }
 
-vmod* vcontext_mod_add(vcontext* ctx,ustring* name,ustring* path)
+vapi vmod* vcall vcontext_mod_add(vcontext* ctx,
+                                  ustring* name,
+                                  ustring* path)
 {
   vmod in_mod;
   vmod* out_mod;

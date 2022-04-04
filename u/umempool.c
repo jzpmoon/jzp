@@ -2,19 +2,19 @@
 #include "ualloc.h"
 #include "umempool.h"
 
-static void* alloc_impl(uallocator* allocator,ualloc_size_t size);
+static void* ucall alloc_impl(uallocator* allocator,ualloc_size_t size);
 
-static void* allocx_impl(uallocator* allocator,char* data,
+static void* ucall allocx_impl(uallocator* allocator,char* data,
 			ualloc_size_t size)
 {
   return NULL;
 }
 
-static void free_impl(uallocator* allocator,void* ptr){}
+static void ucall free_impl(uallocator* allocator,void* ptr){}
 
-static void clean_impl(uallocator* allocator);
+static void ucall clean_impl(uallocator* allocator);
 
-umem_node* umem_node_new(int size){
+static umem_node* umem_node_new(int size){
   int align_size;
   int offset_size;
   umem_node* node;
@@ -33,7 +33,7 @@ umem_node* umem_node_new(int size){
   return node;
 }
 
-void umem_pool_init(umem_pool* pool,ualloc_size_t max_size) {
+uapi void ucall umem_pool_init(umem_pool* pool,ualloc_size_t max_size) {
   pool->allocator.alloc = alloc_impl;
   pool->allocator.allocx = allocx_impl;
   pool->allocator.free = free_impl;
@@ -48,7 +48,7 @@ void umem_pool_init(umem_pool* pool,ualloc_size_t max_size) {
   pool->node = NULL;
 }
 
-void* umem_pool_alloc(umem_pool* pool,ualloc_size_t size){
+uapi void* ucall umem_pool_alloc(umem_pool* pool,ualloc_size_t size){
   umem_node* curr_node;
   umem_node* prev_node;
   int align_size;
@@ -84,13 +84,13 @@ void* umem_pool_alloc(umem_pool* pool,ualloc_size_t size){
   return data;
 }
 
-static void* alloc_impl(uallocator* allocator,ualloc_size_t size)
+static void* ucall alloc_impl(uallocator* allocator,ualloc_size_t size)
 {
   umem_pool* mp = (umem_pool*)allocator;
   return umem_pool_alloc(mp,size);
 }
 
-void umem_pool_clean(umem_pool* pool){
+uapi void ucall umem_pool_clean(umem_pool* pool){
   umem_node* node;
   
   node = pool->node;
@@ -113,8 +113,8 @@ void umem_pool_clean(umem_pool* pool){
 	pool->now_count,pool->now_size);
 }
 
-static void clean_impl(uallocator* allocator)
+static void ucall clean_impl(uallocator* allocator)
 {
   umem_pool* mp = (umem_pool*)allocator;
-  return umem_pool_clean(mp);
+  umem_pool_clean(mp);
 }

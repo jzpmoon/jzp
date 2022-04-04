@@ -36,3 +36,5 @@ cat libl5.mk >> makefile
 cd ../v/
 ./configure.sh --prefix=$prefix --envc=$envc --thw=$thw
 cd $currdir
+
+echo "/*auto create*/" > l5macro.h

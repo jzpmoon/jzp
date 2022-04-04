@@ -5,7 +5,7 @@
 #define USTREAM_FILE_BUFF_GET(stream) ((stream)->u.s.dbuff)
 #define USTREAM_FILE_GET(stream) ((stream)->u.s.file)
 
-ustring* ufile_name_get_by_strtb(ustring_table* strtb,ustring* file_path)
+static ustring* ufile_name_get_by_strtb(ustring_table* strtb,ustring* file_path)
 {
   ustring* file_name;
   int pos;
@@ -25,7 +25,7 @@ ustring* ufile_name_get_by_strtb(ustring_table* strtb,ustring* file_path)
   return file_name;
 }
 
-ustring* ufile_dir_get_by_strtb(ustring_table* strtb,ustring* file_path)
+static ustring* ufile_dir_get_by_strtb(ustring_table* strtb,ustring* file_path)
 {
   ustring* file_name;
   int pos;
@@ -42,8 +42,9 @@ ustring* ufile_dir_get_by_strtb(ustring_table* strtb,ustring* file_path)
   return file_name;
 }
 
-ufile_infor* ufile_init_by_strtb(ustring_table* strtb,ufile_infor* fi,
-			ustring* file_path)
+uapi ufile_infor* ucall ufile_init_by_strtb(ustring_table* strtb,
+                                      ufile_infor* fi,
+			                          ustring* file_path)
 {
   ustring* file_name = NULL;
   ustring* dir_name = NULL;
@@ -61,7 +62,7 @@ ufile_infor* ufile_init_by_strtb(ustring_table* strtb,ufile_infor* fi,
   return NULL;
 }
 
-void ufile_log(ufile_infor* fi)
+uapi void ucall ufile_log(ufile_infor* fi)
 {
   if (fi->file_path)
     ulog1("file path:%s",fi->file_path->value);
@@ -71,7 +72,7 @@ void ufile_log(ufile_infor* fi)
     ulog1("file name:%s",fi->file_name->value);
 }
 
-ustream* ustream_new_by_buff(int iot,ubuffer* buff,URI_DECL){
+uapi ustream* ucall ustream_new_by_buff(int iot,ubuffer* buff,URI_DECL){
   uallocator* allocator;
   ustream* stream;
 
@@ -83,7 +84,7 @@ ustream* ustream_new_by_buff(int iot,ubuffer* buff,URI_DECL){
   URI_RETVAL(UERR_SUCC,stream);
 }
 
-ustream* ustream_new_by_file(int iot,ustring* file_path,URI_DECL)
+uapi ustream* ucall ustream_new_by_file(int iot,ustring* file_path,URI_DECL)
 {
   ustream* stream = NULL;
   FILE* file = NULL;
@@ -111,7 +112,7 @@ ustream* ustream_new_by_file(int iot,ustring* file_path,URI_DECL)
   URI_RETVAL(UERR_OFM,NULL);
 }
 
-ustream* ustream_new_by_fd(int iot,FILE* fd,URI_DECL)
+uapi ustream* ucall ustream_new_by_fd(int iot,FILE* fd,URI_DECL)
 {
   ustream* stream = NULL;
   char* mode;
@@ -134,14 +135,14 @@ ustream* ustream_new_by_fd(int iot,FILE* fd,URI_DECL)
   URI_RETVAL(UERR_OFM,NULL);
 }
 
-ustream* ustream_new(int iot,int dst){
+uapi ustream* ucall ustream_new(int iot,int dst){
   uallocator* allocator;
 
   allocator = &u_global_allocator;
   return ustream_alloc(allocator,iot,dst);
 }
 
-ustream* ustream_alloc(uallocator* allocator,int iot,int dst)
+uapi ustream* ucall ustream_alloc(uallocator* allocator,int iot,int dst)
 {
   ustream* stream = NULL;
   udbuffer* dbuff = NULL;
@@ -173,7 +174,7 @@ ustream* ustream_alloc(uallocator* allocator,int iot,int dst)
   return NULL;
 }
 
-void ustream_dest(ustream* stream)
+uapi void ucall ustream_dest(ustream* stream)
 {
   uallocator* alloc = stream->allocator;
 
@@ -182,7 +183,7 @@ void ustream_dest(ustream* stream)
   alloc->free(alloc,stream);
 }
 
-int ustream_open_by_path(ustream* stream,
+uapi int ucall ustream_open_by_path(ustream* stream,
 			 ustring* file_path)
 {
   if (stream->dst == USTREAM_BUFF ||
@@ -201,7 +202,7 @@ int ustream_open_by_path(ustream* stream,
   }
 }
 
-void ustream_close(ustream* stream)
+uapi void ucall ustream_close(ustream* stream)
 {
   if (stream->dst == USTREAM_FILE) {
     FILE* file = stream->u.s.file;
@@ -212,7 +213,7 @@ void ustream_close(ustream* stream)
   }
 }
 
-int ustream_read_to_buff(ustream* stream,ubuffer* buff,URI_DECL){
+uapi int ucall ustream_read_to_buff(ustream* stream,ubuffer* buff,URI_DECL){
   int count = 0;
   if(stream->iot != USTREAM_INPUT){
     URI_RETVAL(UERR_IOT,count);
@@ -233,7 +234,7 @@ int ustream_read_to_buff(ustream* stream,ubuffer* buff,URI_DECL){
   }
 }
 
-int ustream_read_next(ustream* stream,URI_DECL){
+uapi int ucall ustream_read_next(ustream* stream,URI_DECL){
   int next = -1;
   if(stream->iot != USTREAM_INPUT){
     URI_RETVAL(UERR_IOT,next);
@@ -260,7 +261,7 @@ int ustream_read_next(ustream* stream,URI_DECL){
   URI_RETVAL(UERR_SUCC,next);
 }
 
-int ustream_look_ahead(ustream* stream,URI_DECL){
+uapi int ucall ustream_look_ahead(ustream* stream,URI_DECL){
   int next = -1;
   if(stream->iot != USTREAM_INPUT){
     URI_RETVAL(UERR_IOT,next);
@@ -287,7 +288,7 @@ int ustream_look_ahead(ustream* stream,URI_DECL){
   URI_RETVAL(UERR_SUCC,next);
 }
 
-int ustream_write_dnum(ustream* stream,double dnum,URI_DECL){
+uapi int ucall ustream_write_dnum(ustream* stream,double dnum,URI_DECL){
   if(stream->iot != USTREAM_OUTPUT){
     URI_RETVAL(UERR_IOT,-1);
   }
@@ -304,7 +305,7 @@ int ustream_write_dnum(ustream* stream,double dnum,URI_DECL){
   URI_RETVAL(UERR_SUCC,0);
 }
 
-int ustream_write_int(ustream* stream, int inte,URI_DECL)
+uapi int ucall ustream_write_int(ustream* stream, int inte,URI_DECL)
 {
   if(stream->iot != USTREAM_OUTPUT){
     URI_RETVAL(UERR_IOT,-1);
@@ -322,7 +323,7 @@ int ustream_write_int(ustream* stream, int inte,URI_DECL)
   URI_RETVAL(UERR_SUCC,0);
 }
 
-int ustream_write_char(ustream* stream, int chara,URI_DECL)
+uapi int ucall ustream_write_char(ustream* stream, int chara,URI_DECL)
 {
   if(stream->iot != USTREAM_OUTPUT){
     URI_RETVAL(UERR_IOT,-1);
@@ -340,7 +341,7 @@ int ustream_write_char(ustream* stream, int chara,URI_DECL)
   URI_RETVAL(UERR_SUCC,0);
 }
 
-int ustream_write_string(ustream* stream,char* charp,URI_DECL)
+uapi int ucall ustream_write_string(ustream* stream,char* charp,URI_DECL)
 {
   if(stream->iot != USTREAM_OUTPUT){
     URI_RETVAL(UERR_IOT,-1);

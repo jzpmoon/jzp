@@ -9,7 +9,7 @@ uhstb_def_tpl(ulrsetp);
 ustack_decl_tpl(ulrsetp);
 ustack_def_tpl(ulrsetp);
 
-ulrprod* ulrprod_new(int bdylen)
+uapi ulrprod* ucall ulrprod_new(int bdylen)
 {
   usize_t prodsz;
   ulrprod* prod;
@@ -22,7 +22,7 @@ ulrprod* ulrprod_new(int bdylen)
   return prod;
 }
 
-ulrset* ulrset_new(int inpsym)
+static ulrset* ulrset_new(int inpsym)
 {
   ulrset* set;
 
@@ -35,24 +35,24 @@ ulrset* ulrset_new(int inpsym)
   return set;
 }
 
-void ulritem_dest(ulritem* item)
+static void ulritem_dest(ulritem* item)
 {
   ufree(item);
 }
 
-void ulrset_dest(ulrset* set)
+static void ulrset_dest(ulrset* set)
 {
   ugraph_node_clean((ugnode*)set);
   ulist_ulritemp_dest(set->items,ulritem_dest);
   ufree(set);
 }
 
-int ulrset_put(ulrset* set,ulritem* item)
+static int ulrset_put(ulrset* set,ulritem* item)
 {
   return ulist_ulritemp_append(set->items,item);
 }
 
-ulritem* ulritem_new(ulrprod* prod,int dot)
+static ulritem* ulritem_new(ulrprod* prod,int dot)
 {
   ulritem* item;
 
@@ -64,7 +64,7 @@ ulritem* ulritem_new(ulrprod* prod,int dot)
   return item;
 }
 
-ulrgram* ulrgram_new()
+uapi ulrgram* ucall ulrgram_new()
 {
   ulrgram* gram;
   
@@ -77,7 +77,7 @@ ulrgram* ulrgram_new()
   return gram;
 }
 
-ulrset* ulrgram_start_set_get(ulrgram* gram)
+static ulrset* ucall ulrgram_start_set_get(ulrgram* gram)
 {
   ulrset* itemset;
   ulritem* item;
@@ -99,7 +99,7 @@ ulrset* ulrgram_start_set_get(ulrgram* gram)
   return itemset;
 }
 
-ulrcoll* ulrcoll_new()
+static ulrcoll* ulrcoll_new()
 {
   ulrcoll* coll;
 
@@ -111,7 +111,7 @@ ulrcoll* ulrcoll_new()
   return coll;
 }
 
-int ulritem_comp(ulritem* item1,ulritem* item2)
+static int ucall ulritem_comp(ulritem* item1,ulritem* item2)
 {
   if (item1->dot > item2->dot) {
     return 1;
@@ -128,7 +128,7 @@ int ulritem_comp(ulritem* item1,ulritem* item2)
   }
 }
 
-int ulrset_comp(ulrsetp* set1,ulrsetp* set2)
+static int ucall ulrset_comp(ulrsetp* set1,ulrsetp* set2)
 {
   ulist_ulritemp* items1,* items2;
   uset* s1,* s2;
@@ -159,7 +159,7 @@ int ulrset_comp(ulrsetp* set1,ulrsetp* set2)
   return 0;
 }
 
-int ulrcoll_put(ulrcoll* coll,ulrset* set)
+static int ulrcoll_put(ulrcoll* coll,ulrset* set)
 {
   int retval;
   retval = uhstb_ulrsetp_put(coll->sets,ULRINITSYM,&set,NULL,NULL,
@@ -170,7 +170,7 @@ int ulrcoll_put(ulrcoll* coll,ulrset* set)
   return retval;
 }
 
-int ulr_closure(ulrgram* gram,ulrset* itemset)
+static int ulr_closure(ulrgram* gram,ulrset* itemset)
 {
   ucursor i,j;
   uset* is,* js;
@@ -204,11 +204,11 @@ int ulr_closure(ulrgram* gram,ulrset* itemset)
   return 0;
 }
 
-int ulr_goto(ulrgram* gram,
-	     ulrcoll* coll,
-	     ustack_ulrsetp* stack,
-	     ulrset* itemset,
-	     int inpsym)
+static int ulr_goto(ulrgram* gram,
+	                ulrcoll* coll,
+	                ustack_ulrsetp* stack,
+	                ulrset* itemset,
+	                int inpsym)
 {
   ucursor c;
   uset* s;
@@ -255,7 +255,7 @@ int ulr_goto(ulrgram* gram,
   return 0;
 }
 
-ulrcoll* ulr0auto(ulrgram* gram)
+uapi ulrcoll* ucall ulr0auto(ulrgram* gram)
 {
   ulrset* itemset;
   ustack_ulrsetp stack;

@@ -21,24 +21,23 @@ set currdir=%cd%
 
 echo prefix=%prefix% > makefile
 echo envc=%envc% >> makefile
+echo thw=%thw% >> makefile
 echo currdir=%currdir% >> makefile
 echo !include ..\u\env\env_%envc%.mk >> makefile
+type libv.win.mk >> makefile
 
-type libu.win.mk >> makefile
+cd ..\u\
+call .\configure.bat --prefix=%prefix% --envc=%envc% --thw=%thw%
+cd %currdir%
 
-echo /*auto create*/ > umacro.h
-
-type .\env\env_%envc%.h > umacro.h
-
-type .\env\thw_%thw%.h >> umacro.h
-
-for /f "delims=" %%i in (.\uexport.h) do (
+echo /*auto create*/ > vmacro.h
+for /f "delims=" %%i in (..\u\uexport.h) do (
     set tmp=%%i
-    set tmp=!tmp:_EXPORT_XXX_=_EXPORT_LIBU_!
-	set tmp=!tmp:_NOTEXPORT_XXX_=_NOTEXPORT_LIBU_!
-    set tmp=!tmp:_UEXPORT_H_=_UEXPORT_LIBU_H_!
-    set tmp=!tmp:xapi=uapi!
-    set tmp=!tmp:xcall=ucall!
-    echo !tmp! >> umacro.h
+    set tmp=!tmp:_EXPORT_XXX_=_EXPORT_LIBV_!
+	set tmp=!tmp:_NOTEXPORT_XXX_=_NOTEXPORT_LIBV_!
+    set tmp=!tmp:_UEXPORT_H_=_UEXPORT_LIBV_H_!
+    set tmp=!tmp:xapi=vapi!
+    set tmp=!tmp:xcall=vcall!
+    echo !tmp! >> vmacro.h
 )
 endlocal

@@ -9,11 +9,6 @@
 typedef struct _lobj_stream{
   VGCHEADEREX;
   ustream* stream;
-  vslot_define_begin
-  /*
-   * void member
-   */
-  vslot_define_end
 } lobj_stream;
 
 extern vgc_objex_t lobj_stream_type;

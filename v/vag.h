@@ -55,7 +55,7 @@ int virtb_put(virtb* irtb,vir ir);
 
 int virtb_load(vreader* reader,virtb* irtb);
 
-void vattr_init(vreader* reader);
+void vcall vattr_init(vreader* reader);
 
 ulrgram* vfile2gram(vreader* reader,char* file_path);
 

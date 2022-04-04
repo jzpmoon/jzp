@@ -7,7 +7,7 @@
 #if UOS == WIN
 
   #include <Windows.h>
-  #define URTLD_LAZY
+  #define URTLD_LAZY 0
 
   typedef HMODULE ulib;
   typedef FARPROC ulibsym;
@@ -30,12 +30,12 @@
 
 #endif
 
-ulib udlopen(ustring* name,int mode);
+uapi ulib ucall udlopen(ustring* name,int mode);
 
-ulibsym udlsym(ulib handle,ustring* symbol);
+uapi ulibsym ucall udlsym(ulib handle,ustring* symbol);
 
-int udlclose(ulib handle);
+uapi int ucall udlclose(ulib handle);
 
-const char* udlerror();
+uapi const char* ucall udlerror();
 
 #endif

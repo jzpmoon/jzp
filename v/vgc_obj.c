@@ -3,9 +3,11 @@
 #include "uerror.h"
 #include "vgc_obj.h"
 
-vgc_array* vgc_array_new(vgc_heap* heap,
-			 usize_t array_length,
-			 int area_type){
+vapi vgc_array* vcall
+vgc_array_new(vgc_heap* heap,
+			  usize_t array_length,
+			  int area_type)
+{
   usize_t array_size = TYPE_SIZE_OF(vgc_array,vslot,array_length);
   vgc_array* array;
   vslot* slot_list;
@@ -26,7 +28,9 @@ vgc_array* vgc_array_new(vgc_heap* heap,
   return array;
 }
 
-int vgc_array_push(vgc_array* array,vslot slot){
+vapi int vcall
+vgc_array_push(vgc_array* array,vslot slot)
+{
   if(array->top <= array->_len){
     array->objs[array->top] = slot;
     return array->top++;
@@ -35,22 +39,28 @@ int vgc_array_push(vgc_array* array,vslot slot){
   }
 }
 
-vslot vgc_array_pop(vgc_array* array){
+vapi vslot vcall
+vgc_array_pop(vgc_array* array)
+{
   if(array->top > 0){
     array->top--;
   }
   return array->objs[array->top];
 }
 
-void vgc_array_set(vgc_array* array,usize_t idx,vslot slot){
+vapi void vcall
+vgc_array_set(vgc_array* array,usize_t idx,vslot slot)
+{
   if (idx < array->_len) {
     array->objs[idx] = slot;
   }
 }
 
-vgc_string* vgc_string_new(vgc_heap* heap,
+vapi vgc_string* vcall
+vgc_string_new(vgc_heap* heap,
 			   usize_t string_length,
-			   int area_type){
+			   int area_type)
+{
   usize_t string_size = TYPE_SIZE_OF(vgc_string,char,string_length);
   vgc_string* string;
   string = (vgc_string*)vgc_heap_data_new(heap,
@@ -64,12 +74,14 @@ vgc_string* vgc_string_new(vgc_heap* heap,
   return string;
 }
 
-void vgc_ustr2vstr(vgc_string* vstr,ustring* ustr)
+vapi void vcall
+vgc_ustr2vstr(vgc_string* vstr,ustring* ustr)
 {
   memcpy(vstr->u.b,ustr->value,ustr->len);
 }
 
-vgc_ref* vgc_ref_new(vgc_heap* heap,vslot slot)
+vapi vgc_ref* vcall
+vgc_ref_new(vgc_heap* heap,vslot slot)
 {
   vgc_ref* ref;
   ref = vgc_heap_obj_new(heap,vgc_ref,vgc_obj_type_ref,vgc_heap_area_static);
@@ -79,7 +91,9 @@ vgc_ref* vgc_ref_new(vgc_heap* heap,vslot slot)
   return ref;
 }
 
-vslot vslot_num_eq(vslot slot1,vslot slot2){
+vslot
+vslot_num_eq(vslot slot1,vslot slot2)
+{
   double num1 = vslot_num_get(slot1);
   double num2 = vslot_num_get(slot2);
   vslot bool;
@@ -91,7 +105,9 @@ vslot vslot_num_eq(vslot slot1,vslot slot2){
   return bool;
 }
 
-vslot vslot_int_eq(vslot slot1,vslot slot2){
+vslot
+vslot_int_eq(vslot slot1,vslot slot2)
+{
   int int1 = vslot_int_get(slot1);
   int int2 = vslot_int_get(slot2);
   vslot bool;
@@ -103,7 +119,9 @@ vslot vslot_int_eq(vslot slot1,vslot slot2){
   return bool;
 }
 
-vslot vslot_ref_eq(vslot slot1,vslot slot2){
+vslot
+vslot_ref_eq(vslot slot1,vslot slot2)
+{
   vgc_obj* ref1 = vslot_ref_get(slot1,vgc_obj);
   vgc_obj* ref2 = vslot_ref_get(slot2,vgc_obj);
   vslot bool;
@@ -115,10 +133,12 @@ vslot vslot_ref_eq(vslot slot1,vslot slot2){
   return bool;
 }
 
-vgc_extend* vgc_extend_new(vgc_heap* heap,
+vapi vgc_extend* vcall
+vgc_extend_new(vgc_heap* heap,
 			   int struct_size,
 			   int ref_count,
-			   vgc_objex_t* oet){
+			   vgc_objex_t* oet)
+{
   vgc_extend* extend =
     (vgc_extend*)vgc_heap_data_new(heap,
 				struct_size,

@@ -1,3 +1,4 @@
+#include "umacro.h"
 #include <stdarg.h>
 #include "uerror.h"
 
@@ -8,9 +9,9 @@ URI_ERR_DEFINE(UERR_EOF, "U003", "end of file");
 URI_ERR_DEFINE(UERR_IOT, "U004", "unknow IO type");
 URI_ERR_DEFINE(UERR_DST, "U005", "unknow data source type");
 
-ulog_infor _uli = {NULL,NULL,UTRUE};
+uapi ulog_infor _uli = {NULL,NULL,UTRUE};
 
-int ulog_init(char* log_fn,int power)
+uapi int ucall ulog_init(char* log_fn,int power)
 {
   int retval = 0;
   FILE* log_fd = fopen(log_fn,"w");
@@ -25,12 +26,12 @@ int ulog_init(char* log_fn,int power)
   return retval;
 }
 
-void ulog_enable(int power)
+uapi void ucall ulog_enable(int power)
 {
   _uli.power = power;
 }
 
-void uabort(char* msg,...)
+uapi void ucall uabort(char* msg,...)
 {
   FILE* log_fd = _uli.log_fd;
   va_list ap;
@@ -50,7 +51,7 @@ void uabort(char* msg,...)
   abort();
 }
 
-void ulog(char* msg,...)
+uapi void ucall ulog(char* msg,...)
 {
   FILE* log_fd = _uli.log_fd;
   va_list ap;

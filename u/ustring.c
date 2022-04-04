@@ -4,7 +4,7 @@
 #include "ualloc.h"
 #include "ustring.h"
 
-unsigned int udata_hscd(void* v,int len){
+uapi unsigned int ucall udata_hscd(void* v,int len){
   unsigned int code = 0;
   int i = 0;
   while (i < len) {
@@ -13,7 +13,7 @@ unsigned int udata_hscd(void* v,int len){
   return code;
 }
 
-unsigned int ucharp_hscd(char* v){
+uapi unsigned int ucall ucharp_hscd(char* v){
 	unsigned int code=0,i=0;
 	while(v[i]!='\0'){
 		code=code*31+v[i++];
@@ -21,7 +21,7 @@ unsigned int ucharp_hscd(char* v){
 	return code;
 }
 
-char* ucharp_new(uallocator* alloc,void* data,int len){
+uapi char* ucall ucharp_new(uallocator* alloc,void* data,int len){
   uallocator* _alloc;
   char* charp;
   
@@ -38,7 +38,7 @@ char* ucharp_new(uallocator* alloc,void* data,int len){
   return charp;
 }
 
-ustring* ustring_new(uallocator* alloc,void* value,int len,int hscd)
+uapi ustring* ucall ustring_new(uallocator* alloc,void* value,int len,int hscd)
 {
   uallocator* _alloc;
   ustring* str;
@@ -67,7 +67,7 @@ ustring* ustring_new(uallocator* alloc,void* value,int len,int hscd)
   return NULL;
 }
 
-ustring* ustring_new_by_charp(uallocator* alloc,char* charp)
+uapi ustring* ucall ustring_new_by_charp(uallocator* alloc,char* charp)
 {
   uallocator* _alloc;
   unsigned int hscd;
@@ -84,12 +84,12 @@ ustring* ustring_new_by_charp(uallocator* alloc,char* charp)
   return string;
 }
 
-void ustring_dest(ustring* str){
+uapi void ucall ustring_dest(ustring* str){
 	free(str->value);
 	free(str);
 }
 
-int ustring_comp(ustring* s1,ustring* s2){
+uapi int ucall ustring_comp(ustring* s1,ustring* s2){
   if(s1 == s2){
     return 0;
   }else if(s1->len == s2->len){
@@ -104,7 +104,7 @@ int ustring_comp(ustring* s1,ustring* s2){
   }
 }
 
-int ustring_charp_comp(ustring* str,char* charp)
+uapi int ucall ustring_charp_comp(ustring* str,char* charp)
 {
   char* str_val;
   
@@ -112,15 +112,15 @@ int ustring_charp_comp(ustring* str,char* charp)
   return strcmp(str_val,charp);
 }
 
-int ustring_to_integer(ustring* str){
+uapi int ucall ustring_to_integer(ustring* str){
   return (int)strtol(str->value,NULL,0);
 }
 
-double ustring_to_number(ustring* str){
+uapi double ucall ustring_to_number(ustring* str){
   return atof(str->value);
 }
 
-char* ucharp_concat(char* c1,int len1,char* c2,int len2)
+uapi char* ucall ucharp_concat(char* c1,int len1,char* c2,int len2)
 {
   int len = len1 + len2;
   char* c = ualloc(len + 1);
@@ -133,7 +133,7 @@ char* ucharp_concat(char* c1,int len1,char* c2,int len2)
   return c;
 }
 
-ustring* ustring_concat(uallocator* alloc,ustring* str1,ustring* str2)
+uapi ustring* ucall ustring_concat(uallocator* alloc,ustring* str1,ustring* str2)
 {
   uallocator* _alloc;
   int len;
@@ -164,7 +164,7 @@ ustring* ustring_concat(uallocator* alloc,ustring* str1,ustring* str2)
   return str;
 }
 
-ustring* ustring_concatx(uallocator* alloc,ustring* str1,ustring* str2,
+uapi ustring* ucall ustring_concatx(uallocator* alloc,ustring* str1,ustring* str2,
 			 char* sep)
 {
   uallocator* _alloc;
@@ -199,7 +199,7 @@ ustring* ustring_concatx(uallocator* alloc,ustring* str1,ustring* str2,
   return str;  
 }
 
-ustring* usubstring(uallocator* alloc,ustring* str,int pos,int len)
+uapi ustring* ucall usubstring(uallocator* alloc,ustring* str,int pos,int len)
 {
   uallocator* _alloc;
   ustring* substr;
@@ -228,7 +228,7 @@ ustring* usubstring(uallocator* alloc,ustring* str,int pos,int len)
   return substr;
 }
 
-int ustring_char_at(ustring* str,char c,int t)
+uapi int ucall ustring_char_at(ustring* str,char c,int t)
 {
   char* value;
   char tmp;
@@ -273,7 +273,7 @@ int ustring_char_at(ustring* str,char c,int t)
   return -1;
 }
 
-void uarrev(uui8* arr,usize_t len)
+uapi void ucall uarrev(uui8* arr,usize_t len)
 {
   usize_t i = 0;
   while (i < len / 2) {
@@ -284,7 +284,7 @@ void uarrev(uui8* arr,usize_t len)
   }
 }
 
-void ustring_log(ustring* str){
+uapi void ucall ustring_log(ustring* str){
   ulog1("value:%s",str->value);
   ulog1("len  :%d",str->len);
   ulog1("hscd :%d",str->hash_code);

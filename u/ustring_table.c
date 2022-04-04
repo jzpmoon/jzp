@@ -5,7 +5,7 @@
 
 uhstb_def_tpl(ustring);
 
-static ustring ustrtb_key_put(ustring* key)
+static ustring ucall ustrtb_key_put(ustring* key)
 {
   ustring* str = key;
   char* charp;
@@ -22,12 +22,12 @@ static ustring ustrtb_key_put(ustring* key)
   return new_str;
 }
 
-static int ustrtb_key_comp(ustring* k1,ustring* k2)
+static int ucall ustrtb_key_comp(ustring* k1,ustring* k2)
 {
   return ustring_comp(k1,k2);
 }
 
-ustring* ustring_table_put(ustring_table* strtb,
+uapi ustring* ucall ustring_table_put(ustring_table* strtb,
 			   char*          charp,
 			   int            len)
 {
@@ -49,12 +49,12 @@ ustring* ustring_table_put(ustring_table* strtb,
   }
 }
 
-static int ustrtb_key_comp_greater(ustring* k1,ustring* k2)
+static int ucall ustrtb_key_comp_greater(ustring* k1,ustring* k2)
 {
   return 1;
 }
 
-ustring* ustring_table_add(ustring_table* strtb,
+uapi ustring* ucall ustring_table_add(ustring_table* strtb,
 			   char*          charp,
 			   int            len)
 {
@@ -76,7 +76,7 @@ ustring* ustring_table_add(ustring_table* strtb,
   }
 }
 
-static ustring ustrtb_concat_key_put(ustring* key)
+static ustring ucall ustrtb_concat_key_put(ustring* key)
 {
   ustring** dstr;
   char* charp;
@@ -95,7 +95,7 @@ static ustring ustrtb_concat_key_put(ustring* key)
   return new_str;
 }
 
-static int ustrtb_concat_key_comp(ustring* k1,ustring* k2)
+static int ucall ustrtb_concat_key_comp(ustring* k1,ustring* k2)
 {
   ustring** dstr;
   int retval;
@@ -117,7 +117,7 @@ static int ustrtb_concat_key_comp(ustring* k1,ustring* k2)
   }
 }
 
-ustring* ustring_concat_by_strtb(ustring_table* strtb,
+uapi ustring* ucall ustring_concat_by_strtb(ustring_table* strtb,
 				 ustring* str1,
 				 ustring* str2)
 {

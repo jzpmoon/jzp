@@ -1,6 +1,7 @@
+#include "umacro.h"
 #include "ulib.h"
 
-ulib udlopen(ustring* name,int mode)
+uapi ulib ucall udlopen(ustring* name,int mode)
 {
 #if UOS == WIN
   return LoadLibrary(name->value);
@@ -11,7 +12,7 @@ ulib udlopen(ustring* name,int mode)
 #endif
 }
 
-ulibsym udlsym(ulib handle,ustring* symbol)
+uapi ulibsym ucall udlsym(ulib handle,ustring* symbol)
 {
 #if UOS == WIN
   return GetProcAddress(handle, symbol->value);
@@ -22,7 +23,7 @@ ulibsym udlsym(ulib handle,ustring* symbol)
 #endif
 }
 
-int udlclose(ulib handle)
+uapi int ucall udlclose(ulib handle)
 {
 #if UOS == WIN
   return FreeLibrary(handle);
@@ -33,10 +34,10 @@ int udlclose(ulib handle)
 #endif
 }
 
-const char* udlerror()
+uapi const char* ucall udlerror()
 {
 #if UOS == WIN
-
+	return NULL;
 #elif UOS == CYGWIN
   return dlerror();
 #elif UOS == UNX

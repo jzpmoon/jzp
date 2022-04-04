@@ -56,7 +56,7 @@ VDEFATTR(sys_lib_bin_load,"sys-lib-bin-load",{
     lmod_init_ft callback;
     int retval;
     vmod* mod;
-    
+
     creq = (vast_conf_req*)req;
     eval = (l5eval*)creq->eval;
     dreq = vast_req_dbl(creq);

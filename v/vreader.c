@@ -3,7 +3,8 @@
 
 ulist_def_tpl(vast_kw);
 
-vreader* vreader_new(ustring_table* symtb,
+vapi vreader* vcall
+vreader_new(ustring_table* symtb,
 		     ustring_table* strtb,
 		     vattr_init_ft ainit,
 		     vast_attr* dattr)
@@ -11,7 +12,7 @@ vreader* vreader_new(ustring_table* symtb,
   uhstb_vast_attr* attrtb;
   ulist_vast_kw* kws;
   vreader* reader;
-  
+
   attrtb = uhstb_vast_attr_new(-1);
   if (!attrtb) {
     return NULL;
@@ -41,15 +42,16 @@ vreader* vreader_new(ustring_table* symtb,
   reader->fi.dir_name = NULL;
 
   if (ainit) ainit(reader);
-  
+
   return reader;
 }
 
-vreader* vreader_easy_new(vattr_init_ft ainit)
+vapi vreader* vcall
+vreader_easy_new(vattr_init_ft ainit)
 {
   ustring_table* symtb;
   ustring_table* strtb;
-  
+ 
   symtb = ustring_table_new(-1);
   if(!symtb){
     uabort("vcontext_new:symtb new error!");
@@ -59,16 +61,18 @@ vreader* vreader_easy_new(vattr_init_ft ainit)
   if(!strtb){
     uabort("vcontext_new:strtb new error!");
   }
-  
+
   return vreader_new(symtb,strtb,ainit,NULL);
 }
 
-int vreader_keyword_put(vreader* reader,vast_kw keyword)
+vapi int vcall
+vreader_keyword_put(vreader* reader,vast_kw keyword)
 {
   return ulist_vast_kw_append(reader->kws,keyword);
 }
 
-vtoken_state* vreader_from(vreader* reader)
+vapi vtoken_state* vcall
+vreader_from(vreader* reader)
 {
   uallocator* allocator;
   ustream* stream;
@@ -85,7 +89,8 @@ vtoken_state* vreader_from(vreader* reader)
   return ts;
 }
 
-void vreader_clean(vreader* reader)
+vapi void vcall
+vreader_clean(vreader* reader)
 {
   uallocator* allocator;
   
@@ -93,7 +98,8 @@ void vreader_clean(vreader* reader)
   allocator->clean(allocator);
 }
 
-ustring* vreader_path_get(vreader* reader,ustring* name)
+vapi ustring* vcall
+vreader_path_get(vreader* reader,ustring* name)
 {
   ustring* path;
   
@@ -109,7 +115,8 @@ ustring* vreader_path_get(vreader* reader,ustring* name)
   return path;
 }
 
-int vreader_fi_init_01(vreader* reader,ustring* file_full_path)
+vapi int vcall
+vreader_fi_init_01(vreader* reader,ustring* file_full_path)
 {
   if (!ufile_init_by_strtb(reader->symtb,&reader->fi,file_full_path)) {
     return -1;
@@ -117,7 +124,8 @@ int vreader_fi_init_01(vreader* reader,ustring* file_full_path)
   return 0;
 }
 
-int vreader_fi_init_02(vreader* reader,ustring* file_path,ustring* file_name)
+vapi int vcall
+vreader_fi_init_02(vreader* reader,ustring* file_path,ustring* file_name)
 {
   ustring* file_full_path;
   file_full_path = ustring_concat_by_strtb(reader->symtb,
@@ -131,7 +139,8 @@ int vreader_fi_init_02(vreader* reader,ustring* file_path,ustring* file_name)
   return 0;
 }
 
-int vast_attr_call(vast_attr* attr,vast_attr_req* req,vast_attr_res* res)
+vapi int vcall
+vast_attr_call(vast_attr* attr,vast_attr_req* req,vast_attr_res* res)
 {
   if (!attr || !attr->action) {
     return -1;

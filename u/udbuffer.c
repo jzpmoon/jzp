@@ -1,14 +1,15 @@
+#include "umacro.h"
 #include "ualloc.h"
 #include "udbuffer.h"
 
-udbuffer* udbuffer_new(int size){
+uapi udbuffer* ucall udbuffer_new(int size){
   uallocator* allocator;
 
   allocator = &u_global_allocator;
   return udbuffer_alloc(allocator,size);
 }
 
-udbuffer* udbuffer_alloc(uallocator* allocator,int size)
+uapi udbuffer* ucall udbuffer_alloc(uallocator* allocator,int size)
 {
   udbuffer* dbuff;
 
@@ -22,7 +23,7 @@ udbuffer* udbuffer_alloc(uallocator* allocator,int size)
   return dbuff;  
 }
 
-int udbuffer_read_next(udbuffer* dbuff){
+uapi int ucall udbuffer_read_next(udbuffer* dbuff){
   int c;
   ubuffer* buff;
   if(!dbuff->buff_curr){
@@ -54,7 +55,7 @@ int udbuffer_read_next(udbuffer* dbuff){
   return c;
 }
 
-int udbuffer_look_ahead(udbuffer* dbuff){
+uapi int ucall udbuffer_look_ahead(udbuffer* dbuff){
   int c;
   ubuffer* buff;
   if(!dbuff->buff_curr){
@@ -86,7 +87,7 @@ int udbuffer_look_ahead(udbuffer* dbuff){
   return c;
 }
 
-ubuffer* udbuffer_empty_buff_get(udbuffer* dbuff,
+uapi ubuffer* ucall udbuffer_empty_buff_get(udbuffer* dbuff,
 				 ubuffer* buff){
   ubuffer* buff_empty = NULL;
   if(!buff){
@@ -102,7 +103,7 @@ ubuffer* udbuffer_empty_buff_get(udbuffer* dbuff,
   return buff_empty;
 }
 
-int udbuffer_read_from_file(udbuffer* dbuff,FILE* file){
+uapi int ucall udbuffer_read_from_file(udbuffer* dbuff,FILE* file){
   int count = 0;
   ubuffer* buff = udbuffer_empty_buff_get(dbuff,dbuff->buff_prev);
   if(buff){
@@ -124,7 +125,7 @@ int udbuffer_read_from_file(udbuffer* dbuff,FILE* file){
   return count;
 }
 
-void udbuffer_empty(udbuffer* dbuff){
+uapi void ucall udbuffer_empty(udbuffer* dbuff){
   if (dbuff->buff_prev) {
     ubuffer_empty(dbuff->buff_prev);
   }

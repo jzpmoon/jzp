@@ -7,11 +7,23 @@ uhstb_def_tpl(vast_attr);
 
 #define VTOKEN_BUFF_SIZE 100
 
-int vast_attr_put_comp(vast_attr* k1,vast_attr* k2){
+vapi int vcall
+vast_attr_put(vreader* reader, vast_attr attr)
+{
+    return uhstb_vast_attr_put(reader->attrtb,
+                               attr.name->hash_code,
+                               &attr,
+                               NULL,
+                               NULL,
+                               vast_attr_put_comp);
+}
+
+int ucall
+vast_attr_put_comp(vast_attr* k1,vast_attr* k2){
   return ustring_comp(k1->name,k2->name);
 }
 
-int vast_attr_get_comp(vast_attr* k1,vast_attr* k2){
+int ucall vast_attr_get_comp(vast_attr* k1,vast_attr* k2){
   return ustring_comp(k1->name,k2->name);
 }
 
@@ -464,7 +476,8 @@ vast_obj* vparser_parse(vtoken_state* ts){
   }
 }
 
-void vtoken_log(vtoken_state* ts){
+vapi void vcall
+vtoken_log(vtoken_state* ts){
   char* sym;
   char* str;
   sym = ts->id->value;
@@ -626,7 +639,8 @@ vast_keyword* vast_keyword_new(vtoken_state* ts)
   return kw;
 }
 
-vast_obj* vast_car(vast_obj* cons)
+vapi vast_obj* vcall
+vast_car(vast_obj* cons)
 {
   if (cons->t != vastk_cons) {
     return NULL;
@@ -634,7 +648,8 @@ vast_obj* vast_car(vast_obj* cons)
   return ((vast_cons*)cons)->car;
 }
 
-vast_obj* vast_cdr(vast_obj* cons)
+vapi vast_obj* vcall
+vast_cdr(vast_obj* cons)
 {
   if (cons->t != vastk_cons) {
     return NULL;
@@ -642,7 +657,8 @@ vast_obj* vast_cdr(vast_obj* cons)
   return ((vast_cons*)cons)->cdr;
 }
 
-vast_obj* vast_cdar(vast_obj* cons)
+vapi vast_obj* vcall
+vast_cdar(vast_obj* cons)
 {
   vast_obj* obj;
 
@@ -661,7 +677,8 @@ vast_obj* vast_cdar(vast_obj* cons)
   return obj;
 }
 
-void vtoken_state_init(vtoken_state* ts)
+vapi void vcall
+vtoken_state_init(vtoken_state* ts)
 {
   ubuffer_ready_write(ts->buff);
   ts->token = vtk_bad;
@@ -673,7 +690,8 @@ void vtoken_state_init(vtoken_state* ts)
   ts->coord.y = 1;
 }
 
-vtoken_state* vtoken_state_new(ustream* stream,
+vapi vtoken_state* vcall
+vtoken_state_new(ustream* stream,
 			       vreader* reader)
 {
   return vtoken_state_alloc(&u_global_allocator,
@@ -681,7 +699,8 @@ vtoken_state* vtoken_state_new(ustream* stream,
 			    reader);
 }
 
-vtoken_state* vtoken_state_alloc(uallocator* allocator,
+vapi vtoken_state* vcall
+vtoken_state_alloc(uallocator* allocator,
 				 ustream* stream,
 				 vreader* reader)
 {
@@ -708,14 +727,16 @@ vtoken_state* vtoken_state_alloc(uallocator* allocator,
   return ts;
 }
 
-void vtoken_state_close(vtoken_state* ts)
+vapi void vcall
+vtoken_state_close(vtoken_state* ts)
 {
   ustream* stream = ts->stream;
   ustream_close(stream);
   ulog0("stream close");
 }
 
-void vtoken_state_reset(vtoken_state* ts,ustring* file_path){
+vapi void vcall
+vtoken_state_reset(vtoken_state* ts,ustring* file_path){
   ustream* stream = ts->stream;
   ustream_close(stream);
   ulog0("stream close");
@@ -726,7 +747,8 @@ void vtoken_state_reset(vtoken_state* ts,ustring* file_path){
   vtoken_state_init(ts);
 }
 
-int vast2obj(vast_attr_req* req,vast_attr_res* res)
+vapi int vcall
+vast2obj(vast_attr_req* req,vast_attr_res* res)
 {
   vast_obj* ast_obj;
   
@@ -762,7 +784,7 @@ int vast2obj(vast_attr_req* req,vast_attr_res* res)
 UDEFUN(UFNAME vfile2obj,
        UARGS (vreader* reader,ustring* file_path,vast_attr_req* req,
 	      vast_attr_res* res),
-       URET int)
+       URET vapi int vcall)
 UDECLARE
   vtoken_state* ts;
   vast_obj* ast_obj;

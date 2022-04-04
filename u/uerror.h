@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "umacro.h"
 #include "udef.h"
 
 typedef struct _ulog_infor{
@@ -11,15 +12,15 @@ typedef struct _ulog_infor{
   int power;
 } ulog_infor;
 
-extern ulog_infor _uli;
+extern uapi ulog_infor _uli;
 
-int ulog_init(char* log_fn,int power);
+uapi int ucall ulog_init(char* log_fn,int power);
 
-void ulog_enable(int power);
+uapi void ucall ulog_enable(int power);
 
-void uabort(char* msg,...);
+uapi void ucall uabort(char* msg,...);
 
-void ulog(char* msg,...);
+uapi void ucall ulog(char* msg,...);
 
 #if NDEBUG
 
@@ -32,73 +33,22 @@ void ulog(char* msg,...);
 
 #else
 
-# define __ulog(fd,body)			\
-  do {						\
-    if (!_uli.power) {				\
-      break;					\
-    }						\
-    fprintf(fd,"["__DATE__" "__TIME__"]");	\
-    body;					\
-    fprintf(fd,"\n");				\
-    fflush(fd);					\
-  } while(0)
+# define ulog0(msg) \
+  ulog(msg)
 
-# define ulog0(msg)				\
-  do {						\
-    if (_uli.log_fd) {				\
-      __ulog(_uli.log_fd,			\
-	     {fprintf(_uli.log_fd,msg);});	\
-    } else {					\
-      __ulog(stdout,				\
-	     {fprintf(stdout,msg);});		\
-    }						\
-  } while(0)
+# define ulog1(msg,a1) \
+  ulog(msg,a1)
 
-# define ulog1(msg,a1)				\
-  do {						\
-    if (_uli.log_fd) {				\
-      __ulog(_uli.log_fd,			\
-	     {fprintf(_uli.log_fd,msg,a1);});	\
-    } else {					\
-      __ulog(stdout,				\
-	     {fprintf(stdout,msg,a1);});	\
-    }						\
-  } while(0)
+# define ulog2(msg,a1,a2) \
+  ulog(msg,a1,a2)
 
-# define ulog2(msg,a1,a2)			\
-  do {						\
-    if (_uli.log_fd) {				\
-      __ulog(_uli.log_fd,			\
-	   {fprintf(_uli.log_fd,msg,a1,a2);});	\
-    } else {					\
-      __ulog(stdout,				\
-	     {fprintf(stdout,msg,a1,a2);});	\
-    }						\
-  } while(0)
+# define ulog3(msg,a1,a2,a3) \
+  ulog(msg,a1,a2,a3)
 
-# define ulog3(msg,a1,a2,a3)				\
-  do {							\
-    if (_uli.log_fd) {					\
-      __ulog(_uli.log_fd,				\
-	     {fprintf(_uli.log_fd,msg,a1,a2,a3);});	\
-    } else {						\
-      __ulog(stdout,					\
-	     {fprintf(stdout,msg,a1,a2,a3);});		\
-    }							\
-  } while(0)
+# define ulog4(msg,a1,a2,a3,a4)	\
+  ulog(msg,a1,a2,a3,a4)
 
-# define ulog4(msg,a1,a2,a3,a4)				\
-  do {							\
-    if (_uli.log_fd) {					\
-      __ulog(_uli.log_fd,				\
-	     {fprintf(_uli.log_fd,msg,a1,a2,a3,a4);});	\
-    } else {						\
-      __ulog(stdout,					\
-	     {fprintf(stdout,msg,a1,a2,a3,a4);});	\
-    }							\
-  } while(0)
-
-# define ulog_stack_trace(fname)		\
+# define ulog_stack_trace(fname) \
   ulog0("@"__FILE__"*"#fname"@");
 
 #endif
@@ -130,11 +80,11 @@ typedef struct _ureturn_infor{
 } ureturn_infor;
 
 #define URI_ERR_DEFINE(NAME,CODE,DESC)		\
-  const ureturn_infor (*NAME)=			\
+  uapi const ureturn_infor (*NAME)=			\
     &(ureturn_infor){CODE,DESC}
 
 #define URI_ERR_DECL(NAME)			\
-  extern const ureturn_infor (*NAME)
+  uapi extern const ureturn_infor (*NAME)
     
 #define URI_DEFINE				\
   const ureturn_infor* _ri = UERR_SUCC;		\

@@ -16,7 +16,7 @@ ulist_def_tpl(vps_instp);
 
 UDEFUN(UFNAME vfile2vps,
        UARGS (vreader* reader,ustring* name,ustring* path,vps_cntr* vps),
-       URET vps_mod*)
+       URET vapi vps_mod* vcall)
 UDECLARE
   vps_mod* mod;
   vcfg_graph* grp;
@@ -59,7 +59,8 @@ UEND
 #define vps_id_hscd(id)				\
   ((id).name)?(id).name->hash_code:(id).num
 
-vps_id vps_id_get(vps_cntr* vps,ustring* name)
+vapi vps_id vcall
+vps_id_get(vps_cntr* vps,ustring* name)
 {
   vps_id id;
   
@@ -99,7 +100,7 @@ void vps_inst_log(vps_inst* inst)
   }
 }
 
-vps_inst*
+vapi vps_inst* vcall
 vps_inst_new(vps_cntr* vps,
 	     int iopck,
 	     int iopek,
@@ -139,7 +140,8 @@ vps_inst_new(vps_cntr* vps,
   return inst;
 }
 
-vps_inst* vps_iloadimm(vps_cntr* vps,
+vapi vps_inst* vcall
+vps_iloadimm(vps_cntr* vps,
 		       int imm)
 {
   vps_inst* inst;
@@ -150,7 +152,8 @@ vps_inst* vps_iloadimm(vps_cntr* vps,
   return inst;
 }
 
-vps_inst* vps_iloaddt(vps_cntr* vps,
+vapi vps_inst* vcall
+vps_iloaddt(vps_cntr* vps,
 		      ustring* name)
 {
   vps_inst* inst;
@@ -159,7 +162,8 @@ vps_inst* vps_iloaddt(vps_cntr* vps,
   return inst;
 }
 
-vps_inst* vps_istoreimm(vps_cntr* vps,
+vapi vps_inst* vcall
+vps_istoreimm(vps_cntr* vps,
 			int imm)
 {
   vps_inst* inst;
@@ -170,8 +174,9 @@ vps_inst* vps_istoreimm(vps_cntr* vps,
   return inst;
 }
 
-vps_inst* vps_istoredt(vps_cntr* vps,
-		       ustring* name)
+vapi vps_inst* vcall
+vps_istoredt(vps_cntr* vps,
+		     ustring* name)
 {
   vps_inst* inst;
   inst = vps_inst_new(vps,viopck_non,vinstk_locdt,Bstore);
@@ -179,7 +184,8 @@ vps_inst* vps_istoredt(vps_cntr* vps,
   return inst;
 }
 
-vps_inst* vps_ipushint(vps_cntr* vps,
+vapi vps_inst* vcall
+vps_ipushint(vps_cntr* vps,
 		       vcfg_graph* grp,
 		       ustring* name,
 		       int imm)
@@ -198,7 +204,8 @@ vps_inst* vps_ipushint(vps_cntr* vps,
   return inst;
 }
 
-vps_inst* vps_ipushchar(vps_cntr* vps,
+vapi vps_inst* vcall
+vps_ipushchar(vps_cntr* vps,
 			vcfg_graph* grp,
 			int imm)
 {
@@ -216,7 +223,8 @@ vps_inst* vps_ipushchar(vps_cntr* vps,
   return inst;
 }
 
-vps_inst* vps_ipushnum(vps_cntr* vps,
+vapi vps_inst* vcall
+vps_ipushnum(vps_cntr* vps,
 		       vcfg_graph* grp,
 		       ustring* name,
 		       double dnum)
@@ -235,7 +243,8 @@ vps_inst* vps_ipushnum(vps_cntr* vps,
   return inst;
 }
 
-vps_inst* vps_ipushdt(vps_cntr* vps,
+vapi vps_inst* vcall
+vps_ipushdt(vps_cntr* vps,
 		      vcfg_graph* grp,
 		      ustring* name)
 {
@@ -253,7 +262,8 @@ vps_inst* vps_ipushdt(vps_cntr* vps,
   return inst;
 }
 
-vps_inst* vps_ipushstr(vps_cntr* vps,
+vapi vps_inst* vcall
+vps_ipushstr(vps_cntr* vps,
 		       vcfg_graph* grp,
 		       ustring* string)
 {
@@ -271,7 +281,8 @@ vps_inst* vps_ipushstr(vps_cntr* vps,
   return inst;
 }
 
-vps_inst* vps_ipushnil(vps_cntr* vps,
+vapi vps_inst* vcall
+vps_ipushnil(vps_cntr* vps,
 		       vcfg_graph* grp)
 {
   vps_inst* inst;
@@ -288,7 +299,8 @@ vps_inst* vps_ipushnil(vps_cntr* vps,
   return inst;
 }
 
-vps_inst* vps_ipushbool(vps_cntr* vps,
+vapi vps_inst* vcall
+vps_ipushbool(vps_cntr* vps,
 			vcfg_graph* grp,
 			int bool)
 {
@@ -306,7 +318,8 @@ vps_inst* vps_ipushbool(vps_cntr* vps,
   return inst;
 }
 
-vps_inst* vps_itop(vps_cntr* vps,
+vapi vps_inst* vcall
+vps_itop(vps_cntr* vps,
 		   int imm)
 {
   vps_inst* inst;
@@ -317,7 +330,8 @@ vps_inst* vps_itop(vps_cntr* vps,
   return inst;
 }
 
-vps_inst* vps_ipopdt(vps_cntr* vps,
+vapi vps_inst* vcall
+vps_ipopdt(vps_cntr* vps,
 		     vcfg_graph* grp,
 		     ustring* name)
 {
@@ -335,42 +349,48 @@ vps_inst* vps_ipopdt(vps_cntr* vps,
   return inst;
 }
 
-vps_inst* vps_ipopv(vps_cntr* vps)
+vapi vps_inst* vcall
+vps_ipopv(vps_cntr* vps)
 {
   vps_inst* inst;
   inst = vps_inst_new(vps,viopck_non,vinstk_non,Bpopv);
   return inst;
 }
 
-vps_inst* vps_iadd(vps_cntr* vps)
+vapi vps_inst* vcall
+vps_iadd(vps_cntr* vps)
 {
   vps_inst* inst;
   inst = vps_inst_new(vps,viopck_non,vinstk_non,Badd);
   return inst;
 }
 
-vps_inst* vps_isub(vps_cntr* vps)
+vapi vps_inst* vcall
+vps_isub(vps_cntr* vps)
 {
   vps_inst* inst;
   inst = vps_inst_new(vps,viopck_non,vinstk_non,Bsub);
   return inst;
 }
 
-vps_inst* vps_imul(vps_cntr* vps)
+vapi vps_inst* vcall
+vps_imul(vps_cntr* vps)
 {
   vps_inst* inst;
   inst = vps_inst_new(vps,viopck_non,vinstk_non,Bmul);
   return inst;
 }
 
-vps_inst* vps_idiv(vps_cntr* vps)
+vapi vps_inst* vcall
+vps_idiv(vps_cntr* vps)
 {
   vps_inst* inst;
   inst = vps_inst_new(vps,viopck_non,vinstk_non,Bdiv);
   return inst;
 }
 
-vps_inst* vps_ijmpiimm(vps_cntr* vps,
+vapi vps_inst* vcall
+vps_ijmpiimm(vps_cntr* vps,
 		       int imm)
 {
   vps_inst* inst;
@@ -381,7 +401,8 @@ vps_inst* vps_ijmpiimm(vps_cntr* vps,
   return inst;  
 }
 
-vps_inst* vps_ijmpilb(vps_cntr* vps,
+vapi vps_inst* vcall
+vps_ijmpilb(vps_cntr* vps,
 		      vps_id id)
 {
   vps_inst* inst;
@@ -390,7 +411,8 @@ vps_inst* vps_ijmpilb(vps_cntr* vps,
   return inst;
 }
 
-vps_inst* vps_ijmpimm(vps_cntr* vps,
+vapi vps_inst* vcall
+vps_ijmpimm(vps_cntr* vps,
 		      int imm)
 {
   vps_inst* inst;
@@ -401,7 +423,8 @@ vps_inst* vps_ijmpimm(vps_cntr* vps,
   return inst;  
 }
 
-vps_inst* vps_ijmplb(vps_cntr* vps,
+vapi vps_inst* vcall
+vps_ijmplb(vps_cntr* vps,
 		     vps_id id)
 {
   vps_inst* inst;
@@ -410,77 +433,88 @@ vps_inst* vps_ijmplb(vps_cntr* vps,
   return inst;
 }
 
-vps_inst* vps_ieq(vps_cntr* vps)
+vapi vps_inst* vcall
+vps_ieq(vps_cntr* vps)
 {
   vps_inst* inst;
   inst = vps_inst_new(vps,viopck_non,vinstk_non,Beq);
   return inst;
 }
 
-vps_inst* vps_igt(vps_cntr* vps)
+vapi vps_inst* vcall
+vps_igt(vps_cntr* vps)
 {
   vps_inst* inst;
   inst = vps_inst_new(vps,viopck_non,vinstk_non,Bgt);
   return inst;
 }
 
-vps_inst* vps_ilt(vps_cntr* vps)
+vapi vps_inst* vcall
+vps_ilt(vps_cntr* vps)
 {
   vps_inst* inst;
   inst = vps_inst_new(vps,viopck_non,vinstk_non,Blt);
   return inst;
 }
 
-vps_inst* vps_iand(vps_cntr* vps)
+vapi vps_inst* vcall
+vps_iand(vps_cntr* vps)
 {
   vps_inst* inst;
   inst = vps_inst_new(vps,viopck_non,vinstk_non,Band);
   return inst;
 }
 
-vps_inst* vps_ior(vps_cntr* vps)
+vapi vps_inst* vcall
+vps_ior(vps_cntr* vps)
 {
   vps_inst* inst;
   inst = vps_inst_new(vps,viopck_non,vinstk_non,Bor);
   return inst;
 }
 
-vps_inst* vps_inot(vps_cntr* vps)
+vapi vps_inst* vcall
+vps_inot(vps_cntr* vps)
 {
   vps_inst* inst;
   inst = vps_inst_new(vps,viopck_non,vinstk_non,Bnot);
   return inst;
 }
 
-vps_inst* vps_icall(vps_cntr* vps)
+vapi vps_inst* vcall
+vps_icall(vps_cntr* vps)
 {
   vps_inst* inst;
   inst = vps_inst_new(vps,viopck_non,vinstk_non,Bcall);
   return inst;
 }
 
-vps_inst* vps_ireturn(vps_cntr* vps)
+vapi vps_inst* vcall
+vps_ireturn(vps_cntr* vps)
 {
   vps_inst* inst;
   inst = vps_inst_new(vps,viopck_ret,vinstk_non,Breturn);
   return inst;
 }
 
-vps_inst* vps_iretvoid(vps_cntr* vps)
+vapi vps_inst* vcall
+vps_iretvoid(vps_cntr* vps)
 {
   vps_inst* inst;
   inst = vps_inst_new(vps,viopck_ret,vinstk_non,Bretvoid);
   return inst;
 }
 
-vps_inst* vps_inop(vps_cntr* vps)
+vapi vps_inst* vcall
+vps_inop(vps_cntr* vps)
 {
   vps_inst* inst;
   inst = vps_inst_new(vps,viopck_non,vinstk_non,Bnop);
   return inst;  
 }
 
-vps_inst* vps_irefimm(vps_cntr* vps,
+vapi vps_inst* vcall
+vps_irefimm(vps_cntr* vps,
 		      int imm)
 {
   vps_inst* inst;
@@ -491,7 +525,8 @@ vps_inst* vps_irefimm(vps_cntr* vps,
   return inst;
 }
 
-vps_inst* vps_irefdt(vps_cntr* vps,
+vapi vps_inst* vcall
+vps_irefdt(vps_cntr* vps,
 		     ustring* name)
 {
   vps_inst* inst;
@@ -500,7 +535,8 @@ vps_inst* vps_irefdt(vps_cntr* vps,
   return inst;
 }
 
-vps_inst* vps_isetimm(vps_cntr* vps,
+vapi vps_inst* vcall
+vps_isetimm(vps_cntr* vps,
 		      int imm)
 {
   vps_inst* inst;
@@ -511,7 +547,8 @@ vps_inst* vps_isetimm(vps_cntr* vps,
   return inst;  
 }
 
-vps_inst* vps_isetdt(vps_cntr* vps,
+vapi vps_inst* vcall
+vps_isetdt(vps_cntr* vps,
 		     ustring* name)
 {
   vps_inst* inst;
@@ -520,7 +557,8 @@ vps_inst* vps_isetdt(vps_cntr* vps,
   return inst;
 }
 
-vps_inst* vps_ilabel(vps_cntr* vps,
+vapi vps_inst* vcall
+vps_ilabel(vps_cntr* vps,
 		     vps_id id)
 {
   vps_inst* inst;
@@ -529,7 +567,8 @@ vps_inst* vps_ilabel(vps_cntr* vps,
   return inst;
 }
 
-vps_data* vps_num_new(vps_cntr* vps,
+vapi vps_data* vcall
+vps_num_new(vps_cntr* vps,
 		      ustring* name,
 		      double num)
 {
@@ -547,7 +586,8 @@ vps_data* vps_num_new(vps_cntr* vps,
   return data;
 }
 
-vps_data* vps_int_new(vps_cntr* vps,
+vapi vps_data* vcall
+vps_int_new(vps_cntr* vps,
 		      ustring* name,
 		      int inte)
 {
@@ -565,7 +605,8 @@ vps_data* vps_int_new(vps_cntr* vps,
   return data;
 }
 
-vps_data* vps_char_new(vps_cntr* vps,
+vapi vps_data* vcall
+vps_char_new(vps_cntr* vps,
 		       int chara)
 {
   uallocator* alloc;
@@ -581,7 +622,8 @@ vps_data* vps_char_new(vps_cntr* vps,
   return data;
 }
 
-vps_data* vps_str_new(vps_cntr* vps,
+vapi vps_data* vcall
+vps_str_new(vps_cntr* vps,
 		      ustring* name,
 		      ustring* string)
 {
@@ -599,7 +641,8 @@ vps_data* vps_str_new(vps_cntr* vps,
   return data;
 }
 
-vps_data* vps_any_new(vps_cntr* vps,
+vapi vps_data* vcall
+vps_any_new(vps_cntr* vps,
 		      ustring* name)
 {
   uallocator* alloc;  
@@ -615,7 +658,8 @@ vps_data* vps_any_new(vps_cntr* vps,
   return data;
 }
 
-vps_data* vps_dtcd_new(vps_cntr* vps,
+vapi vps_data* vcall
+vps_dtcd_new(vps_cntr* vps,
 		       ustring* name,
 		       vps_cfg* code)
 {
@@ -633,7 +677,8 @@ vps_data* vps_dtcd_new(vps_cntr* vps,
   return data;
 }
 
-vps_data* vps_bool_new(vps_cntr* vps,
+vapi vps_data* vcall
+vps_bool_new(vps_cntr* vps,
 		       int bool)
 {
   uallocator* alloc;
@@ -649,7 +694,8 @@ vps_data* vps_bool_new(vps_cntr* vps,
   return data;
 }
 
-vcfg_block* vcfg_block_new(vps_cntr* vps,
+vapi vcfg_block* vcall
+vcfg_block_new(vps_cntr* vps,
 			   vps_id id)
 {
   vcfg_block* b;
@@ -667,7 +713,8 @@ vcfg_block* vcfg_block_new(vps_cntr* vps,
   return b;
 }
 
-void vcfg_blk_apd(vcfg_block* blk,
+vapi void vcall
+vcfg_blk_apd(vcfg_block* blk,
 		  vps_inst* inst)
 {
   ulist_vps_instp_append(blk->insts,inst);
@@ -684,7 +731,8 @@ vps_inst* vcfg_blk_linst_get(vcfg_block* blk)
   }
 }
 
-vcfg_graph* vcfg_graph_new(vps_cntr* vps,ustring* name)
+vapi vcfg_graph* vcall
+vcfg_graph_new(vps_cntr* vps,ustring* name)
 {
   vcfg_graph* g;
   uallocator* allocator;
@@ -708,8 +756,8 @@ vcfg_graph* vcfg_graph_new(vps_cntr* vps,ustring* name)
   return g;
 }
 
-static int vcfg_grp_dt_put_comp(vps_datap* data1,
-				vps_datap* data2)
+static int ucall vcfg_grp_dt_put_comp(vps_datap* data1,
+				                      vps_datap* data2)
 {
   vps_data* d1;
   vps_data* d2;
@@ -726,7 +774,7 @@ static int vcfg_grp_dt_put_comp(vps_datap* data1,
   return ustring_comp(n1,n2);
 }
 
-static int vcfg_grp_dt_get_comp(vps_datap* data1,
+static int ucall vcfg_grp_dt_get_comp(vps_datap* data1,
 				vps_datap* data2)
 {
   vps_data* d1;
@@ -744,7 +792,7 @@ static int vcfg_grp_dt_get_comp(vps_datap* data1,
   return ustring_comp(n1,n2);
 }
 
-static int vcfg_grp_cd_put_comp(vps_datap* data1,
+static int ucall vcfg_grp_cd_put_comp(vps_datap* data1,
 				vps_datap* data2)
 {
   vps_data* d1;
@@ -762,7 +810,7 @@ static int vcfg_grp_cd_put_comp(vps_datap* data1,
   return vps_id_comp(id1,id2);
 }
 
-static int vcfg_grp_cd_get_comp(vps_datap* data1,
+static int ucall vcfg_grp_cd_get_comp(vps_datap* data1,
 				vps_datap* data2)
 {
   vps_data* d1;
@@ -780,7 +828,8 @@ static int vcfg_grp_cd_get_comp(vps_datap* data1,
   return vps_id_comp(id1,id2);
 }
 
-void vcfg_grp_inst_apd(vcfg_graph* grp,
+vapi void vcall
+vcfg_grp_inst_apd(vcfg_graph* grp,
 		       vps_inst* inst)
 {
   int retval;
@@ -803,7 +852,7 @@ vps_inst* vcfg_grp_linst_get(vcfg_graph* grp)
 
 UDEFUN(UFNAME vcfg_grp_cdapd,
        UARGS (vps_cntr* vps,vcfg_graph* grp,vps_cfg* cfg),
-       URET void)
+       URET vapi void vcall)
 UDECLARE
   vps_data* data;
   vps_id id;
@@ -835,7 +884,7 @@ UEND
 
 UDEFUN(UFNAME vcfg_grp_cdget,
        UARGS (vps_cntr* vps,vcfg_graph* grp,vps_id id),
-       URET vps_data*)
+       URET vapi vps_data* vcall)
 UDECLARE
   unsigned int hscd;
   vps_cfg cfg;
@@ -860,7 +909,7 @@ UEND
 
 UDEFUN(UFNAME vcfg_grp_build,
        UARGS (vps_cntr* vps,vcfg_graph* grp),
-       URET void)
+       URET vapi void vcall)
 UDECLARE
   vps_inst* inst;
   ulist_vps_instp* insts;
@@ -920,7 +969,7 @@ UEND
 
 UDEFUN(UFNAME vcfg_grp_connect,
        UARGS (vps_cntr* vps,vcfg_graph* grp),
-       URET void)
+       URET vapi void vcall)
 UDECLARE
   ulist_vps_cfgp* cfgs;
   ucursor cursor;
@@ -976,7 +1025,8 @@ UBEGIN
   }
 UEND
 
-void vcfg_grp_params_apd(vcfg_graph* grp,
+vapi void vcall
+vcfg_grp_params_apd(vcfg_graph* grp,
 			 vps_data* dt)
 {
   ustring* name;
@@ -1000,7 +1050,8 @@ void vcfg_grp_params_apd(vcfg_graph* grp,
   grp->params_count++;
 }
 
-void vcfg_grp_locals_apd(vcfg_graph* grp,
+vapi void vcall
+vcfg_grp_locals_apd(vcfg_graph* grp,
 			 vps_data* dt)
 {
   ustring* name;
@@ -1024,7 +1075,8 @@ void vcfg_grp_locals_apd(vcfg_graph* grp,
   grp->locals_count++;
 }
 
-vps_data* vcfg_grp_dtget(vcfg_graph* grp,
+vapi vps_data* vcall
+vcfg_grp_dtget(vcfg_graph* grp,
 			 ustring* name)
 {
   vps_data dt_in;
@@ -1044,7 +1096,8 @@ vps_data* vcfg_grp_dtget(vcfg_graph* grp,
   }
 }
 
-int vcfg_grp_conts_put(vcfg_graph* grp,
+vapi int vcall
+vcfg_grp_conts_put(vcfg_graph* grp,
 		       vps_data* data)
 {
   int retval;
@@ -1056,7 +1109,8 @@ int vcfg_grp_conts_put(vcfg_graph* grp,
   return grp->imms->len - 1;
 }
 
-vps_mod* vps_mod_new(vps_cntr* vps,
+vapi vps_mod* vcall
+vps_mod_new(vps_cntr* vps,
 		     ustring* name,
 		     ustring* path)
 {
@@ -1089,7 +1143,7 @@ vps_mod* vps_mod_new(vps_cntr* vps,
   return mod;
 }
 
-static int vps_mod_data_comp(vps_datap* data1,
+static int ucall vps_mod_data_comp(vps_datap* data1,
 			     vps_datap* data2)
 {
   vps_data* d1 = *data1;
@@ -1098,7 +1152,7 @@ static int vps_mod_data_comp(vps_datap* data1,
   return ustring_comp(d1->name,d2->name);
 }
 
-static int vps_mod_code_comp(vcfg_graphp* data1,
+static int ucall vps_mod_code_comp(vcfg_graphp* data1,
 			     vcfg_graphp* data2)
 {
   vcfg_graph* g1 = *data1;
@@ -1107,7 +1161,8 @@ static int vps_mod_code_comp(vcfg_graphp* data1,
   return vps_id_comp(g1->id,g2->id);
 }
 
-void vps_mod_data_put(vps_mod* mod,
+vapi void vcall
+vps_mod_data_put(vps_mod* mod,
 		      vps_data* data)
 {
   ustring* name = data->name;
@@ -1125,7 +1180,8 @@ void vps_mod_data_put(vps_mod* mod,
   }
 }
 
-void vps_mod_code_put(vps_mod* mod,
+vapi void vcall
+vps_mod_code_put(vps_mod* mod,
 		      vcfg_graph* code)
 {
   vps_id id;
@@ -1146,7 +1202,7 @@ void vps_mod_code_put(vps_mod* mod,
 UDEFUN(UFNAME vps_mod_data_get,
        UARGS (vps_mod* mod,
 	      ustring* name),
-       URET vps_data*)
+       URET vapi vps_data* vcall)
 UDECLARE
   vps_data dtin;
   vps_data* ink;
@@ -1169,7 +1225,7 @@ UEND
 UDEFUN(UFNAME vps_mod_code_get,
        UARGS (vps_mod* mod,
 	      ustring* name),
-       URET vcfg_graph*)
+       URET vapi vcfg_graph* vcall)
 UDECLARE
   vps_id id;
   unsigned int hscd;
@@ -1193,7 +1249,8 @@ UBEGIN
   }
 UEND
 
-void vps_cntr_init(vps_cntr* cntr)
+vapi void vcall
+vps_cntr_init(vps_cntr* cntr)
 {
   uallocator* allocator;
   
@@ -1210,7 +1267,7 @@ void vps_cntr_init(vps_cntr* cntr)
   cntr->seqnum = 0;
 }
 
-static int vps_cntr_mod_comp(vps_modp* mod1,
+static int ucall vps_cntr_mod_comp(vps_modp* mod1,
 			     vps_modp* mod2)
 {
   ustring* name1 = (*mod1)->name;
@@ -1218,7 +1275,8 @@ static int vps_cntr_mod_comp(vps_modp* mod1,
   return ustring_comp(name1,name2);
 }
 
-int vps_cntr_load(vps_cntr* vps,
+vapi int vcall
+vps_cntr_load(vps_cntr* vps,
 		  vps_mod* mod)
 {
   ustring* name = mod->name;
@@ -1249,7 +1307,7 @@ int vps_cntr_load(vps_cntr* vps,
 
 UDEFUN(UFNAME vps_cntr_data_get,
        UARGS (vps_cntr* vps,ustring* name),
-       URET vps_data*)
+       URET vapi vps_data* vcall)
 UDECLARE
   vps_data* data;
   uset* set;
@@ -1274,7 +1332,7 @@ UEND
 
 UDEFUN(UFNAME vps_cntr_code_get,
        UARGS (vps_cntr* vps,ustring* name),
-       URET vcfg_graph*)
+       URET vapi vcfg_graph* vcall)
 UDECLARE
   vcfg_graph* grp;
   uset* set;
@@ -1297,7 +1355,8 @@ UBEGIN
   return NULL;
 UEND
   
-void vps_cntr_clean(vps_cntr* vps)
+vapi void vcall
+vps_cntr_clean(vps_cntr* vps)
 {
   uallocator* allocator;
   
@@ -1305,7 +1364,7 @@ void vps_cntr_clean(vps_cntr* vps)
   allocator->clean(allocator);
 }
 
-static int vps_type_comp(vps_typep* type1,
+static int ucall vps_type_comp(vps_typep* type1,
 			 vps_typep* type2)
 {
   vps_type* t1;
@@ -1316,7 +1375,8 @@ static int vps_type_comp(vps_typep* type1,
   return ustring_comp(t1->type_name,t2->type_name);
 }
 
-vps_type* vps_type_new(vps_cntr* vps,
+vapi vps_type* vcall
+vps_type_new(vps_cntr* vps,
 		       ustring* type_name,
 		       int type_size,
 		       int type_index)
@@ -1336,7 +1396,8 @@ vps_type* vps_type_new(vps_cntr* vps,
   return type;
 }
 
-void vps_ltype_put(vps_mod* mod,
+vapi void vcall
+vps_ltype_put(vps_mod* mod,
 		   vps_type* type)
 {
   ustring* type_name;
@@ -1356,7 +1417,8 @@ void vps_ltype_put(vps_mod* mod,
   }
 }
 
-void vps_gtype_put(vps_cntr* vps,
+vapi void vcall
+vps_gtype_put(vps_cntr* vps,
 		   vps_type* type)
 {
   ustring* type_name;
@@ -1376,7 +1438,8 @@ void vps_gtype_put(vps_cntr* vps,
   }
 }
 
-vps_type* vps_type_get(vps_mod* mod,
+vapi vps_type* vcall
+vps_type_get(vps_mod* mod,
 		       ustring* type_name)
 {
   vps_type type;

@@ -9,7 +9,7 @@ lobj_stream* lobj_istream_new_by_file(vgc_heap* heap,
   URI_DEFINE;
   lobj_stream* lstream;
   ustream* stream;
-  lstream = vgc_objex_new(heap,lobj_stream,&lobj_stream_type);
+  lstream = vgc_objvex_new(heap,lobj_stream,&lobj_stream_type);
   if(!lstream){
     uabort("lstream new error!");
   }

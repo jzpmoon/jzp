@@ -38,3 +38,5 @@ cat $smk >> $dmk
 cd ../u/
 ./configure.sh --prefix=$prefix --envc=$envc --thw=$thw
 cd $currdir
+
+echo "/*auto create*/" > vmacro.h

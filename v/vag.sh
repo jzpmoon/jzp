@@ -2,7 +2,7 @@
 prefix=$(pwd)
 envc="unx"
 thw="arm64"
-smk="libv.mk"
+smk="vag.mk"
 dmk="makefile"
 currdir=$(pwd)
 

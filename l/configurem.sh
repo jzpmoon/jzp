@@ -38,3 +38,5 @@ cat liblmod.mk >> $mk
 cd ../v/
 ./configure.sh --prefix=$prefix --envc=$envc --thw=$thw
 cd $currdir
+
+echo "/*auto create*/" > lmmacro.h

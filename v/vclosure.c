@@ -6,7 +6,7 @@ ulist_def_tpl(vclosurep);
 
 UDEFUN(UFNAME vclosure_new,
        UARGS (vps_cntr* vps),
-       URET vclosure*)
+       URET vapi vclosure* vcall)
 UDECLARE
   uallocator* allocator;
   vclosure* closure;
@@ -47,7 +47,7 @@ UEND
 
 UDEFUN(UFNAME vclosure2mod,
        UARGS (vclosure* closure,vps_cntr* vps,vps_mod* mod),
-       URET void)
+       URET vapi void vcall)
 UDECLARE
   uset* set;
   ucursor c;
@@ -118,7 +118,7 @@ UEND
 UDEFUN(UFNAME vfile2closure,
        UARGS (vclosure* parent,vreader* reader,ustring* name,ustring* path,
 	      vps_cntr* vps,int closure_type),
-       URET vclosure*)
+       URET vapi vclosure* vcall)
 UDECLARE
   vclosure* closure;
   vps_closure_req req;
@@ -157,7 +157,7 @@ UEND
 
 UDEFUN(UFNAME vclosure2vps,
        UARGS (vreader* reader,ustring* name,ustring* path,vps_cntr* vps),
-       URET vps_mod*)
+       URET vapi vps_mod* vcall)
 UDECLARE
   vclosure* top_closure;
   vclosure* closure;
@@ -175,7 +175,7 @@ UEND
 
 UDEFUN(UFNAME vclosure_field_get,
        UARGS (vclosure* closure,ustring* name),
-       URET vps_data*)
+       URET vapi vps_data* vcall)
 UDECLARE
   uset* fields;
   uset* childs;
@@ -240,7 +240,7 @@ UEND
 
 UDEFUN(UFNAME vclosure_curr_field_get,
 	 UARGS (vclosure* closure,ustring* name),
-	 URET vps_data*)
+	 URET vapi vps_data* vcall)
 UDECLARE
   uset* fields;
   ucursor c;
@@ -270,7 +270,7 @@ UEND
 
 UDEFUN(UFNAME vclosure_field_add,
        UARGS (vclosure* closure,vps_data* field),
-       URET int)
+       URET vapi int vcall)
 UDECLARE
 
 UBEGIN
@@ -279,7 +279,7 @@ UEND
 
 UDEFUN(UFNAME vclosure_child_add,
        UARGS (vclosure* closure,vclosure* child),
-       URET int)
+       URET vapi int vcall)
 UDECLARE
 
 UBEGIN
@@ -289,7 +289,7 @@ UEND
 
 UDEFUN(UFNAME vclosure_func_get,
        UARGS (vclosure* closure,ustring* name),
-       URET vclosure*)
+       URET vapi vclosure* vcall)
 UDECLARE
   uset* childs;
   ucursor c;
@@ -318,7 +318,7 @@ UEND
 
 UDEFUN(UFNAME vclosure_file_get,
        UARGS (vclosure* closure,ustring* path),
-       URET vclosure*)
+       URET vapi vclosure* vcall)
 UDECLARE
   uset* childs;
   ucursor c;
@@ -347,7 +347,7 @@ UEND
 
 UDEFUN(UFNAME vclosure_path_get,
        UARGS (vreader* reader,ustring* name),
-       URET ustring*)
+       URET vapi ustring* vcall)
 UDECLARE
 UBEGIN
   return vreader_path_get(reader,name);

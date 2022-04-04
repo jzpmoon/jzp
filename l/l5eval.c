@@ -2,7 +2,7 @@
 #include "l5eval.h"
 #include "l5.conf.attr"
 
-static void l5conf_init(vreader* reader)
+static void vcall l5conf_init(vreader* reader)
 {
   _vattr_file_init_l5_conf(reader);
 }
@@ -10,7 +10,7 @@ static void l5conf_init(vreader* reader)
 UDEFUN(UFNAME symcall_action,
        UARGS (vast_attr_req* req,
 	      vast_attr_res* res),
-       URET static int)
+       URET static int vcall)
 UDECLARE
   vast_obj* ast_obj;
   vps_closure_req* jreq;
@@ -249,7 +249,7 @@ UEND
 
 #include "_l5temp.attr"
 
-static void l5attr_init(vreader* reader)
+static void vcall l5attr_init(vreader* reader)
 {
   l5attr_file_concat_init(reader);
 }

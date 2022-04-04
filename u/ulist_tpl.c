@@ -3,13 +3,13 @@
 #include "ulist_tpl.h"
 
 #define ulist_cursor_tpl(t)					\
-  static void ulist_##t##_cursor_init(ucursor* cursor){		\
+  static void ucall ulist_##t##_cursor_init(ucursor* cursor){		\
     ulist_##t##_cursor* c = (ulist_##t##_cursor*)cursor;	\
     c->next = NULL;						\
   }
 
 #define ulist_cursor_next_tpl(t)					\
-  static void* ulist_##t##_cursor_next(uset* set,ucursor* cursor){	\
+  static void* ucall ulist_##t##_cursor_next(uset* set,ucursor* cursor){	\
     ulist_##t* list = (ulist_##t*)set;					\
     ulist_##t##_cursor* c = (ulist_##t##_cursor*)cursor;		\
     ulsnd_##t* next;							\
@@ -27,7 +27,7 @@
   }
 
 #define ulist_new_tpl(t)						\
-  ulist_##t* ulist_##t##_new(){						\
+  uapi_tpl ulist_##t* ucall ulist_##t##_new(){						\
     uallocator* allocator = &u_global_allocator;			\
     ulist_##t* list = allocator->alloc(allocator,sizeof(ulist_##t));	\
     if(list){								\
@@ -41,7 +41,7 @@
   }
 
 #define ulist_alloc_tpl(t)					\
-  ulist_##t* ulist_##t##_alloc(uallocator* allocator){		\
+  uapi_tpl ulist_##t* ucall ulist_##t##_alloc(uallocator* allocator){		\
     ulist_##t* list;						\
 								\
     list = allocator->alloc(allocator,sizeof(ulist_##t));	\
@@ -56,7 +56,7 @@
   }
 
 #define ulist_append_tpl(t)						\
-  int ulist_##t##_append(ulist_##t* list,t value){			\
+  uapi_tpl int ucall ulist_##t##_append(ulist_##t* list,t value){			\
     ulsnd_##t* header=list->header;					\
     ulsnd_##t* footer=NULL;						\
     ulsnd_##t* node=NULL;						\
@@ -80,7 +80,7 @@
   }
 
 #define ulist_concat_tpl(t)					\
-  void ulist_##t##_concat(ulist_##t* list1,ulist_##t* list2){	\
+  uapi_tpl void ucall ulist_##t##_concat(ulist_##t* list1,ulist_##t* list2){	\
     ulsnd_##t* header1 = list1->header;				\
     ulsnd_##t* header2 = list2->header;				\
     ulsnd_##t* footer1;						\
@@ -98,7 +98,7 @@
   }
 
 #define ulist_first_get_tpl(t)					\
-  void ulist_##t##_first_get(ulist_##t* list,t** outval)	\
+  uapi_tpl void ucall ulist_##t##_first_get(ulist_##t* list,t** outval)	\
   {								\
     ulsnd_##t* header;						\
     if (list->len > 0) {					\
@@ -110,7 +110,7 @@
   }
 
 #define ulist_last_get_tpl(t)				\
-  void ulist_##t##_last_get(ulist_##t* list,t** outval)	\
+  uapi_tpl void ucall ulist_##t##_last_get(ulist_##t* list,t** outval)	\
   {							\
     ulsnd_##t* header;					\
     if (list->len > 0) {				\
@@ -123,7 +123,7 @@
 
 
 #define ulist_dest_tpl(t)						\
-  void ulist_##t##_dest(ulist_##t* list,ulist_##t##_dest_ft dest){	\
+  uapi_tpl void ucall ulist_##t##_dest(ulist_##t* list,ulist_##t##_dest_ft dest){	\
     uallocator* allocator = list->allocator;				\
     ulsnd_##t* header = list->header;					\
     ulsnd_##t* nd = list->header;					\

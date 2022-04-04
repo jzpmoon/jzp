@@ -5,14 +5,14 @@
 #include "uhstb_tpl.h"
 
 #define uhstb_cursor_tpl(t)					\
-  static void uhstb_##t##_cursor_init(ucursor* cursor){		\
+  static void ucall uhstb_##t##_cursor_init(ucursor* cursor){		\
     uhstb_##t##_cursor* i = (uhstb_##t##_cursor*)cursor;	\
     i->next_idx = -1;						\
     i->next_nd = NULL;						\
   }
 
 #define uhstb_cursor_next_tpl(t)					\
-  static void* uhstb_##t##_cursor_next(uset* set,ucursor* cursor){	\
+  static void* ucall uhstb_##t##_cursor_next(uset* set,ucursor* cursor){	\
     uhstb_##t* hstb = (uhstb_##t*)set;					\
     uhstb_##t##_cursor* c = (uhstb_##t##_cursor*)cursor;		\
     void* k;								\
@@ -30,7 +30,7 @@
   }
 
 #define uhstb_new_tpl(t)				\
-  uhstb_##t* uhstb_##t##_new(int len){			\
+  uapi_tpl uhstb_##t* ucall uhstb_##t##_new(int len){			\
     uallocator* allocator;				\
     							\
     allocator = &u_global_allocator;			\
@@ -38,7 +38,7 @@
   }
 
 #define uhstb_alloc_tpl(t)					\
-  uhstb_##t* uhstb_##t##_alloc(uallocator* allocator,int len){	\
+  uapi_tpl uhstb_##t* ucall uhstb_##t##_alloc(uallocator* allocator,int len){	\
     uhstb_##t* hstb;						\
     int rlen;							\
     int size;							\
@@ -65,7 +65,7 @@
   }
 
 #define uhstb_dest_tpl(t)						\
-  void uhstb_##t##_dest(uhstb_##t* hstb,uhstb_##t##_dest_ft dest)	\
+  uapi_tpl void ucall uhstb_##t##_dest(uhstb_##t* hstb,uhstb_##t##_dest_ft dest)	\
   {									\
     int i;								\
     for (i = 0;i < hstb->len;i++) {					\
@@ -83,7 +83,7 @@
   }
 
 #define uhstb_put_tpl(t)						\
-  int uhstb_##t##_put(uhstb_##t*          hstb,				\
+  uapi_tpl int ucall uhstb_##t##_put(uhstb_##t*          hstb,				\
 		      unsigned int        hscd,				\
 		      t*                  ink,				\
 		      t**                 outk,				\
@@ -130,7 +130,7 @@
   }
 
 #define uhstb_get_tpl(t)				\
-  int uhstb_##t##_get(uhstb_##t*          hstb,		\
+  uapi_tpl int ucall uhstb_##t##_get(uhstb_##t*          hstb,		\
 		      unsigned int        hscd,		\
 		      t*                  ink,		\
 		      t**                 outk,		\

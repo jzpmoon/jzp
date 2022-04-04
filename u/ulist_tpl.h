@@ -1,6 +1,7 @@
 #ifndef _ULIST_TPL_H_
 #define _ULIST_TPL_H_
 
+#include "umacro.h"
 #include "udef.h"
 #include "uset.h"
 #include "umempool.h"
@@ -23,25 +24,25 @@
   typedef void(*ulist_##t##_dest_ft)(t)
 
 #define ulist_new_decl_tpl(t)			\
-  ulist_##t* ulist_##t##_new()
+  uapi_tpl ulist_##t* ucall ulist_##t##_new()
 
 #define ulist_alloc_decl_tpl(t)				\
-  ulist_##t* ulist_##t##_alloc(uallocator* allocator)
+  uapi_tpl ulist_##t* ucall ulist_##t##_alloc(uallocator* allocator)
   
 #define ulist_append_decl_tpl(t)			\
-  int ulist_##t##_append(ulist_##t* list,t value)
+  uapi_tpl int ucall ulist_##t##_append(ulist_##t* list,t value)
 
 #define ulist_concat_decl_tpl(t)				\
-  void ulist_##t##_concat(ulist_##t* list1,ulist_##t* list2)
+  uapi_tpl void ucall ulist_##t##_concat(ulist_##t* list1,ulist_##t* list2)
 
 #define ulist_first_get_decl_tpl(t)				\
-  void ulist_##t##_first_get(ulist_##t* list,t** outval)
+  uapi_tpl void ucall ulist_##t##_first_get(ulist_##t* list,t** outval)
   
 #define ulist_last_get_decl_tpl(t)			\
-  void ulist_##t##_last_get(ulist_##t* list,t** outval)
+  uapi_tpl void ucall ulist_##t##_last_get(ulist_##t* list,t** outval)
 
 #define ulist_dest_decl_tpl(t)					\
-  void ulist_##t##_dest(ulist_##t* list,ulist_##t##_dest_ft del)
+  uapi_tpl void ucall ulist_##t##_dest(ulist_##t* list,ulist_##t##_dest_ft del)
   
 #define ulist_decl_tpl(t)			\
   ulist_tpl(t);					\
@@ -52,5 +53,5 @@
   ulist_first_get_decl_tpl(t);			\
   ulist_last_get_decl_tpl(t);			\
   ulist_dest_decl_tpl(t)
-  
+
 #endif

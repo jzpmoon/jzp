@@ -12,23 +12,23 @@ typedef struct _ubuffer{
   char data[1];
 } ubuffer;
 
-ubuffer* ubuffer_new(int size);
+uapi ubuffer* ucall ubuffer_new(int size);
 
-ubuffer* ubuffer_alloc(uallocator* allocator,int size);
+uapi ubuffer* ucall ubuffer_alloc(uallocator* allocator,int size);
 
-void ubuffer_dest(ubuffer* buff);
+uapi void ucall ubuffer_dest(ubuffer* buff);
 
-int ubuffer_read_from_buff(ubuffer* to_buff,
+uapi int ucall ubuffer_read_from_buff(ubuffer* to_buff,
 			   ubuffer* from_buff);
 
-int ubuffer_read_from_file(ubuffer* to_buff,
+uapi int ucall ubuffer_read_from_file(ubuffer* to_buff,
 			   FILE*    from_file);
 
-int ubuffer_read_next(ubuffer* buff);
+uapi int ucall ubuffer_read_next(ubuffer* buff);
 
-int ubuffer_look_ahead(ubuffer* buff);
+uapi int ucall ubuffer_look_ahead(ubuffer* buff);
 
-int ubuffer_write_next(ubuffer* buff,int byte);
+uapi int ucall ubuffer_write_next(ubuffer* buff,int byte);
 
 #define USEEK_SET 0
 
@@ -36,7 +36,7 @@ int ubuffer_write_next(ubuffer* buff,int byte);
 
 #define USEEK_END 2
 
-int ubuffer_seek(ubuffer* buff,int offset,int origin);
+uapi int ucall ubuffer_seek(ubuffer* buff,int offset,int origin);
 
 #define ubuffer_ready_read(buff)		\
   do{						\

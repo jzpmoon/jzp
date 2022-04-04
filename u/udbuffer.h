@@ -10,16 +10,16 @@ typedef struct _udbuffer{
   int      buff_size;
 } udbuffer;
 
-udbuffer* udbuffer_new(int size);
+uapi udbuffer* ucall udbuffer_new(int size);
 
-udbuffer* udbuffer_alloc(uallocator* allocator,int size);
+uapi udbuffer* ucall udbuffer_alloc(uallocator* allocator,int size);
 
-int udbuffer_read_next(udbuffer* dbuff);
+uapi int ucall udbuffer_read_next(udbuffer* dbuff);
 
-int udbuffer_look_ahead(udbuffer* dbuff);
+uapi int ucall udbuffer_look_ahead(udbuffer* dbuff);
 
-int udbuffer_read_from_file(udbuffer* dbuff,FILE* file);
+uapi int ucall udbuffer_read_from_file(udbuffer* dbuff,FILE* file);
 
-void udbuffer_empty(udbuffer* dbuff);
+uapi void ucall udbuffer_empty(udbuffer* dbuff);
 
 #endif

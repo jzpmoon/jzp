@@ -1,6 +1,8 @@
 #ifndef _VPARSER_H_
 #define _VPARSER_H_
 
+#include "umacro.h"
+#include "vmacro.h"
 #include "vreader.h"
 
 enum vastk{
@@ -83,11 +85,14 @@ vast_keyword* vast_keyword_new(vtoken_state* ts);
 
 void vast_obj_log(vast_obj* ast_obj);
 
-vast_obj* vast_car(vast_obj* cons);
+vapi vast_obj* vcall
+vast_car(vast_obj* cons);
 
-vast_obj* vast_cdr(vast_obj* cons);
+vapi vast_obj* vcall
+vast_cdr(vast_obj* cons);
 
-vast_obj* vast_cdar(vast_obj* cons);
+vapi vast_obj* vcall
+vast_cdar(vast_obj* cons);
 
 #define vast_typeof(obj,type) (!(obj) || (obj)->t != type)
 
@@ -108,7 +113,7 @@ vast_obj* vast_cdar(vast_obj* cons);
 #define VDEFATTR(aname,sname,body)			 \
   UDEFUN(UFNAME _vast_attr_action_##aname,		 \
 	 UARGS (vast_attr_req* req,vast_attr_res* res),	 \
-	 URET int)					 \
+	 URET int vcall)					 \
   UDECLARE						 \
       vast_attr_ft this_fun = _vast_attr_action_##aname; \
   UBEGIN						 \
@@ -154,24 +159,22 @@ vast_obj* vast_cdar(vast_obj* cons);
     if(!_vast_attr_infor_##aname.name){			\
       uabort("init attr error!");			\
     }							\
-    uhstb_vast_attr_put((reader)->attrtb,		\
-			_vast_attr_infor_##aname.	\
-			name->				\
-			hash_code,			\
-			&_vast_attr_infor_##aname,	\
-			NULL,				\
-			NULL,				\
-			vast_attr_put_comp);		\
+    vast_attr_put(reader,		\
+			_vast_attr_infor_##aname);		\
   }while(0)
 
-int vast_attr_put_comp(vast_attr* k1,vast_attr* k2);
+vapi int vcall
+vast_attr_put(vreader* reader, vast_attr attr);
 
-int vast_attr_get_comp(vast_attr* k1,vast_attr* k2);
+int ucall
+vast_attr_put_comp(vast_attr* k1,vast_attr* k2);
 
-int vast2obj(vast_attr_req* req,vast_attr_res* res);
+int ucall vast_attr_get_comp(vast_attr* k1,vast_attr* k2);
+
+vapi int vcall vast2obj(vast_attr_req* req,vast_attr_res* res);
 
 UDECLFUN(UFNAME vfile2obj,
 	 UARGS (vreader* reader,ustring* file_path,vast_attr_req* req,
 		vast_attr_res* res),
-	 URET int);
+	 URET vapi int vcall);
 #endif

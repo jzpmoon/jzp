@@ -74,7 +74,7 @@ UEND
 
 UDEFUN(UFNAME leval_loader_load,
        UARGS (vmod_loader* loader,vmod* mod),
-       URET static int)
+       URET static int vcall)
 UDECLARE
   vps_mod* src_mod;
   leval_loader* eval_loader;

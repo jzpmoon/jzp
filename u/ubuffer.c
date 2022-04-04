@@ -1,7 +1,8 @@
+#include "umacro.h"
 #include "ualloc.h"
 #include "ubuffer.h"
 
-ubuffer* ubuffer_new(int size)
+uapi ubuffer* ucall ubuffer_new(int size)
 {
   int _size;
   ubuffer* buff;
@@ -19,7 +20,7 @@ ubuffer* ubuffer_new(int size)
   return buff;
 }
 
-ubuffer* ubuffer_alloc(uallocator* allocator,int size)
+uapi ubuffer* ucall ubuffer_alloc(uallocator* allocator,int size)
 {
   int _size;
   ubuffer* buff;
@@ -35,12 +36,12 @@ ubuffer* ubuffer_alloc(uallocator* allocator,int size)
   return buff;
 }
 
-void ubuffer_dest(ubuffer* buff)
+uapi void ucall ubuffer_dest(ubuffer* buff)
 {
   buff->allocator->free(buff->allocator,buff);
 }
 
-int ubuffer_read_from_buff(ubuffer* to_buff,
+uapi int ucall ubuffer_read_from_buff(ubuffer* to_buff,
 			   ubuffer* from_buff){
   int count = 0;
   while(to_buff->pos < to_buff->limit &&
@@ -51,7 +52,7 @@ int ubuffer_read_from_buff(ubuffer* to_buff,
   return count;
 }
 
-int ubuffer_read_from_file(ubuffer* to_buff,
+uapi int ucall ubuffer_read_from_file(ubuffer* to_buff,
 			   FILE*    from_file){
   int count = 0;
   int eof_val;
@@ -70,7 +71,7 @@ int ubuffer_read_from_file(ubuffer* to_buff,
   return count;
 }
 
-int ubuffer_read_next(ubuffer* buff){
+uapi int ucall ubuffer_read_next(ubuffer* buff){
   int next;
   if(buff->pos < buff->limit){
     next = buff->data[buff->pos++];
@@ -80,7 +81,7 @@ int ubuffer_read_next(ubuffer* buff){
   return next;
 }
 
-int ubuffer_write_next(ubuffer* buff,int byte){
+uapi int ucall ubuffer_write_next(ubuffer* buff,int byte){
   if(buff->pos < buff->limit){
     buff->data[buff->pos++] = byte;
     return 0;
@@ -89,7 +90,7 @@ int ubuffer_write_next(ubuffer* buff,int byte){
   }
 }
 
-int ubuffer_look_ahead(ubuffer* buff){
+uapi int ucall ubuffer_look_ahead(ubuffer* buff){
   int next;
   if(buff->pos < buff->limit){
     next = buff->data[buff->pos];
@@ -99,7 +100,7 @@ int ubuffer_look_ahead(ubuffer* buff){
   return next;
 }
 
-int ubuffer_seek(ubuffer* buff,int offset,int origin){
+uapi int ucall ubuffer_seek(ubuffer* buff,int offset,int origin){
   int pos;
   if(origin == USEEK_SET){
     pos = 0;

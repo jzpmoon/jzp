@@ -22,10 +22,10 @@ typedef struct _umem_pool{
   umem_node* node;
 } umem_pool;
 
-void umem_pool_init(umem_pool* pool,ualloc_size_t max_size);
+uapi void ucall umem_pool_init(umem_pool* pool,ualloc_size_t max_size);
 
-void* umem_pool_alloc(umem_pool* pool,ualloc_size_t size);
+uapi void* ucall umem_pool_alloc(umem_pool* pool,ualloc_size_t size);
 
-void umem_pool_clean(umem_pool* pool);
+uapi void ucall umem_pool_clean(umem_pool* pool);
 
 #endif

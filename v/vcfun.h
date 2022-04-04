@@ -1,6 +1,7 @@
 #ifndef _VCFUN_H_
 #define _VCFUN_H_
 
+#include "vmacro.h"
 #include "vcontext.h"
 
 struct _vcfun_infor{
@@ -12,7 +13,7 @@ struct _vcfun_infor{
   vcfun_ft entry;
 };
 
-typedef vgc_obj*(*var_gen_ft)();
+typedef vgc_obj*(vcall *var_gen_ft)();
 
 struct _var_infor{
   char* lname;
@@ -21,7 +22,7 @@ struct _var_infor{
   var_gen_ft var_gen;
 };
 
-typedef void (*vcfun_init_ft)(vcontext* ctx,vmod* mod);
+typedef void (vcall *vcfun_init_ft)(vcontext* ctx,vmod* mod);
 
 #define VSCOPE_GLOBAL VPS_SCOPE_GLOBAL
 #define VSCOPE_LOCAL VPS_SCOPE_LOCAL

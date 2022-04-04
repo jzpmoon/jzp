@@ -32,9 +32,11 @@ ustack_def_tpl(vgc_objp)
 #define vgc_obj_is_active(heap,obj)		\
   vgc_area_of_obj(&heap->area_active,obj)
 
-vgc_heap* vgc_heap_new(usize_t area_static_size,
-		       usize_t area_active_size,
-		       usize_t root_set_size){
+vapi vgc_heap* vcall
+vgc_heap_new(usize_t area_static_size,
+             usize_t area_active_size,
+             usize_t root_set_size)
+{
   usize_t align_static_size = ALIGN_BOUNDARY(area_static_size);
   usize_t align_active_size = ALIGN_BOUNDARY(area_active_size);
   usize_t area_size = align_static_size + align_active_size;
@@ -59,7 +61,8 @@ vgc_heap* vgc_heap_new(usize_t area_static_size,
   return heap;
 }
 
-void vgc_collect_mark(vgc_heap* heap,vgc_obj* begin_obj){
+static void vgc_collect_mark(vgc_heap* heap,vgc_obj* begin_obj)
+{
   ustack_vgc_objp* stack = &heap->stack;
   int mark_count = 0;
   if(ustack_vgc_objp_push(stack,begin_obj)){
@@ -94,7 +97,8 @@ void vgc_collect_mark(vgc_heap* heap,vgc_obj* begin_obj){
   }
 }
 
-void vgc_collect_cal_addr(vgc_heap* heap){
+static void vgc_collect_cal_addr(vgc_heap* heap)
+{
   vgc_heap_area* heap_area = &heap->area_active;
   vgc_obj* move_addr = heap_area->area_begin;
   vgc_obj* next_obj = heap_area->area_begin;
@@ -109,7 +113,8 @@ void vgc_collect_cal_addr(vgc_heap* heap){
   }
 }
 
-void vgc_collect_update_addr(vgc_heap* heap,vgc_obj* begin_obj){
+static void vgc_collect_update_addr(vgc_heap* heap,vgc_obj* begin_obj)
+{
   ustack_vgc_objp* stack = &heap->stack;
   if(ustack_vgc_objp_push(stack,begin_obj)){
     uabort("vgc_collect_mark:stack overflow!");
@@ -151,7 +156,8 @@ void vgc_collect_update_addr(vgc_heap* heap,vgc_obj* begin_obj){
   }
 }
 
-vgc_obj* vgc_collect_move(vgc_heap* heap){
+static vgc_obj* vgc_collect_move(vgc_heap* heap)
+{
   vgc_heap_area* heap_area = &heap->area_active;
   vgc_obj* move_addr = heap_area->area_begin;
   vgc_obj* next_obj = heap_area->area_begin;
@@ -179,7 +185,8 @@ vgc_obj* vgc_collect_move(vgc_heap* heap){
   return move_addr;
 }
 
-int vgc_collect(vgc_heap* heap){
+static int vgc_collect(vgc_heap* heap)
+{
   ustack_vslot* root_set;
   ublock_vslot* block;
   vgc_heap_area* heap_area;
@@ -248,11 +255,13 @@ int vgc_collect(vgc_heap* heap){
   ((char*)(area)->area_begin + (area)->area_size -	\
    (char*)(area)->area_index)
 
-vgc_obj* vgc_heap_data_try_new(vgc_heap* heap,
-			       usize_t obj_size,
-			       usize_t ref_count,
-			       int obj_type,
-			       int area_type){
+vgc_obj*
+vgc_heap_data_try_new(vgc_heap* heap,
+                      usize_t obj_size,
+                      usize_t ref_count,
+                      int obj_type,
+                      int area_type)
+{
   vgc_heap_area* heap_area;
   vgc_obj* next_obj;
   vgc_obj* last_obj;
@@ -282,11 +291,13 @@ vgc_obj* vgc_heap_data_try_new(vgc_heap* heap,
   }
 }
 
-vgc_obj* vgc_heap_data_new(vgc_heap* heap,
-			   usize_t obj_size,
-			   usize_t ref_count,
-			   int obj_type,
-			   int area_type){
+vapi vgc_obj* vcall
+vgc_heap_data_new(vgc_heap* heap,
+                  usize_t obj_size,
+			      usize_t ref_count,
+			      int obj_type,
+			      int area_type)
+{
   vgc_obj* new_obj;
   new_obj = vgc_heap_data_try_new(heap,
 				  obj_size,

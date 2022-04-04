@@ -7,6 +7,7 @@
 #include "ustack_tpl.h"
 #include "uhstb_tpl.h"
 #include "ulist_tpl.h"
+#include "vmacro.h"
 
 enum {
   vgc_obj_type_array,
@@ -75,7 +76,7 @@ typedef struct _vslot{
 #define vslot_define_begin			\
   struct{
 #define vslot_define(type,name)			\
-  vslot name;
+  vslot name
 #define vslot_define_end			\
   } _u;
 #define vslot_is_num(slot)			\
@@ -152,15 +153,17 @@ typedef struct _vgc_heap{
   char heap_data[1];
 } vgc_heap;
 
-vgc_heap* vgc_heap_new(usize_t area_static_size,
-		       usize_t area_active_size,
-		       usize_t root_set_size);
+vapi vgc_heap* vcall
+vgc_heap_new(usize_t area_static_size,
+             usize_t area_active_size,
+             usize_t root_set_size);
 
-vgc_obj* vgc_heap_data_new(vgc_heap* heap,
-			   usize_t obj_size,
-			   usize_t ref_count,
-			   int obj_type,
-			   int area_type);
+vapi vgc_obj* vcall
+vgc_heap_data_new(vgc_heap* heap,
+                  usize_t obj_size,
+                  usize_t ref_count,
+                  int obj_type,
+                  int area_type);
 
 #define vgc_obj_slot_count(type)		\
   (sizeof(((type*)0)->_u)/sizeof(vslot))
@@ -194,15 +197,19 @@ typedef struct _vgc_array{
   vslot objs[1];
 } vgc_array;
 
-vgc_array* vgc_array_new(vgc_heap* heap,
-			 usize_t array_length,
-			 int area_type);
+vapi vgc_array* vcall
+vgc_array_new(vgc_heap* heap,
+              usize_t array_length,
+               int area_type);
 
-int vgc_array_push(vgc_array* array,vslot slot);
+vapi int vcall
+vgc_array_push(vgc_array* array,vslot slot);
 
-vslot vgc_array_pop(vgc_array* array);
+vapi vslot vcall
+vgc_array_pop(vgc_array* array);
 
-void vgc_array_set(vgc_array* array,usize_t idx,vslot slot);
+vapi void vcall
+vgc_array_set(vgc_array* array,usize_t idx,vslot slot);
 
 typedef struct _vgc_string{
   VGCHEADER;
@@ -213,13 +220,13 @@ typedef struct _vgc_string{
   } u;
 } vgc_string;
 
-vgc_string* vgc_string_new(vgc_heap* heap,
+vapi vgc_string* vcall
+vgc_string_new(vgc_heap* heap,
 			   usize_t string_length,
 			   int area_type);
 
-void vgc_ustr2vstr(vgc_string* vstr,ustring* ustr);
-
-void vgc_string_log(vgc_heap* heap);
+vapi void vcall
+vgc_ustr2vstr(vgc_string* vstr,ustring* ustr);
 
 #define vgc_str_bound_check(obj,index) \
   (index >= 0 && index < obj->len)
@@ -231,7 +238,8 @@ typedef struct _vgc_ref{
   vslot_define_end
 } vgc_ref;
 
-vgc_ref* vgc_ref_new(vgc_heap* heap,vslot slot);
+vapi vgc_ref* vcall
+vgc_ref_new(vgc_heap* heap,vslot slot);
 
 typedef struct _vgc_obj_ex_t{
   char* type_name;
@@ -243,17 +251,18 @@ typedef struct _vgc_obj_ex_t{
 
 typedef struct _vgc_extend{
   VGCHEADEREX;
-  vslot_define_begin
-  /*void member*/
-  vslot_define_end
 } vgc_extend;
 
-vgc_extend* vgc_extend_new(vgc_heap* heap,
+vapi vgc_extend* vcall
+vgc_extend_new(vgc_heap* heap,
 			   int struct_size,
 			   int ref_count,
 			   vgc_objex_t* oet);
 
-#define vgc_objex_new(heap,stype,oet)					\
-  (stype*) vgc_extend_new(heap,sizeof(stype),vgc_obj_slot_count(stype),oet);
+#define vgc_objvex_new(heap,stype,oet)  \
+  (stype*) vgc_extend_new(heap,sizeof(stype),0,oet)
+
+#define vgc_objfex_new(heap,stype,oet)  \
+  (stype*) vgc_extend_new(heap,sizeof(stype),vgc_obj_slot_count(stype),oet)
 
 #endif

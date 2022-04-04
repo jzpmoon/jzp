@@ -1,9 +1,9 @@
 #ifndef _USTREAM_H_
 #define _USTREAM_H_
 
+#include "umacro.h"
 #include "udbuffer.h"
 #include "ustring_table.h"
-#include "umacro.h"
 
 #define USTREAM_INPUT  0
 #define USTREAM_OUTPUT 1
@@ -33,40 +33,41 @@ struct _ufile_infor{
   ustring* file_name;
 };
 
-ufile_infor* ufile_init_by_strtb(ustring_table* strtb,ufile_infor* fi,
-				 ustring* file_path);
+uapi ufile_infor* ucall ufile_init_by_strtb(ustring_table* strtb,
+                                      ufile_infor* fi,
+				                      ustring* file_path);
 
-void ufile_log(ufile_infor* fi);
+uapi void ucall ufile_log(ufile_infor* fi);
 
-ustream* ustream_new_by_buff(int iot,ubuffer* buff,URI_DECL);
+uapi ustream* ucall ustream_new_by_buff(int iot,ubuffer* buff,URI_DECL);
 
-ustream* ustream_new_by_file(int iot,ustring* file_path,URI_DECL);
+uapi ustream* ucall ustream_new_by_file(int iot,ustring* file_path,URI_DECL);
 
-ustream* ustream_new_by_fd(int iot,FILE* fd,URI_DECL);
+uapi ustream* ucall ustream_new_by_fd(int iot,FILE* fd,URI_DECL);
 
-ustream* ustream_new(int iot,int dst);
+uapi ustream* ucall ustream_new(int iot,int dst);
 
-ustream* ustream_alloc(uallocator* allocator,int iot,int dst);
+uapi ustream* ucall ustream_alloc(uallocator* allocator,int iot,int dst);
 
-void ustream_dest(ustream* stream);
+uapi void ucall ustream_dest(ustream* stream);
 
-int ustream_open_by_path(ustream* stream,
+uapi int ucall ustream_open_by_path(ustream* stream,
 			 ustring* file_path);
 
-void ustream_close(ustream* stream);
+uapi void ucall ustream_close(ustream* stream);
 
-int ustream_read_to_buff(ustream* stream,ubuffer* buff,URI_DECL);
+uapi int ucall ustream_read_to_buff(ustream* stream,ubuffer* buff,URI_DECL);
 
-int ustream_read_next(ustream* stream,URI_DECL);
+uapi int ucall ustream_read_next(ustream* stream,URI_DECL);
 
-int ustream_look_ahead(ustream* stream,URI_DECL);
+uapi int ucall ustream_look_ahead(ustream* stream,URI_DECL);
 
-int ustream_write_dnum(ustream* stream,double dnum,URI_DECL);
+uapi int ucall ustream_write_dnum(ustream* stream,double dnum,URI_DECL);
 
-int ustream_write_int(ustream* stream, int inte,URI_DECL);
+uapi int ucall ustream_write_int(ustream* stream, int inte,URI_DECL);
 
-int ustream_write_char(ustream* stream, int chara,URI_DECL);
+uapi int ucall ustream_write_char(ustream* stream, int chara,URI_DECL);
 
-int ustream_write_string(ustream* stream,char* charp,URI_DECL);
+uapi int ucall ustream_write_string(ustream* stream,char* charp,URI_DECL);
 
 #endif
