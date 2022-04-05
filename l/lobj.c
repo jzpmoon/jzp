@@ -1,10 +1,11 @@
 #include <stddef.h>
 #include "lobj.h"
 
-vgc_objex_t lobj_stream_type = {"stream"};
+lmapi vgc_objex_t lobj_stream_type = {"stream"};
 
-lobj_stream* lobj_istream_new_by_file(vgc_heap* heap,
-				      ustring* file_path)
+lobj_stream*
+lobj_istream_new_by_file(vgc_heap* heap,
+                         ustring* file_path)
 {
   URI_DEFINE;
   lobj_stream* lstream;
@@ -23,8 +24,9 @@ lobj_stream* lobj_istream_new_by_file(vgc_heap* heap,
   return lstream;
 }
 
-lobj_stream* lobj_ostream_new_by_file(vgc_heap* heap,
-				      ustring* file_path)
+lobj_stream*
+lobj_ostream_new_by_file(vgc_heap* heap,
+                         ustring* file_path)
 {
   URI_DEFINE;
   lobj_stream* lstream;
@@ -43,8 +45,9 @@ lobj_stream* lobj_ostream_new_by_file(vgc_heap* heap,
   return lstream;
 }
 
-lobj_stream* lobj_istream_new_by_fd(vgc_heap* heap,
-				    FILE* fd)
+lobj_stream*
+lobj_istream_new_by_fd(vgc_heap* heap,
+                       FILE* fd)
 {
   URI_DEFINE;
   lobj_stream* lstream;
@@ -63,8 +66,9 @@ lobj_stream* lobj_istream_new_by_fd(vgc_heap* heap,
   return lstream;  
 }
 
-lobj_stream* lobj_ostream_new_by_fd(vgc_heap* heap,
-				    FILE* fd)
+lobj_stream*
+lobj_ostream_new_by_fd(vgc_heap* heap,
+                       FILE* fd)
 {
   URI_DEFINE;
   lobj_stream* lstream;
@@ -83,8 +87,9 @@ lobj_stream* lobj_ostream_new_by_fd(vgc_heap* heap,
   return lstream;
 }
 
-lobj_stream* lobj_istream_new(vcontext* ctx,
-			      vgc_string* fn)
+lobj_stream*
+lobj_istream_new(vcontext* ctx,
+                 vgc_string* fn)
 {
   ustring* file_path;
 
@@ -96,8 +101,9 @@ lobj_stream* lobj_istream_new(vcontext* ctx,
   return lobj_istream_new_by_file(ctx->heap,file_path);
 }
 
-lobj_stream* lobj_ostream_new(vcontext* ctx,
-			      vgc_string* fn)
+lobj_stream*
+lobj_ostream_new(vcontext* ctx,
+                 vgc_string* fn)
 {
   ustring* file_path;
 

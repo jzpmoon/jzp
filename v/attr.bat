@@ -1,4 +1,5 @@
 @echo off
+setlocal enabledelayedexpansion
 set attr=
 set out=_temp.attr
 set callback=_attr_init
@@ -20,7 +21,9 @@ set callback=_attr_init
 if %attr% == "" goto exit
 
 echo #include "vparser.h" > %out%
-type %attr: =.attr%.attr >> %out%
-echo void %callback%(vreader* reader){_vattr_file_init_%attr: =(reader);_vattr_file_init_%(reader);} >> %out%
+type %attr:-=.attr %.attr >> %out%
+echo void %callback%(vreader* reader){_vattr_file_init_%attr:-=(reader);_vattr_file_init_%(reader);} >> %out%
 
 :exit
+
+endlocal

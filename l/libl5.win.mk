@@ -16,7 +16,7 @@ ATTR = l5base
 $(bin):$(temp_attr_file) libv.lib $(obj)
 	$(LINK) $(obj) $(L)$(libv_path) libv.lib $(L)$(libu_path) libu.lib $(OUT)$(bin) $(SHARED)
 .c.obj:
-	$(CC) $(C) $(COUT)$@ $< $(I) $(libv_path) $(I) $(libu_path) $(CFLAGS) $(FPIC) $(D)_EXPORT_LIBU_ $(D)_EXPORT_LIBV_
+	$(CC) $(C) $(COUT)$@ $< $(I) $(libv_path) $(I) $(libu_path) $(CFLAGS) $(FPIC) $(D)_EXPORT_LIBL5_
 $(temp_attr_file):
 	$(libv_path)\attr.bat --attr=$(ATTR) --out=$(temp_attr_file) --callback=l5attr_file_concat_init
 libv.lib:
@@ -35,4 +35,4 @@ clean:
 	cd $(libv_path)
 	nmake /f $(v_somk) clean
 	cd $(currdir)
-	del $(bin) $(obj) $(temp_attr_file)
+	del $(bin) $(obj) $(temp_attr_file) *.lib *.exp

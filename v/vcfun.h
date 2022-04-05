@@ -37,7 +37,7 @@ typedef void (vcall *vcfun_init_ft)(vcontext* ctx,vmod* mod);
     {LNAME,NULL,PCOUNT,RETVAL,SCOPE,_vcfun_entry_##FNAME};
 
 #define VDEFVAR(FNAME,LNAME,SCOPE,BODY)			\
-  vgc_obj* _var_gen_##FNAME(vcontext* ctx){		\
+  vgc_obj* vcall _var_gen_##FNAME(vcontext* ctx){		\
     BODY;						\
   }							\
   static struct _var_infor _var_infor_##FNAME =		\

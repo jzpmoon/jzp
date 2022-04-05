@@ -1,4 +1,5 @@
 @echo off
+setlocal enabledelayedexpansion
 set prefix=%cd%
 set envc=win
 set thw=x86_64
@@ -30,3 +31,5 @@ echo currdir=%currdir% >> %dmk%
 echo !include ..\u\env\env_%envc%.mk >> %dmk%
 
 type %smk% >> %dmk%
+
+endlocal

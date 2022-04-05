@@ -100,7 +100,8 @@ typedef struct _vgc_cfun{
   int has_retval;
 } vgc_cfun;
 
-vgc_cfun* vgc_cfun_new(vgc_heap* heap,
+vapi vgc_cfun* vcall
+vgc_cfun_new(vgc_heap* heap,
 		       vcfun_ft entry,
 		       int params_count,
 		       int has_retval,
@@ -134,7 +135,8 @@ UDECLFUN(UFNAME vcontext_new,
          UARGS (vgc_heap* heap),
          URET vapi vcontext* vcall);
 
-vapi vslot vcall vcontext_params_get(vcontext* ctx,int index);
+vapi vslot vcall
+vcontext_params_get(vcontext* ctx,int index);
 
 UDECLFUN(UFNAME vcontext_vps_load,
 	 UARGS (vcontext* ctx,vps_cntr* vps),
@@ -160,9 +162,11 @@ UDECLFUN(UFNAME vcontext_mod2mod,
 
 void vmod_add_reloc(vmod* mod,vreloc reloc);
 
-vsymbol* vmod_gobj_put(vgc_heap* heap,vmod* mod,ustring* name,vgc_obj* obj);
+vapi vsymbol* vcall
+vmod_gobj_put(vgc_heap* heap,vmod* mod,ustring* name,vgc_obj* obj);
 
-vsymbol* vmod_lobj_put(vgc_heap* heap,vmod* mod,ustring* name,vgc_obj* obj);
+vapi vsymbol* vcall
+vmod_lobj_put(vgc_heap* heap,vmod* mod,ustring* name,vgc_obj* obj);
 
 vsymbol* vmod_gslot_put(vgc_heap* heap,vmod* mod,ustring* name,vslot slot);
 
@@ -176,20 +180,14 @@ usize_t vcontext_stack_top_get(vcontext* ctx);
 
 void vcontext_stack_top_set(vcontext* ctx,usize_t index);
 
-#define vcontext_stack_push(ctx,slot)			\
-  if(ustack_vslot_push(ctx->stack,slot)){		\
-    uabort("vgc_heap_stack: overflow!");		\
-  }
+vapi void vcall
+vcontext_stack_push(vcontext* ctx, vslot slot);
 
-#define vcontext_stack_pop(ctx,slotp)			\
-  if(ustack_vslot_pop(ctx->stack,slotp)){		\
-    uabort("vgc_heap_stack: empty!");			\
-  }
+vapi void vcall
+vcontext_stack_pop(vcontext* ctx, vslot* slotp);
 
-#define vcontext_stack_pushv(ctx)		\
-  if(ustack_vslot_pushv(ctx->stack)){		\
-    uabort("vgc_heap_stack: overflow!");	\
-  }
+vapi void vcall
+vcontext_stack_pushv(vcontext* ctx);
 
 #define vcontext_obj_push(ctx,obj)		\
   do{						\

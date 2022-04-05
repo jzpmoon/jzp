@@ -271,7 +271,7 @@ UEND
 
 UDEFUN(UFNAME l5startup,
        UARGS (char* self_path),
-       URET l5eval*)
+       URET l5api l5eval* l5call)
 UDECLARE
   l5eval* eval;
   leval* base_eval;
@@ -301,7 +301,7 @@ UEND
 
 UDEFUN(UFNAME l5eval_src_load,
        UARGS (l5eval* eval,char* file_path),
-       URET int)
+       URET l5api int l5call)
 UDECLARE
   vreader* reader;
   leval* base_eval;
@@ -323,7 +323,7 @@ UEND
 
 UDEFUN(UFNAME l5eval_lib_load,
        UARGS (l5eval* eval,char* file_path),
-       URET int)
+       URET l5api int l5call)
 UDECLARE
   vreader* reader;
   leval* base_eval;
@@ -343,7 +343,7 @@ UEND
 
 UDEFUN(UFNAME l5eval_conf_load,
        UARGS (l5eval* eval,char* file_path),
-       URET int)
+       URET l5api int l5call)
 UDECLARE
   vreader* reader;
   vast_conf_req req;

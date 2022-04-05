@@ -82,11 +82,13 @@ vgc_subr* vgc_subr_new(vcontext* ctx,
   return subr;
 }
 
-vgc_cfun* vgc_cfun_new(vgc_heap* heap,
-		       vcfun_ft entry,
-		       int params_count,
-		       int has_retval,
-		       int area_type){
+vapi vgc_cfun* vcall
+vgc_cfun_new(vgc_heap* heap,
+             vcfun_ft entry,
+             int params_count,
+             int has_retval,
+             int area_type)
+{
   vgc_cfun* cfun;
   if(params_count < 0){
     return NULL;
@@ -709,7 +711,8 @@ void vmod_add_reloc(vmod* mod,vreloc reloc)
   }
 }
 
-vsymbol* vmod_gobj_put(vgc_heap* heap,vmod* mod,ustring* name,vgc_obj* obj)
+vapi vsymbol* vcall
+vmod_gobj_put(vgc_heap* heap,vmod* mod,ustring* name,vgc_obj* obj)
 {
   vslot slot;
   vsymbol* symbol;
@@ -720,7 +723,8 @@ vsymbol* vmod_gobj_put(vgc_heap* heap,vmod* mod,ustring* name,vgc_obj* obj)
   return symbol;
 }
 
-vsymbol* vmod_lobj_put(vgc_heap* heap,vmod* mod,ustring* name,vgc_obj* obj)
+vapi vsymbol* vcall
+vmod_lobj_put(vgc_heap* heap,vmod* mod,ustring* name,vgc_obj* obj)
 {
   vslot slot;
   vsymbol* symbol;
@@ -807,4 +811,28 @@ void vcontext_stack_top_set(vcontext* ctx,usize_t index){
   if(ustack_vslot_top_set(ctx->stack,index)){
     uabort("vcontext_stack:index over of bound!");
   }
+}
+
+vapi void vcall
+vcontext_stack_push(vcontext* ctx, vslot slot)
+{
+    if (ustack_vslot_push(ctx->stack, slot)) {
+        uabort("vgc_heap_stack: overflow!");
+    }
+}
+
+vapi void vcall
+vcontext_stack_pop(vcontext* ctx, vslot* slotp)
+{
+    if (ustack_vslot_pop(ctx->stack, slotp)) {
+        uabort("vgc_heap_stack: empty!");
+    }
+}
+
+vapi void vcall
+vcontext_stack_pushv(vcontext* ctx)
+{
+    if (ustack_vslot_pushv(ctx->stack)) {
+        uabort("vgc_heap_stack: overflow!");
+    }
 }
