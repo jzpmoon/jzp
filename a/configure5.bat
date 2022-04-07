@@ -19,10 +19,15 @@ set currdir=%cd%
 	goto loop
 :end
 
+set entry_exec=l5.bat
+echo @echo off > %entry_exec%
+echo %prefix%\l5 %%* --self-path %prefix%\ --conf l5.win.conf >> %entry_exec%
+
 echo prefix=%prefix% > makefile
 echo envc=%envc% >> makefile
 echo thw=%thw% >> makefile
 echo currdir=%currdir% >> makefile
+echo entry_exec=%entry_exec% >> makefile
 echo !include ..\u\env\env_%envc%.mk >> makefile
 type l5.win.mk >> makefile
 

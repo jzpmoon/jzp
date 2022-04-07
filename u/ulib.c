@@ -34,7 +34,7 @@ uapi int ucall udlclose(ulib handle)
 #endif
 }
 
-uapi const char* ucall udlerror()
+uapi const char* ucall udlerrorstr()
 {
 #if UOS == WIN
 	return NULL;
@@ -42,5 +42,14 @@ uapi const char* ucall udlerror()
   return dlerror();
 #elif UOS == UNX
   return dlerror();
+#endif
+}
+
+uapi usi32 ucall udlerrorcode()
+{
+#if UOS == WIN
+	return GetLastError();
+#else
+	return -1;
 #endif
 }

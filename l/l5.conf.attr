@@ -98,14 +98,14 @@ VDEFATTR(sys_lib_bin_load,"sys-lib-bin-load",{
     }
     handle = udlopen(lib_path->name,URTLD_LAZY);
     if (!handle) {
-      uabort("open lib error:%s!",udlerror());
+      uabort("open lib error:%s,%d!",udlerrorstr(),udlerrorcode());
     }
     if (!init_cfun) {
       uabort("init cfun not define!");
     }
     callback = (lmod_init_ft)udlsym(handle,init_cfun->name);
     if (!callback) {
-      uabort("get lib symbol error:%s!",udlerror());
+      uabort("get lib symbol error:%s,%d!",udlerrorstr(),udlerrorcode());
     }
     mod = vcontext_mod_add(eval->base_eval->ctx,lib_path->name,
 			   lib_path->name);

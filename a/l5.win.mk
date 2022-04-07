@@ -1,7 +1,7 @@
 bin_name = l5$(suf_pg)
 obj_list = l5.obj
 
-conf_name = l5.conf
+conf_name = l5.win.conf
 
 libl_path = ..\l\
 
@@ -33,6 +33,7 @@ liblmod.lib:
 install:
 	copy $(bin_name) $(prefix)
 	copy $(conf_name) $(prefix)
+	copy $(entry_exec) $(prefix)
 	cd $(libl_path)
 	nmake /f $(l_somk) install
 	cd $(currdir)
@@ -48,6 +49,7 @@ install:
 uninstall:
 	del $(prefix)\$(bin_name)
 	del $(prefix)\$(conf_name)
+	del $(prefix)\$(entry_exec)
 	cd $(libl_path)
 	nmake /f $(l_somk) uninstall
 	cd $(currdir)

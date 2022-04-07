@@ -1264,6 +1264,7 @@ vps_cntr_init(vps_cntr* cntr)
   if (!cntr->types) {
     uabort("new hash table type error!");
   }
+  cntr->entry = NULL;
   cntr->seqnum = 0;
 }
 

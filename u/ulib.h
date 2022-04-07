@@ -36,6 +36,8 @@ uapi ulibsym ucall udlsym(ulib handle,ustring* symbol);
 
 uapi int ucall udlclose(ulib handle);
 
-uapi const char* ucall udlerror();
+uapi const char* ucall udlerrorstr();
+
+uapi usi32 ucall udlerrorcode();
 
 #endif
