@@ -285,7 +285,7 @@ uapi void ucall uarrev(uui8* arr,usize_t len)
 }
 
 uapi void ucall ustring_log(ustring* str){
-  ulog1("value:%s",str->value);
-  ulog1("len  :%d",str->len);
-  ulog1("hscd :%d",str->hash_code);
+  udebug1("value:%s",str->value);
+  udebug1("len  :%d",str->len);
+  udebug1("hscd :%d",str->hash_code);
 }

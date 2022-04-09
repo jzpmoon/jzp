@@ -141,13 +141,13 @@ vps_id_get(vps_cntr* vps,ustring* name);
 
 int vps_id_comp(vps_id id1,vps_id id2);
 
-#define vps_id_log(id)				\
-  do {						\
-    if (id.name) {				\
-      ulog2("id=%s:%d",id.name->value,id.num);	\
-    } else {					\
-      ulog1("id=:%d",id.num);			\
-    }						\
+#define vps_id_log(id)					\
+  do {							\
+    if (id.name) {					\
+      udebug2("id=%s:%d",id.name->value,id.num);	\
+    } else {						\
+      udebug1("id=:%d",id.num);				\
+    }							\
   } while(0)
 
 typedef struct _vps_cfg{

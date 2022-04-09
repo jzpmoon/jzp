@@ -653,7 +653,7 @@ void bc_set(vcontext* ctx,
 #define NEXT2 do{op=FETCH;op+=FETCH<<8;}while(0)
 
 void vcontext_execute(vcontext* ctx){
-  ulog("vcontext_execute");
+  udebug0("vcontext_execute");
   bc_call(ctx);
   while(1){
     int op;
@@ -661,105 +661,105 @@ void vcontext_execute(vcontext* ctx){
     NEXT;
     switch(op){
     case Bnop:
-      ulog("Bnop");
+      udebug0("Bnop");
       break;
     case Bload:
       NEXT;
-      ulog("Bload %d",op);
+      udebug1("Bload %d",op);
       bc_push(ctx,bc_locals(ctx,op));
       break;
     case Bstore:
       NEXT;
-      ulog("Bstore %d",op);
+      udebug1("Bstore %d",op);
       bc_store(ctx,op);
       break;
     case Bpush:
       NEXT;
-      ulog("Bpush %d",op);
+      udebug1("Bpush %d",op);
       bc_push(ctx,bc_constant_get(ctx,op));
       break;
     case Btop:
       NEXT;
       op = (signed char)op;
-      ulog("Btop %d",op);
+      udebug1("Btop %d",op);
       bc_top(ctx,op);
       break;
     case Bpop:
       NEXT;
-      ulog("Bpop %d",op);
+      udebug1("Bpop %d",op);
       bc_pop(ctx,op);
       break;
     case Bpopv:
-      ulog("Bpopv");
+      udebug0("Bpopv");
       bc_popv(ctx);
       break;
     case Bjmp:
       NEXT2;
-      ulog("Bjmp %d",op);
+      udebug1("Bjmp %d",op);
       bc_jmp(ctx,op);
       break;
     case Bjmpi:
       NEXT2;
-      ulog("Bjmpi %d",op);
+      udebug1("Bjmpi %d",op);
       bc_jmpi(ctx,op);
       break;
     case Beq:
-      ulog("Beq");
+      udebug0("Beq");
       bc_eq(ctx);
       break;
     case Bgt:
-      ulog("Bgt");
+      udebug0("Bgt");
       bc_gt(ctx);
       break;
     case Blt:
-      ulog("Blt");
+      udebug0("Blt");
       bc_lt(ctx);
       break;
     case Band:
-      ulog("Band");
+      udebug0("Band");
       bc_and(ctx);
       break;
     case Bor:
-      ulog("Bor");
+      udebug0("Bor");
       bc_or(ctx);
       break;
     case Bnot:
-      ulog("Bnot");
+      udebug0("Bnot");
       bc_not(ctx);
       break;
     case Badd:
-      ulog("Badd");
+      udebug0("Badd");
       bc_add(ctx);
       break;
     case Bsub:
-      ulog("Bsub");
+      udebug0("Bsub");
       bc_sub(ctx);
       break;
     case Bmul:
-      ulog("Bmul");
+      udebug0("Bmul");
       bc_mul(ctx);
       break;
     case Bdiv:
-      ulog("Bdiv");
+      udebug0("Bdiv");
       bc_div(ctx);
       break;
     case Bcall:
-      ulog("Bcall");
+      udebug0("Bcall");
       bc_call(ctx);
       break;
     case Breturn:
-      ulog("Breturn");
+      udebug0("Breturn");
       bc_return(ctx);
       break;
     case Bretvoid:
-      ulog("Bretvoid");
+      udebug0("Bretvoid");
       bc_return_void(ctx);
       break;
     case Brefl:
       {
 	vslot slot;
 	NEXT2;
-	ulog("Brefl %d",op);
+	udebug1("Brefl %d",op);
 	slot = bc_locals(ctx,op);
 	if (!vslot_is_int(slot)) {
 	  uabort("not a integer!");
@@ -769,14 +769,14 @@ void vcontext_execute(vcontext* ctx){
       }
     case Bref:
       NEXT2;
-      ulog("Bref %d",op);
+      udebug1("Bref %d",op);
       bc_ref(ctx,op);
       break;
     case Bsetl:
       {
 	vslot slot;
 	NEXT2;
-	ulog("Bsetl %d",op);
+	udebug1("Bsetl %d",op);
 	slot = bc_locals(ctx,op);
 	if (!vslot_is_int(slot)) {
 	  uabort("not a integer!");
@@ -786,7 +786,7 @@ void vcontext_execute(vcontext* ctx){
       }
     case Bset:
       NEXT2;
-      ulog("Bset %d",op);
+      udebug1("Bset %d",op);
       bc_set(ctx,op);
       break;
     default:

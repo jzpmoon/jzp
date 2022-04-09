@@ -172,8 +172,13 @@ int main(int argc,char** args)
 {
   ulrgram* gram;
   vreader* reader;
+  ulog_conf log_conf;
 
-  ulog_init("vag.log",UTRUE);
+  log_conf.log_fn = "vag.log";
+  log_conf.power = UTRUE;
+  log_conf.line = 100;
+  ulog_init(&log_conf);
+  
   if(argc == 1){
     ulog("no input file!");
     return 0;

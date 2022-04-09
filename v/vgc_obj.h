@@ -119,12 +119,12 @@ typedef struct _vslot{
   (vslot_is_bool(slot) && (slot).u.bool)
 
 #define vslot_log(slot)				\
-  ulog1("slot type:%d",slot.t);			\
-  ulog1("slot num:%f",slot.u.num);		\
-  ulog1("slot int:%d",slot.u.inte);		\
-  ulog1("slot char:%c",slot.u.chara);		\
-  ulog1("slot bool:%d",slot.u.bool);		\
-  ulog1("slot ref:%p",slot.u.ref);
+  udebug1("slot type:%d",slot.t);		\
+  udebug1("slot num:%f",slot.u.num);		\
+  udebug1("slot int:%d",slot.u.inte);		\
+  udebug1("slot char:%c",slot.u.chara);		\
+  udebug1("slot bool:%d",slot.u.bool);		\
+  udebug1("slot ref:%p",slot.u.ref);
 
 vslot vslot_num_eq(vslot slot1,vslot slot2);
 vslot vslot_int_eq(vslot slot1,vslot slot2);

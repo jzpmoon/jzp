@@ -482,33 +482,33 @@ vtoken_log(vtoken_state* ts){
   char* str;
   sym = ts->id->value;
   str = ts->str->value;
-  ulog0("********token state begin");
-  ulog1("token  :%d",ts->token);
-  ulog1("symbol :%s",sym);
-  ulog1("string :%s",str);
-  ulog1("number :%f",ts->dnum);
-  ulog0("********token state   end");
+  udebug0("********token state begin");
+  udebug1("token  :%d",ts->token);
+  udebug1("symbol :%s",sym);
+  udebug1("string :%s",str);
+  udebug1("number :%f",ts->dnum);
+  udebug0("********token state   end");
 }
 
 void vparser_atom_log(vast_obj* s_exp){
   if(s_exp){
     if(s_exp->t == vastk_symbol){
-      ulog1("  %s",((vast_symbol*)s_exp)->name->value);
+      udebug1("  %s",((vast_symbol*)s_exp)->name->value);
     }else if(s_exp->t == vastk_string){
-      ulog1("  \"%s\"",((vast_string*)s_exp)->value->value);
+      udebug1("  \"%s\"",((vast_string*)s_exp)->value->value);
     }else if(s_exp->t == vastk_number){
-      ulog1("  %f",((vast_number*)s_exp)->value);
+      udebug1("  %f",((vast_number*)s_exp)->value);
     }else if(s_exp->t == vastk_integer){
-      ulog1("  %d",((vast_integer*)s_exp)->value);
+      udebug1("  %d",((vast_integer*)s_exp)->value);
     }else if(s_exp->t == vastk_character){
-      ulog1("  '%c'",((vast_character*)s_exp)->value);
+      udebug1("  '%c'",((vast_character*)s_exp)->value);
     }else if(s_exp->t == vastk_keyword){
-      ulog1("  %s",((vast_keyword*)s_exp)->kw.kw_str);
+      udebug1("  %s",((vast_keyword*)s_exp)->kw.kw_str);
     }else{
-      ulog0(" [unkonw]");
+      udebug0(" [unkonw]");
     }
   }else{
-    ulog0(" ()");
+    udebug0(" ()");
   }
 }
 
@@ -518,7 +518,7 @@ void vast_obj_log(vast_obj* ast_obj){
   if(s_exp){
     if(s_exp->t == vastk_cons){
       cons = (vast_cons*)s_exp;
-      ulog0("(");
+      udebug0("(");
       while(1){
 	vast_obj* cdr;
 	vast_obj_log(cons->car);
@@ -532,7 +532,7 @@ void vast_obj_log(vast_obj* ast_obj){
 	    break;
 	  }
 	}else{
-	  ulog0(")");
+	  udebug0(")");
 	  break;
 	}
       }
@@ -732,18 +732,18 @@ vtoken_state_close(vtoken_state* ts)
 {
   ustream* stream = ts->stream;
   ustream_close(stream);
-  ulog0("stream close");
+  udebug0("stream close");
 }
 
 vapi void vcall
 vtoken_state_reset(vtoken_state* ts,ustring* file_path){
   ustream* stream = ts->stream;
   ustream_close(stream);
-  ulog0("stream close");
+  udebug0("stream close");
   if(ustream_open_by_path(stream,file_path)) {
     uabort("token state file stream open error!");
   }
-  ulog0("stream open");
+  udebug0("stream open");
   vtoken_state_init(ts);
 }
 

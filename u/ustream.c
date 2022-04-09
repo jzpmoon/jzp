@@ -5,7 +5,8 @@
 #define USTREAM_FILE_BUFF_GET(stream) ((stream)->u.s.dbuff)
 #define USTREAM_FILE_GET(stream) ((stream)->u.s.file)
 
-static ustring* ufile_name_get_by_strtb(ustring_table* strtb,ustring* file_path)
+static ustring* ufile_name_get_by_strtb(ustring_table* strtb,
+					ustring* file_path)
 {
   ustring* file_name;
   int pos;
@@ -25,7 +26,8 @@ static ustring* ufile_name_get_by_strtb(ustring_table* strtb,ustring* file_path)
   return file_name;
 }
 
-static ustring* ufile_dir_get_by_strtb(ustring_table* strtb,ustring* file_path)
+static ustring* ufile_dir_get_by_strtb(ustring_table* strtb,
+				       ustring* file_path)
 {
   ustring* file_name;
   int pos;
@@ -65,11 +67,11 @@ uapi ufile_infor* ucall ufile_init_by_strtb(ustring_table* strtb,
 uapi void ucall ufile_log(ufile_infor* fi)
 {
   if (fi->file_path)
-    ulog1("file path:%s",fi->file_path->value);
+    udebug1("file path:%s",fi->file_path->value);
   if (fi->dir_name)
-    ulog1("dir name:%s",fi->dir_name->value);
+    udebug1("dir name:%s",fi->dir_name->value);
   if (fi->file_name)
-    ulog1("file name:%s",fi->file_name->value);
+    udebug1("file name:%s",fi->file_name->value);
 }
 
 uapi ustream* ucall ustream_new_by_buff(int iot,ubuffer* buff,URI_DECL){

@@ -1,4 +1,3 @@
-#include "lmmacro.h"
 #include "lobj.h"
 #include "_ltemp.cfun"
 

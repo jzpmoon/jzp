@@ -94,8 +94,8 @@ uapi void ucall umem_pool_clean(umem_pool* pool){
   umem_node* node;
   
   node = pool->node;
-  ulog("umem pool clean before count:%d,size:%d",
-       pool->now_count,pool->now_size);
+  udebug2("umem pool clean before count:%d,size:%d",
+	  pool->now_count,pool->now_size);
   while (node) {
     umem_node* temp = node;
     node = node->next;
@@ -109,8 +109,8 @@ uapi void ucall umem_pool_clean(umem_pool* pool){
       temp->index = temp->mem;
     }
   }
-  ulog("umem pool clean after count:%d,size:%d",
-	pool->now_count,pool->now_size);
+  udebug2("umem pool clean after count:%d,size:%d",
+	  pool->now_count,pool->now_size);
 }
 
 static void ucall clean_impl(uallocator* allocator)

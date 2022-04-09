@@ -9,40 +9,40 @@ URI_ERR_DEFINE(UERR_EOF, "U003", "end of file");
 URI_ERR_DEFINE(UERR_IOT, "U004", "unknow IO type");
 URI_ERR_DEFINE(UERR_DST, "U005", "unknow data source type");
 
-uapi ulog_infor _uli = {NULL,NULL,UTRUE};
+static ulog_conf _log_conf = {NULL,UTRUE,-1};
 
-uapi int ucall ulog_init(char* log_fn,int power)
+uapi ulog_infor _uli = {NULL,NULL,1};
+
+uapi int ucall ulog_init(ulog_conf* conf)
 {
   int retval = 0;
-  FILE* log_fd = fopen(log_fn,"w");
+  FILE* log_fd;
 
-  if (!log_fd) {
-    log_fd = stdout;
-    retval = -1;
+  if (conf) {
+    log_fd = fopen(conf->log_fn,"w");
+    if (!log_fd) {
+      log_fd = stdout;
+      retval = -1;
+    }
+    _uli.log_fd = log_fd;
+    _uli.conf = conf;
+  } else {
+    _uli.log_fd = stdout;
+    _uli.conf = &_log_conf;
   }
-  _uli.log_fd = log_fd;
-  _uli.log_fn = log_fn;
-  _uli.power = power;
   return retval;
-}
-
-uapi void ucall ulog_enable(int power)
-{
-  _uli.power = power;
 }
 
 uapi void ucall uabort(char* msg,...)
 {
-  FILE* log_fd = _uli.log_fd;
+  FILE* log_fd;
   va_list ap;
 
-  if (!_uli.power) {
+  if (!_uli.conf->power) {
     return;
   }
-  if (!log_fd) {
-    log_fd = stdout;
-  }
-  fprintf(log_fd,"<"__DATE__" "__TIME__">");
+  log_fd = _uli.log_fd;
+  fprintf(log_fd,"%d.<"__DATE__" "__TIME__">",_uli.curr_line);
   va_start(ap,msg);
   vfprintf(log_fd,msg,ap);
   va_end(ap);
@@ -53,19 +53,27 @@ uapi void ucall uabort(char* msg,...)
 
 uapi void ucall ulog(char* msg,...)
 {
-  FILE* log_fd = _uli.log_fd;
+  ulog_conf* conf;
+  FILE* log_fd;
   va_list ap;
 
-  if (!_uli.power) {
+  conf = _uli.conf;
+  if (!conf->power) {
     return;
   }
-  if (!log_fd) {
-    log_fd = stdout;
+  if (_uli.curr_line % conf->line == 0 &&
+      _uli.log_fd != stdout) {
+    if (fclose(_uli.log_fd) == EOF) {
+      return;
+    }
+    _uli.log_fd = fopen(conf->log_fn,"w");
   }
-  fprintf(log_fd,"["__DATE__" "__TIME__"]");
+  log_fd = _uli.log_fd;
+  fprintf(log_fd,"%d.["__DATE__" "__TIME__"]",_uli.curr_line);
   va_start(ap,msg);
   vfprintf(log_fd,msg,ap);
   va_end(ap);
   fprintf(log_fd,"\n");
   fflush(log_fd);
+  _uli.curr_line++;
 }

@@ -216,7 +216,7 @@ UBEGIN
 	vps_inst_imm_set(pinst,pinst->ope[0].data->idx);
       }
       ulist_vps_instp_append(insts,pinst);
-      ulog("inst imm");
+      udebug0("inst imm");
       break;
     case vinstk_locdt:
       {
@@ -235,7 +235,7 @@ UBEGIN
 	}
 	vps_inst_imm_set(pinst,data->idx);
 	ulist_vps_instp_append(insts,pinst);
-	ulog("inst local data");
+	udebug0("inst local data");
       }
       break;
     case vinstk_glodt:
@@ -249,7 +249,7 @@ UBEGIN
 	vmod_add_reloc(mod,reloc);
 	vps_inst_imm_set(pinst,data->idx);
 	ulist_vps_instp_append(insts,pinst);
-	ulog("inst global data");
+	udebug0("inst global data");
       }
       break;
     case vinstk_code:
@@ -259,13 +259,13 @@ UBEGIN
 	insts_count = get_insts_count(cfgs,pinst->ope[0].id);
 	vps_inst_imm_set(pinst,insts_count);
 	ulist_vps_instp_append(insts,pinst);
-	ulog("inst code");
+	udebug0("inst code");
       }
       break;
     case vinstk_non:
       {
 	ulist_vps_instp_append(insts,pinst);
-	ulog("inst non");
+	udebug0("inst non");
       }
       break;
     default:
@@ -274,7 +274,7 @@ UBEGIN
     continue;
   l2:
     ulist_vps_instp_append(insts,pinst);
-    ulog("inst non operand");
+    udebug0("inst non operand");
   }
   return 0;
 UEND
@@ -428,7 +428,7 @@ void vcontext_mod_log(vcontext* ctx){
     if (!next) {
       break;
     }
-    ulog("vcontext_mod_log:%s",next->name->value);
+    udebug1("vcontext_mod_log:%s",next->name->value);
   }
 }
 
@@ -468,13 +468,13 @@ UBEGIN
       break;
     }
     g = *gp;
-    ulog0("load vps graph name:");
+    udebug0("load vps graph name:");
     vps_id_log(g->id);
     vcontext_graph_load(ctx,dest_mod,g);
   }
 
   if (src_mod->entry) {
-    ulog0("load vps entry graph");
+    udebug0("load vps entry graph");
     vps_id_log(src_mod->entry->id);
     dest_mod->init = vcontext_graph_load(ctx,dest_mod,src_mod->entry);
   }
@@ -528,7 +528,7 @@ UBEGIN
       break;
     }
     mod = *next;
-    ulog("load vps mod:%s",mod->name->value);
+    udebug1("load vps mod:%s",mod->name->value);
     vcontext_mod_load(ctx,mod);
   }
   vps_cntr_clean(vps);

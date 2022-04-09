@@ -6,17 +6,22 @@
 #include "umacro.h"
 #include "udef.h"
 
-typedef struct _ulog_infor{
-  FILE* log_fd;
+typedef struct _ulog_infor ulog_infor;
+typedef struct _ulog_conf ulog_conf;
+struct _ulog_conf{
   char* log_fn;
   int power;
-} ulog_infor;
+  int line;
+};
+struct _ulog_infor{
+  FILE* log_fd;
+  ulog_conf* conf;
+  int curr_line;
+};
 
 extern uapi ulog_infor _uli;
 
-uapi int ucall ulog_init(char* log_fn,int power);
-
-uapi void ucall ulog_enable(int power);
+uapi int ucall ulog_init(ulog_conf* conf);
 
 uapi void ucall uabort(char* msg,...);
 
@@ -24,32 +29,32 @@ uapi void ucall ulog(char* msg,...);
 
 #if NDEBUG
 
-# define ulog0(msg)
-# define ulog1(msg,a1)
-# define ulog2(msg,a1,a2)
-# define ulog3(msg,a1,a2,a3)
-# define ulog4(msg,a1,a2,a3,a4)
+# define udebug0(msg)
+# define udebug1(msg,a1)
+# define udebug2(msg,a1,a2)
+# define udebug3(msg,a1,a2,a3)
+# define udebug4(msg,a1,a2,a3,a4)
 # define ulog_stack_trace(fname)
 
 #else
 
-# define ulog0(msg) \
+# define udebug0(msg)				\
   ulog(msg)
 
-# define ulog1(msg,a1) \
+# define udebug1(msg,a1)			\
   ulog(msg,a1)
 
-# define ulog2(msg,a1,a2) \
+# define udebug2(msg,a1,a2)			\
   ulog(msg,a1,a2)
 
-# define ulog3(msg,a1,a2,a3) \
+# define udebug3(msg,a1,a2,a3)			\
   ulog(msg,a1,a2,a3)
 
-# define ulog4(msg,a1,a2,a3,a4)	\
+# define udebug4(msg,a1,a2,a3,a4)		\
   ulog(msg,a1,a2,a3,a4)
 
-# define ulog_stack_trace(fname) \
-  ulog0("@"__FILE__"*"#fname"@");
+# define ulog_stack_trace(fname)		\
+  ulog("@"__FILE__"*"#fname"@");
 
 #endif
 

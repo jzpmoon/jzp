@@ -27,6 +27,12 @@ UEND
 
 int main (int argc,char** args)
 {
-  ulog_init("jzpl.log",UTRUE);
+  ulog_conf log_conf;
+
+  log_conf.log_fn = "jzpl.log";
+  log_conf.power = UTRUE;
+  log_conf.line = 100;
+  ulog_init(&log_conf);
+  
   return jzpl(argc,args);
 }

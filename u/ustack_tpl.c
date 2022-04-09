@@ -16,12 +16,12 @@
 
 #define ustack_log_tpl(t)					\
   uapi_tpl void ucall ustack_##t##_log(ustack_##t* stack){	\
-    ulog1("ustack curr_block: %p",stack->curr_block);		\
-    ulog1("ustack cache_block:%p",stack->cache_block);		\
-    ulog1("ustack block_pos:  %d",stack->block_pos);		\
-    ulog1("ustack block_count:%d",stack->block_count);		\
-    ulog1("ustack block_limit:%d",stack->block_limit);		\
-    ulog1("ustack block_size:%d",stack->block_size);		\
+    udebug1("ustack curr_block: %p",stack->curr_block);		\
+    udebug1("ustack cache_block:%p",stack->cache_block);	\
+    udebug1("ustack block_pos:  %d",stack->block_pos);		\
+    udebug1("ustack block_count:%d",stack->block_count);	\
+    udebug1("ustack block_limit:%d",stack->block_limit);	\
+    udebug1("ustack block_size:%d",stack->block_size);		\
   }
 
 #define ublock_new_tpl(t)					\

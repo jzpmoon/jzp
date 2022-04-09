@@ -175,7 +175,7 @@ VDEFATTR(g_var,"g-var",{
     }else{
       uabort("g-var inst error!");
     }
-    ulog0("global var");
+    udebug0("global var");
     VATTR_RETURN_VOID;
   })
 
@@ -213,7 +213,7 @@ VDEFATTR(var,"var",{
       } else {
 	uabort("var inst error!");
       }
-      ulog0("local var");
+      udebug0("local var");
       VATTR_RETURN_VOID;
     } else {
       uabort("var inst can not use here!");
@@ -265,7 +265,7 @@ VDEFATTR(local,"local",{
       }else{
 	uabort("local inst error!");
       }
-      ulog0("local");
+      udebug0("local");
     } else {
       uabort("local inst can not use here!");
     }
@@ -282,7 +282,7 @@ VDEFATTR(load,"load",{
     vast_obj* next;
     vcfg_graph* grp;
 
-    ulog0("load");
+    udebug0("load");
     jreq = (vps_jzp_req*)req;
     
     if (!VATTR_CONTEXT_SUBR(jreq->parent)) {
@@ -324,7 +324,7 @@ VDEFATTR(store,"store",{
     vast_obj* next;
     vcfg_graph* grp;
 
-    ulog0("store");
+    udebug0("store");
     jreq = (vps_jzp_req*)req;
     
     if(!VATTR_CONTEXT_SUBR(jreq->parent)){
@@ -366,7 +366,7 @@ VDEFATTR(push,"push",{
     vast_obj* obj;
     vast_obj* next;
     
-    ulog0("push");
+    udebug0("push");
     jreq = (vps_jzp_req*)req;
     
     if(!VATTR_CONTEXT_SUBR(jreq->parent)){
@@ -457,7 +457,7 @@ VDEFATTR(top,"top",{
     vast_obj* next;
     vcfg_graph* grp;
     
-    ulog0("top");
+    udebug0("top");
     jreq = (vps_jzp_req*)req;
     
     if(!VATTR_CONTEXT_SUBR(jreq->parent)){
@@ -496,7 +496,7 @@ VDEFATTR(pop,"pop",{
     vast_obj* obj;
     vast_obj* next;
 
-    ulog0("pop");
+    udebug0("pop");
     jreq = (vps_jzp_req*)req;
     
     if(!VATTR_CONTEXT_SUBR(jreq->parent)){
@@ -534,7 +534,7 @@ VDEFATTR(add,"add",{
     vps_inst* inst;
     vcfg_graph* grp;
 
-    ulog0("add");
+    udebug0("add");
     jreq = (vps_jzp_req*)req;
     
     if(!VATTR_CONTEXT_SUBR(jreq->parent)){
@@ -554,7 +554,7 @@ VDEFATTR(sub,"sub",{
     vps_inst* inst;
     vcfg_graph* grp;
     
-    ulog0("sub");
+    udebug0("sub");
     jreq = (vps_jzp_req*)req;
     
     if(!VATTR_CONTEXT_SUBR(jreq->parent)){
@@ -574,7 +574,7 @@ VDEFATTR(mul,"mul",{
     vps_inst* inst;
     vcfg_graph* grp;
     
-    ulog0("mul");
+    udebug0("mul");
     jreq = (vps_jzp_req*)req;
 
     if(!VATTR_CONTEXT_SUBR(jreq->parent)){
@@ -594,7 +594,7 @@ VDEFATTR(div,"div",{
     vps_inst* inst;
     vcfg_graph* grp;
     
-    ulog0("div");
+    udebug0("div");
     jreq = (vps_jzp_req*)req;
     
     if(!VATTR_CONTEXT_SUBR(jreq->parent)){
@@ -616,7 +616,7 @@ VDEFATTR(jmpi,"jmpi",{
     vast_obj* next;
     vcfg_graph* grp;
 
-    ulog0("jmpi");
+    udebug0("jmpi");
     jreq = (vps_jzp_req*)req;
     
     if(!VATTR_CONTEXT_SUBR(jreq->parent)){
@@ -659,7 +659,7 @@ VDEFATTR(jmp,"jmp",{
     vast_obj* next;
     vcfg_graph* grp;
 
-    ulog0("jmp");
+    udebug0("jmp");
     jreq = (vps_jzp_req*)req;
     
     if(!VATTR_CONTEXT_SUBR(jreq->parent)){
@@ -700,7 +700,7 @@ VDEFATTR(eq,"eq",{
     vps_inst* inst;
     vcfg_graph* grp;
 
-    ulog0("eq");
+    udebug0("eq");
     jreq = (vps_jzp_req*)req;
     
     if(!VATTR_CONTEXT_SUBR(jreq->parent)){
@@ -720,7 +720,7 @@ VDEFATTR(gt,"gt",{
     vps_inst* inst;
     vcfg_graph* grp;
 
-    ulog0("gt");
+    udebug0("gt");
     jreq = (vps_jzp_req*)req;
     
     if(!VATTR_CONTEXT_SUBR(jreq->parent)){
@@ -740,7 +740,7 @@ VDEFATTR(lt,"lt",{
     vps_inst* inst;
     vcfg_graph* grp;
 
-    ulog0("lt");
+    udebug0("lt");
     jreq = (vps_jzp_req*)req;
     
     if(!VATTR_CONTEXT_SUBR(jreq->parent)){
@@ -760,7 +760,7 @@ VDEFATTR(and,"and",{
     vps_inst* inst;
     vcfg_graph* grp;
 
-    ulog0("and");
+    udebug0("and");
     jreq = (vps_jzp_req*)req;
     
     if(!VATTR_CONTEXT_SUBR(jreq->parent)){
@@ -780,7 +780,7 @@ VDEFATTR(or,"or",{
     vps_inst* inst;
     vcfg_graph* grp;
 
-    ulog0("or");
+    udebug0("or");
     jreq = (vps_jzp_req*)req;
     
     if(!VATTR_CONTEXT_SUBR(jreq->parent)){
@@ -800,7 +800,7 @@ VDEFATTR(not,"not",{
     vps_inst* inst;
     vcfg_graph* grp;
 
-    ulog0("not");
+    udebug0("not");
     jreq = (vps_jzp_req*)req;
     
     if(!VATTR_CONTEXT_SUBR(jreq->parent)){
@@ -820,7 +820,7 @@ VDEFATTR(call,"call",{
     vps_inst* inst;
     vcfg_graph* grp;
 
-    ulog0("call");
+    udebug0("call");
     jreq = (vps_jzp_req*)req;
     
     if(!VATTR_CONTEXT_SUBR(jreq->parent)){
@@ -840,7 +840,7 @@ VDEFATTR(return,"return",{
     vps_inst* inst;
     vcfg_graph* grp;
 
-    ulog0("return");
+    udebug0("return");
     jreq = (vps_jzp_req*)req;
     
     if(!VATTR_CONTEXT_SUBR(jreq->parent)){
@@ -860,7 +860,7 @@ VDEFATTR(retvoid,"retvoid",{
     vps_inst* inst;
     vcfg_graph* grp;
 
-    ulog0("retvoid");
+    udebug0("retvoid");
     jreq = (vps_jzp_req*)req;
     
     if(!VATTR_CONTEXT_SUBR(jreq->parent)){
@@ -882,7 +882,7 @@ VDEFATTR(ref,"ref",{
     vast_obj* next;
     vcfg_graph* grp;
 
-    ulog0("ref");
+    udebug0("ref");
     jreq = (vps_jzp_req*)req;
     
     if(!VATTR_CONTEXT_SUBR(jreq->parent)){
@@ -955,7 +955,7 @@ VDEFATTR(set,"set",{
     vast_obj* next;
     vcfg_graph* grp;
 
-    ulog0("set");
+    udebug0("set");
     jreq = (vps_jzp_req*)req;
     
     if(!VATTR_CONTEXT_SUBR(jreq->parent)){
@@ -1028,7 +1028,7 @@ VDEFATTR(label,"label",{
     vast_obj* next;
     vcfg_graph* grp;
 
-    ulog0("label");
+    udebug0("label");
     jreq = (vps_jzp_req*)req;
     
     if(!VATTR_CONTEXT_SUBR(jreq->parent)){
@@ -1066,7 +1066,7 @@ VDEFATTR(nop,"nop",{
     vps_inst* inst;
     vcfg_graph* grp;
 
-    ulog0("nop");
+    udebug0("nop");
     jreq = (vps_jzp_req*)req;
     
     if (!VATTR_CONTEXT_SUBR(jreq->parent)) {

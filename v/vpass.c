@@ -91,7 +91,7 @@ void vps_inst_log(vps_inst* inst)
 {
 #define DF(code,name,value,len,oct)				\
   case code:							\
-    ulog4("inst log:%d:%s:%d:%d",code,name,len,oct);		\
+    udebug4("inst log:%d:%s:%d:%d",code,name,len,oct);		\
     break;
   switch (inst->opc.opcode) {
     VBYTECODE

@@ -167,6 +167,38 @@ VDEFATTR(sys_lib_src_decl,"sys-lib-src-load",{
 })
 
 /*
+ * define attribute sys-log
+ * (sys-log ...)
+ */
+VDEFATTR(sys_log,"sys-log",{
+    VATTR_RETURN_VOID;
+})
+
+/*
+ * define attribute log-name
+ * (log-name ...)
+ */
+VDEFATTR(log_name,"log-name",{
+    VATTR_RETURN_VOID;
+})
+
+/*
+ * define attribute log-enable
+ * (log-enable ...)
+ */
+VDEFATTR(log_enable,"log-enable",{
+    VATTR_RETURN_VOID;
+})
+
+/*
+ * define attribute log-max-line
+ * (log-max-line ...)
+ */
+VDEFATTR(log_max_line,"log-max-line",{
+    VATTR_RETURN_VOID;
+})
+
+/*
  * declare attribute
  */
 VATTRONLOAD(l5_conf,{
@@ -174,4 +206,8 @@ VATTRONLOAD(l5_conf,{
     VDECLATTR(sys_lib_src_decl);
     VDECLATTR(lib_path);
     VDECLATTR(init_cfun);
+    VDECLATTR(sys_log);
+    VDECLATTR(log_name);
+    VDECLATTR(log_enable);
+    VDECLATTR(log_max_line);
 })
