@@ -1,5 +1,7 @@
-_vtemp.attr
+_*.attr
+_*.cfun
 *macro.h
 
 !*.sh
+!*.bat
 !*.irm

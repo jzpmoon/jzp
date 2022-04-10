@@ -1,7 +1,6 @@
-_l*.attr
-_l*.cfun
+_*.attr
+_*.cfun
 *macro.h
 
-!configure*.sh
-!*.conf
 !*.l5
+!*.l3

@@ -110,16 +110,16 @@ vast_cdar(vast_obj* cons);
 
 #define vast_keywordp(obj) vast_typeof(obj,vastk_keyword)
 
-#define VDEFATTR(aname,sname,body)			 \
-  UDEFUN(UFNAME _vast_attr_action_##aname,		 \
-	 UARGS (vast_attr_req* req,vast_attr_res* res),	 \
-	 URET int vcall)					 \
-  UDECLARE						 \
-      vast_attr_ft this_fun = _vast_attr_action_##aname; \
-  UBEGIN						 \
-    body						 \
-  UEND							 \
-  static vast_attr _vast_attr_infor_##aname =		 \
+#define VDEFATTR(aname,sname,body)			\
+  UDEFUN(UFNAME _vast_attr_action_##aname,		\
+	 UARGS (vast_attr_req* req,vast_attr_res* res),	\
+	 URET int vcall)				\
+    UDECLARE						\
+    vast_attr_ft this_fun = _vast_attr_action_##aname;	\
+  UBEGIN						\
+  body							\
+  UEND							\
+  static vast_attr _vast_attr_infor_##aname =		\
     {sname,NULL,_vast_attr_action_##aname};
 
 #define VATTRONLOAD(afname,body)			\
@@ -145,6 +145,9 @@ vast_cdar(vast_obj* cons);
     return (0);					\
   } while(0)
 
+#define vast_req_from(from)			\
+  (req->req_from == _vast_attr_action_##from)
+
 #define vast_res_from(from)			\
   (res->res_from == _vast_attr_action_##from)
 
@@ -159,8 +162,8 @@ vast_cdar(vast_obj* cons);
     if(!_vast_attr_infor_##aname.name){			\
       uabort("init attr error!");			\
     }							\
-    vast_attr_put(reader,		\
-			_vast_attr_infor_##aname);		\
+    vast_attr_put(reader,				\
+		  _vast_attr_infor_##aname);		\
   }while(0)
 
 vapi int vcall

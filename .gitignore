@@ -1,7 +1,6 @@
 *
 
 !*/
-
 !*.c
 !*.h
 !*.attr
@@ -9,9 +8,8 @@
 !*.jzp
 !*.n
 !*.mk
-!configure.sh
+!configure*.sh
+!configure*.bat
 !readme.txt
 !.gitignore
-!*.sln
-!*.vcxproj
-!*.bat
+!*.conf

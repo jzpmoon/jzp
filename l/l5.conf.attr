@@ -167,19 +167,23 @@ VDEFATTR(sys_lib_src_decl,"sys-lib-src-load",{
 })
 
 /*
- * define attribute sys-log
- * (sys-log ...)
- */
-VDEFATTR(sys_log,"sys-log",{
-    VATTR_RETURN_VOID;
-})
-
-/*
  * define attribute log-name
  * (log-name ...)
  */
 VDEFATTR(log_name,"log-name",{
-    VATTR_RETURN_VOID;
+  vast_obj* next;
+  vast_obj* obj;
+
+  next = vast_cdr(req->ast_obj);
+  if (vast_consp(next)) {
+    uabort("log-name has no args!");
+  }
+  obj = vast_car(next);
+  if (vast_symbolp(obj)) {
+    uabort("log-name not a symbol!");
+  }
+  
+  VATTR_RETURN(var_apd,obj);
 })
 
 /*
@@ -187,7 +191,19 @@ VDEFATTR(log_name,"log-name",{
  * (log-enable ...)
  */
 VDEFATTR(log_enable,"log-enable",{
-    VATTR_RETURN_VOID;
+  vast_obj* next;
+  vast_obj* obj;
+
+  next = vast_cdr(req->ast_obj);
+  if (vast_consp(next)) {
+    uabort("log-enable has no args!");
+  }
+  obj = vast_car(next);
+  if (vast_integerp(obj)) {
+    uabort("log-enable not a integer!");
+  }
+  
+  VATTR_RETURN(var_apd,obj);
 })
 
 /*
@@ -195,6 +211,98 @@ VDEFATTR(log_enable,"log-enable",{
  * (log-max-line ...)
  */
 VDEFATTR(log_max_line,"log-max-line",{
+  vast_obj* next;
+  vast_obj* obj;
+
+  next = vast_cdr(req->ast_obj);
+  if (vast_consp(next)) {
+    uabort("log-max-line has no args!");
+  }
+  obj = vast_car(next);
+  if (vast_integerp(obj)) {
+    uabort("log-max-line not a integer!");
+  }
+  
+  VATTR_RETURN(var_apd,obj);
+})
+
+/*
+ * define attribute sys-log
+ * (sys-log ...)
+ */
+VDEFATTR(sys_log,"sys-log",{
+    vast_conf_req* creq;
+    l5eval* eval;
+    vast_obj* next;
+    vast_obj* obj;
+    vast_obj* opt;
+    vast_conf_req dreq;
+    vast_symbol* opt_name;
+    vast_symbol* log_name;
+    vast_integer* log_enable;
+    vast_integer* log_max_line;
+    static ulog_conf log_conf;
+    int retval;
+    
+    creq = (vast_conf_req*)req;
+    eval = (l5eval*)creq->eval;
+    dreq = vast_req_dbl(creq);
+    next = creq->ast_obj;
+    while (1) {
+      next = vast_cdr(next);
+      if (!next) {
+	break;
+      }
+      opt = vast_car(next);
+      if (vast_consp(opt)) {
+	uabort("has no options!");
+      }
+      obj = vast_car(opt);
+      if (vast_symbolp(obj)) {
+	uabort("option name not a symbol!");
+      }
+      opt_name = (vast_symbol*)obj;
+      dreq.ast_obj = opt;
+      if (vast_attr_of(opt_name->attr,log_name)) {
+	retval = vast_attr_call(opt_name->attr,(vast_attr_req*)&dreq,res);
+	if (retval != 1) {
+	  uabort("option error!");
+	}
+	log_name = (vast_symbol*)res->res_obj;
+      } else if (vast_attr_of(opt_name->attr,log_enable)) {
+	retval = vast_attr_call(opt_name->attr,(vast_attr_req*)&dreq,res);
+	if (retval != 1) {
+	  uabort("option error!");
+	}
+	log_enable = (vast_integer*)res->res_obj;
+      } else if (vast_attr_of(opt_name->attr,log_max_line)) {
+	retval = vast_attr_call(opt_name->attr,(vast_attr_req*)&dreq,res);
+	if (retval != 1) {
+	  uabort("option error!");
+	}
+	log_max_line = (vast_integer*)res->res_obj;
+      } else {
+	uabort("unknow options!");
+      }
+    }
+    
+    if (log_name) {
+      log_conf.log_fn = log_name->name->value;
+    } else {
+      log_conf.log_fn = "jzpl.log";
+    }
+    if (log_enable && log_enable->value) {
+      log_conf.power = UTRUE;
+    } else {
+      log_conf.power = UFALSE;
+    }
+    if (log_max_line) {
+      log_conf.line = log_max_line->value;
+    } else {
+      log_conf.line = -1;
+    }
+    ulog_init(&log_conf);
+    
     VATTR_RETURN_VOID;
 })
 

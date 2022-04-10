@@ -4,6 +4,8 @@
 #include "umacro.h"
 #include "ustring.h"
 
+typedef void (*dlinit_ft)(void);
+
 #if UOS == WIN
 
   #include <Windows.h>
@@ -11,6 +13,17 @@
 
   typedef HMODULE ulib;
   typedef FARPROC ulibsym;
+
+  #define udlinit_register(callback)               \
+    BOOL WINAPI DllMain(_In_ HINSTANCE hinstDLL,   \
+                        _In_ DWORD fdwReason,      \
+                        _In_ LPVOID lpvReserved) { \
+      dlinit_ft init = callback;                   \
+      if (fdwReason == DLL_PROCESS_ATTACH) {       \
+        if (init) init();                          \
+      }                                            \
+      return TRUE;                                 \
+    }
 
 #elif UOS == CYGWIN
 
@@ -20,6 +33,12 @@
   typedef void* ulib;
   typedef void* ulibsym;
 
+  #define udlinit_register(callback)                   \
+    __attribute__((constructor)) void _DllMain(void) { \
+      dlinit_ft init = callback;                       \
+      if (init) init();                                \
+    }
+
 #elif UOS == UNX
 
   #include <dlfcn.h>
@@ -27,6 +46,12 @@
 
   typedef void* ulib;
   typedef void* ulibsym;
+
+  #define udlinit_register(callback)                   \
+    __attribute__((constructor)) void _DllMain(void) { \
+      dlinit_ft init = callback;                       \
+      if (init) init();                                \
+    }
 
 #endif
 

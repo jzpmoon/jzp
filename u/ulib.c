@@ -1,5 +1,8 @@
 #include "umacro.h"
 #include "ulib.h"
+#include "uerror.h"
+
+udlinit_register(NULL)
 
 uapi ulib ucall udlopen(ustring* name,int mode)
 {
