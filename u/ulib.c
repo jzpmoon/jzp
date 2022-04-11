@@ -2,7 +2,7 @@
 #include "ulib.h"
 #include "uerror.h"
 
-udlinit_register(NULL)
+udlinit_register(NULL,NULL)
 
 uapi ulib ucall udlopen(ustring* name,int mode)
 {

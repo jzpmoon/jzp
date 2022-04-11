@@ -14,14 +14,19 @@ typedef void (*dlinit_ft)(void);
   typedef HMODULE ulib;
   typedef FARPROC ulibsym;
 
-  #define udlinit_register(callback)               \
+  #define udlinit_register(cstr,dstr)		   \
     BOOL WINAPI DllMain(_In_ HINSTANCE hinstDLL,   \
                         _In_ DWORD fdwReason,      \
                         _In_ LPVOID lpvReserved) { \
-      dlinit_ft init = callback;                   \
+      dlinit_ft _cstr = cstr;			   \
+      dlinit_ft _dstr = dstr;			   \
       if (fdwReason == DLL_PROCESS_ATTACH) {       \
-        if (init) init();                          \
+        if (_cstr) _cstr();			   \
       }                                            \
+      else					   \
+      if (fdwReason == DLL_PROCESS_DETACH) {	   \
+	if (_dstr) _dstr();			   \
+      }						   \
       return TRUE;                                 \
     }
 
@@ -33,11 +38,18 @@ typedef void (*dlinit_ft)(void);
   typedef void* ulib;
   typedef void* ulibsym;
 
-  #define udlinit_register(callback)                   \
-    __attribute__((constructor)) void _DllMain(void) { \
-      dlinit_ft init = callback;                       \
-      if (init) init();                                \
-    }
+  #define udlinit_register(cstr,dstr)		       \
+  __attribute__((constructor))			       \
+  void _DllMain_cstr(void) {			       \
+    dlinit_ft _cstr = cstr;			       \
+    if (_cstr) _cstr();				       \
+  }						       \
+  __attribute__((destructor))			       \
+  void _DllMain_dstr(void) {			       \
+    dlinit_ft _dstr = dstr;			       \
+    if (_dstr) _dstr();				       \
+  }
+
 
 #elif UOS == UNX
 
@@ -47,11 +59,17 @@ typedef void (*dlinit_ft)(void);
   typedef void* ulib;
   typedef void* ulibsym;
 
-  #define udlinit_register(callback)                   \
-    __attribute__((constructor)) void _DllMain(void) { \
-      dlinit_ft init = callback;                       \
-      if (init) init();                                \
-    }
+  #define udlinit_register(cstr,dstr)		       \
+  __attribute__((constructor))			       \
+  void _DllMain_cstr(void) {			       \
+    dlinit_ft _cstr = cstr;			       \
+    if (_cstr) _cstr();				       \
+  }						       \
+  __attribute__((destructor))			       \
+  void _DllMain_dstr(void) {			       \
+    dlinit_ft _dstr = dstr;			       \
+    if (_dstr) _dstr();				       \
+  }
 
 #endif
 
