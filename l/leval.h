@@ -56,4 +56,7 @@ UDECLFUN(UFNAME leval_conf_load,
 	 UARGS (leval* eval,char* file_path),
 	 URET int);
 
+UDECLFUN(UFNAME leval_local_name_get,
+	UARGS(vtoken_state* ts, ustring* src_name, ustring* local_name, char sep),
+	URET int);
 #endif

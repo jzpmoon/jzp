@@ -17,6 +17,7 @@ uapi int ucall ustring_charp_comp(ustring* str,char* charp);
 uapi char* ucall ucharp_new(uallocator* alloc,void* data,int len);
 uapi ustring* ucall ustring_new(uallocator* alloc,void* value,int len,int hscd);
 uapi ustring* ucall ustring_new_by_charp(uallocator* alloc,char* charp);
+uapi ustring ucall ustring_init(char* charp);
 uapi unsigned int ucall udata_hscd(void* v,int len);
 uapi unsigned int ucall ucharp_hscd(char* v);
 uapi void ucall ustring_dest(ustring* str);

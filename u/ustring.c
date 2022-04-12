@@ -84,6 +84,17 @@ uapi ustring* ucall ustring_new_by_charp(uallocator* alloc,char* charp)
   return string;
 }
 
+uapi ustring ucall ustring_init(char* charp)
+{
+  ustring str;
+
+  str.hash_code = ucharp_hscd(charp);
+  str.len = strlen(charp);
+  str.value = charp;
+
+  return str;
+}
+
 uapi void ucall ustring_dest(ustring* str){
 	free(str->value);
 	free(str);

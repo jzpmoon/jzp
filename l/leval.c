@@ -70,6 +70,44 @@ UBEGIN
     uabort("file infor init error!");
   }
   return 0;
+  UEND
+
+UDEFUN(UFNAME leval_local_name_get,
+  UARGS(vtoken_state * ts, ustring * src_name, ustring* local_name, char sep),
+  URET int)
+UDECLARE
+  ubuffer* buff;
+  int pos;
+  int i;
+UBEGIN
+  buff = ts->buff;
+  pos = -1;
+  ubuffer_ready_write(buff);
+  for (i = 0; i < src_name->len; i++) {
+    int c = src_name->value[i];
+    if (c == sep) {
+      if (pos > -1) {
+        ubuffer_seek(buff, pos, USEEK_SET);
+        if (ubuffer_write_next(buff, UDIR_SEP)) {
+          uabort("src name to local name over of buffer!");
+        }
+        ubuffer_seek(buff, i, USEEK_SET);
+      }
+      if(ubuffer_write_next(buff, c)) {
+        uabort("src name to local name over of buffer!");
+      }
+      pos = i;
+    } else {
+      if (ubuffer_write_next(buff, c)) {
+        uabort("src name to local name over of buffer!");
+      }
+    }
+  }
+  if(ubuffer_write_next(buff, '\0')) {
+    uabort("src name to local name over of buffer!");
+  }
+  *local_name = ustring_init(buff->data);
+  return 0;
 UEND
 
 UDEFUN(UFNAME leval_loader_load,
