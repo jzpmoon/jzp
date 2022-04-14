@@ -1,4 +1,5 @@
 ;;;l5 test
+(require n0.code)
 
 (defun inc (x)
   (+ x 1 1))
@@ -14,4 +15,5 @@
 	 (fib (- x 2)))
     (1)))
 
-(print (fib 8))
+;(print (fib 8))
+(test)

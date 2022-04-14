@@ -33,4 +33,8 @@ UDECLFUN(UFNAME l5eval_lib_load,
 UDECLFUN(UFNAME l5eval_conf_load,
          UARGS (l5eval* eval,char* file_path),
          URET l5api int l5call);
+
+#define l5eval_local_name_get(ts,src_name,local_name)		\
+  leval_local_name_get(ts,src_name,local_name,'.',".l5");
+
 #endif

@@ -654,8 +654,7 @@ VDEFATTR(require,"require",{
     if (!ts) {
       uabort("reader from error!");
     }
-    leval_local_name_get(ts,src_name->name,&local_name,'.');
-    ulog("local name:%s",local_name.value);
+    l5eval_local_name_get(ts,src_name->name,&local_name);
     path = vclosure_path_get(reader,&local_name);
     if (vclosure_file_get(jreq->closure,path)) {
       VATTR_RETURN_VOID;

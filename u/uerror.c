@@ -78,7 +78,8 @@ uapi void ucall ulog(char* msg,...)
   if (!conf || !conf->power || !_uli.log_fd) {
     return;
   }
-  if (_uli.curr_line % conf->line == 0 &&
+  if (conf->line > 0 &&
+      _uli.curr_line % conf->line == 0 &&
       _uli.log_fd != stdout) {
     if (fclose(_uli.log_fd) == EOF) {
       return;
