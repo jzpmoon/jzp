@@ -14,6 +14,18 @@
       (+ (fib (- x 1))
 	 (fib (- x 2)))
     (1)))
+    
+(defun factorial (x)
+  (if (> x 1)
+      (* (factorial (- x 1))
+         x)
+      (1)))
+
+(defun let-test (x)
+  (let i 1)
+  (- x i))
 
 ;(print (fib 8))
-(test)
+;(test)
+;(print (factorial 5))
+(print (let-test 2))
