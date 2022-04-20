@@ -66,6 +66,10 @@ UBEGIN
       vast_string* str = (vast_string*)obj;
       inst = vps_ipushstr(vps,grp,str->value);
       vcfg_grp_inst_apd(grp,inst);
+    } else if(obj->t == vastk_character) {
+      vast_character* chara = (vast_character*)obj;
+      inst = vps_ipushchar(vps,grp,chara->value);
+      vcfg_grp_inst_apd(grp,inst);
     } else if (!vast_consp(obj)) {
       vast_obj* car = vast_car(obj);
       if (!vast_symbolp(car)) {
@@ -140,6 +144,10 @@ UBEGIN
     vast_string* str = (vast_string*)car;
     inst = vps_ipushstr(req->vps,grp,str->value);
     vcfg_grp_inst_apd(grp,inst);
+  } else if(!vast_characterp(car)) {
+    vast_character* chara = (vast_character*)car;
+    inst = vps_ipushchar(req->vps,grp,chara->value);
+    vcfg_grp_inst_apd(grp,inst);
   } else if (!vast_symbolp(car)) {
     sym = (vast_symbol*)car;
     data = vclosure_field_get(closure,sym->name);
@@ -204,6 +212,10 @@ UBEGIN
   } else if (!vast_stringp(obj)) {
     vast_string* str = (vast_string*)obj;
     inst = vps_ipushstr(vps,grp,str->value);
+    vcfg_grp_inst_apd(grp,inst);
+  } else if(!vast_characterp(obj)) {
+    vast_character* chara = (vast_character*)obj;
+    inst = vps_ipushchar(vps,grp,chara->value);
     vcfg_grp_inst_apd(grp,inst);
   } else if (!vast_symbolp(obj)) {
     vast_symbol* sym = (vast_symbol*)obj;
