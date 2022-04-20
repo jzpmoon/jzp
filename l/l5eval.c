@@ -136,6 +136,10 @@ UBEGIN
     vast_number* num = (vast_number*)car;
     inst = vps_ipushnum(req->vps,grp,num->name,num->value);
     vcfg_grp_inst_apd(grp,inst);
+  } else if (!vast_stringp(car)) {
+    vast_string* str = (vast_string*)car;
+    inst = vps_ipushstr(req->vps,grp,str->value);
+    vcfg_grp_inst_apd(grp,inst);
   } else if (!vast_symbolp(car)) {
     sym = (vast_symbol*)car;
     data = vclosure_field_get(closure,sym->name);
@@ -197,6 +201,10 @@ UBEGIN
   } else if (!vast_integerp(obj)) {
      vast_integer* inte = (vast_integer*)obj;
      inst = vps_ipushint(vps,grp,inte->name,inte->value);
+  } else if (!vast_stringp(obj)) {
+    vast_string* str = (vast_string*)obj;
+    inst = vps_ipushstr(vps,grp,str->value);
+    vcfg_grp_inst_apd(grp,inst);
   } else if (!vast_symbolp(obj)) {
     vast_symbol* sym = (vast_symbol*)obj;
     vps_data* data = vclosure_field_get(closure,sym->name);

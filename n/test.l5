@@ -25,7 +25,21 @@
   (let i 1)
   (- x i))
 
+(defun while-test (x)
+  (let i 0)
+  (let s 0)
+  (while (< i x)
+    (set s (+ s i))
+    (set i (+ i 1)))
+  (s))
+
+(defun if-test (x)
+  (if (> x 1)
+    ("hello")))
+
 ;(print (fib 8))
 ;(test)
 ;(print (factorial 5))
-(print (let-test 2))
+;(print (let-test 2))
+(print (while-test 6))
+;(print (if-test 1))

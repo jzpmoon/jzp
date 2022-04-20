@@ -269,12 +269,17 @@ VDEFATTR(if,"if",{
     vcfg_grp_inst_apd(grp,inst);
     
     next = vast_cdr(next);
-    if (!vast_consp(next)) {
+    if (!next) {
+      inst = vps_ipushnil(jreq->vps,grp);
+      vcfg_grp_inst_apd(grp,inst);
+    } else if (!vast_consp(next)) {
       obj = vast_car(next);
       if (vast_consp(obj)) {
-    uabort("ast attr \"if\" else has no ()!");
+	uabort("ast attr \"if\" else has no ()!");
       }
       vclosure_cons_call(jreq->closure,jreq,obj);
+    } else {
+      uabort("ast attr \"if\" has no else!");
     }
     
     inst = vps_ilabel(jreq->vps,exit_id);
@@ -344,6 +349,8 @@ VDEFATTR(while,"while",{
     vcfg_grp_inst_apd(grp,inst);
     
     inst = vps_ilabel(jreq->vps,exit_id);
+    vcfg_grp_inst_apd(grp,inst);
+    inst = vps_ipushnil(jreq->vps,grp);
     vcfg_grp_inst_apd(grp,inst);
 
     VATTR_RETURN_VOID;
