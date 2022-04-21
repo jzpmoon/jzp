@@ -136,13 +136,16 @@ VDEFUN(stream_output,"stream-output",VSCOPE_GLOBAL,2,VRETVAL_NO,{
     } else if (vslot_is_ref(slot)) {
       vgc_obj* obj;
       if (vslot_is_null(slot)) {
-	uabort("stream-output:nil object!");
-      }
-      obj = vslot_ref_get(slot,vgc_obj);
-      if (vgc_obj_typeof(obj,vgc_obj_type_string)) {
-	vgc_string* str = (vgc_string*)obj;
-	if(ustream_write_string(lstream->stream,str->u.c,URI_REF)){
+	if(ustream_write_string(lstream->stream,"nil",URI_REF)){
 	  uabort("stream-output:stream write string error!");
+	}
+      } else {
+	obj = vslot_ref_get(slot,vgc_obj);
+	if (vgc_obj_typeof(obj,vgc_obj_type_string)) {
+	  vgc_string* str = (vgc_string*)obj;
+	  if(ustream_write_string(lstream->stream,str->u.c,URI_REF)){
+	    uabort("stream-output:stream write string error!");
+	  }
 	}
       }
     } else {

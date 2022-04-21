@@ -30,8 +30,7 @@
   (let s 0)
   (while (< i x)
     (set s (+ s i))
-    (set i (+ i 1)))
-  (s))
+    (set i (+ i 1))))
 
 (defun if-test (x)
   (if (> x 1)
