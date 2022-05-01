@@ -33,9 +33,13 @@ uapi ustring* ucall ustring_table_put(ustring_table* strtb,
 {
   unsigned int hscd = len > 0 ? udata_hscd(charp,len) : ucharp_hscd(charp);
   int      _len     = len > 0 ? len : strlen(charp);
-  ustring  str      = (ustring){charp,_len,hscd};
+  ustring  str;
   ustring* new_str;
   int retval;
+
+  str.value = charp;
+  str.len = _len;
+  str.hash_code = hscd;
   retval = uhstb_ustring_put(strtb,
 			     hscd,
 			     &str,
@@ -60,9 +64,13 @@ uapi ustring* ucall ustring_table_add(ustring_table* strtb,
 {
   unsigned int hscd = len > 0 ? udata_hscd(charp,len) : ucharp_hscd(charp);
   int      _len     = len > 0 ? len : strlen(charp);
-  ustring  str      = (ustring){charp,_len,hscd};
+  ustring  str;
   ustring* new_str;
   int retval;
+
+  str.value = charp;
+  str.len = _len;
+  str.hash_code = hscd;
   retval = uhstb_ustring_put(strtb,
 			     hscd,
 			     &str,

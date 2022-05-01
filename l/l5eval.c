@@ -278,11 +278,13 @@ UDEFUN(UFNAME l5kw_init,
        UARGS (vreader* reader),
        URET static void)
 UDECLARE
-
+  vast_kw kw;
 UBEGIN
   /*keyword init*/
   #define DF(no,str)				       \
-  if (vreader_keyword_put(reader,(vast_kw){no,str})) { \
+  kw.kw_type = no;                                     \
+  kw.kw_str = str;                                     \
+  if (vreader_keyword_put(reader,kw)) {                \
     uabort("keyword put error!");		       \
   }
   #include "l5kw.h"

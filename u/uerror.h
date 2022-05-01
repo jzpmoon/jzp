@@ -85,8 +85,8 @@ typedef struct _ureturn_infor{
 } ureturn_infor;
 
 #define URI_ERR_DEFINE(NAME,CODE,DESC)		\
-  uapi const ureturn_infor (*NAME)=			\
-    &(ureturn_infor){CODE,DESC}
+  static ureturn_infor __##NAME = {CODE,DESC};  \
+  uapi const ureturn_infor *NAME = &__##NAME
 
 #define URI_ERR_DECL(NAME)			\
   uapi extern const ureturn_infor (*NAME)

@@ -15,9 +15,9 @@ typedef void (*dlinit_ft)(void);
   typedef FARPROC ulibsym;
 
   #define udlinit_register(cstr,dstr)		   \
-    BOOL WINAPI DllMain(_In_ HINSTANCE hinstDLL,   \
-                        _In_ DWORD fdwReason,      \
-                        _In_ LPVOID lpvReserved) { \
+    BOOL WINAPI DllMain(HINSTANCE hinstDLL,        \
+                        DWORD fdwReason,           \
+                        LPVOID lpvReserved) {      \
       dlinit_ft _cstr = cstr;			   \
       dlinit_ft _dstr = dstr;			   \
       if (fdwReason == DLL_PROCESS_ATTACH) {       \
