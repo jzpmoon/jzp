@@ -38,6 +38,18 @@ uapi char* ucall ucharp_new(uallocator* alloc,void* data,int len){
   return charp;
 }
 
+uapi int ucall ucharp_isint(char* charp)
+{
+  int i;
+
+  for (i = 0; charp[i] != '\0'; i++) {
+    if (!isdigit(charp[i])) {
+      return 0;
+    }
+  }
+  return 1;
+}
+
 uapi ustring* ucall ustring_new(uallocator* alloc,void* value,int len,int hscd)
 {
   uallocator* _alloc;

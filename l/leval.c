@@ -126,6 +126,9 @@ UEND
 
 UDEFUN(UFNAME lstartup,
        UARGS (char* self_path,
+	      int vm_gc_asz,
+	      int vm_gc_ssz,
+	      int vm_gc_rsz,
 	      vattr_init_ft attr_init,
 	      vattr_init_ft conf_attr_init,
 	      lkw_init_ft kw_init,
@@ -147,9 +150,9 @@ UBEGIN
     uabort("new eval error!");
   }
   
-  heap = vgc_heap_new(1024*100,
-		      1024*10,
-		      1024);
+  heap = vgc_heap_new(vm_gc_ssz,
+		      vm_gc_asz,
+		      vm_gc_rsz);
   if (!heap) {
     uabort("new heap error!");
   }

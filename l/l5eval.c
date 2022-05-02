@@ -292,7 +292,10 @@ UBEGIN
 UEND
 
 UDEFUN(UFNAME l5startup,
-       UARGS (char* self_path),
+       UARGS (char* self_path,
+	      int vm_gc_asz,
+	      int vm_gc_ssz,
+	      int vm_gc_rsz),
        URET l5api l5eval* l5call)
 UDECLARE
   l5eval* eval;
@@ -300,6 +303,9 @@ UDECLARE
   vclosure* top_closure;
 UBEGIN
   base_eval = lstartup(self_path,
+		       vm_gc_asz,
+		       vm_gc_ssz,
+		       vm_gc_rsz,
 		       l5attr_init,
 		       l5conf_init,
 		       l5kw_init,

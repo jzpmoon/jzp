@@ -19,7 +19,10 @@ enum l5kwk{
 };
 
 UDECLFUN(UFNAME l5startup,
-         UARGS (char* self_path),
+         UARGS (char* self_path,
+		int vm_gc_asz,
+		int vm_gc_ssz,
+		int vm_gc_rsz),
          URET l5api l5eval* l5call);
 
 UDECLFUN(UFNAME l5eval_src_load,

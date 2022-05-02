@@ -37,6 +37,9 @@ struct _vast_conf_req{
 
 UDECLFUN(UFNAME lstartup,
 	 UARGS (char* self_path,
+		int vm_gc_asz,
+		int vm_gc_ssz,
+		int vm_gc_rsz,
 		vattr_init_ft attr_init,
 		vattr_init_ft conf_attr_init,
 		lkw_init_ft kw_init,

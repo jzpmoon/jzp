@@ -61,6 +61,7 @@ uapi void ucall uabort(char* msg,...)
       fprintf(log_fd, "%d.<"__DATE__" "__TIME__">", _uli.curr_line);
       va_start(ap, msg);
       vfprintf(log_fd, msg, ap);
+      vfprintf(stdout, msg, ap);
       va_end(ap);
       fprintf(log_fd, "\n");
       fflush(log_fd);

@@ -15,6 +15,7 @@ typedef struct _ustring{
 uapi int ucall ustring_comp(ustring* s1,ustring* s2);
 uapi int ucall ustring_charp_comp(ustring* str,char* charp);
 uapi char* ucall ucharp_new(uallocator* alloc,void* data,int len);
+uapi int ucall ucharp_isint(char* charp);
 uapi ustring* ucall ustring_new(uallocator* alloc,void* value,int len,int hscd);
 uapi ustring* ucall ustring_new_by_charp(uallocator* alloc,char* charp);
 uapi ustring ucall ustring_init(char* charp);
