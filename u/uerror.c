@@ -54,10 +54,12 @@ uapi void ucall uabort(char* msg,...)
   va_list ap;
 
   if (!_uli.conf || !_uli.conf->power) {
-    return;
-  }
-  log_fd = _uli.log_fd;
-  if (log_fd) {
+    va_start(ap, msg);
+    vfprintf(stdout, msg, ap);
+    va_end(ap);
+  } else {
+    log_fd = _uli.log_fd;
+    if (log_fd) {
       fprintf(log_fd, "%d.<"__DATE__" "__TIME__">", _uli.curr_line);
       va_start(ap, msg);
       vfprintf(log_fd, msg, ap);
@@ -65,6 +67,7 @@ uapi void ucall uabort(char* msg,...)
       va_end(ap);
       fprintf(log_fd, "\n");
       fflush(log_fd);
+    }
   }
   abort();
 }

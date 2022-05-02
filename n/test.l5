@@ -38,7 +38,7 @@
 
 ;(print (fib 8))
 ;(test)
-;(print (factorial 5))
+(print (factorial 5))
 ;(print (let-test 2))
-(print (while-test 6))
+;(print (while-test 6))
 ;(print (if-test 1))
