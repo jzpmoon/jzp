@@ -1,5 +1,6 @@
 #include "umacro.h"
 #include <stdarg.h>
+#include "utime.h"
 #include "uerror.h"
 
 URI_ERR_DEFINE(UERR_SUCC, "U000", "success");
@@ -52,6 +53,7 @@ uapi void ucall uabort(char* msg,...)
 {
   FILE* log_fd;
   va_list ap;
+  char* time_str;
 
   if (!_uli.conf || !_uli.conf->power) {
     va_start(ap, msg);
@@ -60,7 +62,11 @@ uapi void ucall uabort(char* msg,...)
   } else {
     log_fd = _uli.log_fd;
     if (log_fd) {
-      fprintf(log_fd, "%d.<"__DATE__" "__TIME__">", _uli.curr_line);
+      time_str = utimestr();
+      if (time_str == NULL) {
+	time_str = "get time error!";
+      }
+      fprintf(log_fd, "%d.<%s>", _uli.curr_line, time_str);
       va_start(ap, msg);
       vfprintf(log_fd, msg, ap);
       vfprintf(stdout, msg, ap);
@@ -77,6 +83,7 @@ uapi void ucall ulog(char* msg,...)
   ulog_conf* conf;
   FILE* log_fd;
   va_list ap;
+  char* time_str;
 
   conf = _uli.conf;
   if (!conf || !conf->power || !_uli.log_fd) {
@@ -91,7 +98,11 @@ uapi void ucall ulog(char* msg,...)
     _uli.log_fd = fopen(conf->log_fn,"w");
   }
   log_fd = _uli.log_fd;
-  fprintf(log_fd,"%d.["__DATE__" "__TIME__"]",_uli.curr_line);
+  time_str = utimestr();
+  if (time_str == NULL) {
+    time_str = "get time error!";
+  }
+  fprintf(log_fd,"%d.[%s]", _uli.curr_line, time_str);
   va_start(ap,msg);
   vfprintf(log_fd,msg,ap);
   va_end(ap);

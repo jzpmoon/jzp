@@ -12,7 +12,8 @@ obj_list := ulist.o         \
             ualloc.o        \
 	    ugraph.o        \
 	    ulr.o           \
-            ulib.o
+            ulib.o          \
+            utime.o
 
 CFLAGS := -std=c89 -Wall -Wextra -Wno-unused-parameter $(DEBUG_MODE)
 

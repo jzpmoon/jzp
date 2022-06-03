@@ -31,6 +31,36 @@
     return k;								\
   }
 
+#define uhstb_map_put_tpl(t)					\
+  static int uhstb_map_##t##_put(umap_##t*           map,	\
+				 unsigned int        hscd,	\
+				 t*                  ink,	\
+				 t**                 outk,	\
+				 umap_##t##_key_ft   putk,	\
+				 umap_##t##_comp_ft  comp)	\
+  {								\
+    return uhstb_##t##_put((uhstb_##t*)map,			\
+			   hscd,				\
+			   ink,					\
+			   outk,				\
+			   putk,				\
+			   comp);				\
+  }
+
+#define uhstb_map_get_tpl(t)					\
+  static int uhstb_map_##t##_get(umap_##t*           map,	\
+				 unsigned int        hscd,	\
+				 t*                  ink,	\
+				 t**                 outk,	\
+				 umap_##t##_comp_ft  comp)	\
+  {								\
+    return uhstb_##t##_get((uhstb_##t*)map,			\
+			   hscd,				\
+			   ink,					\
+			   outk,				\
+			   comp);				\
+  }
+
 #define uhstb_new_tpl(t)				\
   uapi_tpl uhstb_##t* ucall uhstb_##t##_new(int len)	\
   {							\
@@ -59,8 +89,8 @@
     if (hstb) {							\
       hstb->iterate = uhstb_##t##_cursor_init;			\
       hstb->next = uhstb_##t##_cursor_next;			\
-      hstb->put = uhstb_##t##_put;				\
-      hstb->get = uhstb_##t##_get;				\
+      hstb->put = uhstb_map_##t##_put;				\
+      hstb->get = uhstb_map_##t##_get;				\
       hstb->len = rlen;						\
       hstb->count = 0;						\
       hstb->allocator = allocator;				\
@@ -166,6 +196,8 @@
 #define uhstb_def_tpl(t)			\
   uhstb_cursor_tpl(t);				\
   uhstb_cursor_next_tpl(t);			\
+  uhstb_map_put_tpl(t);				\
+  uhstb_map_get_tpl(t);				\
   uhstb_new_tpl(t);				\
   uhstb_alloc_tpl(t);				\
   uhstb_dest_tpl(t);				\

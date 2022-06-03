@@ -1,5 +1,6 @@
 #include <stddef.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include "uerror.h"
 #include "ualloc.h"
 #include "ustring.h"

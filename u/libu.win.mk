@@ -3,16 +3,17 @@ obj_list = ulist.obj         \
            ustack.obj        \
            ustring.obj       \
            ustring_table.obj \
-		   uerror.obj        \
-		   ubuffer.obj       \
-		   udbuffer.obj	     \
-		   ustream.obj       \
-		   uhstb.obj         \
-		   umempool.obj      \
+           uerror.obj        \
+           ubuffer.obj       \
+           udbuffer.obj	     \
+           ustream.obj       \
+           uhstb.obj         \
+           umempool.obj      \
            ualloc.obj        \
-		   ugraph.obj        \
-		   ulr.obj           \
-           ulib.obj
+           ugraph.obj        \
+           ulr.obj           \
+           ulib.obj          \
+           utime.obj
 
 CFLAGS = $(STDC98) $(WALL) $(WEXTRA) $(WNO_UNUSED_PARAMETER) $(DEBUG_MODE)
 

@@ -33,29 +33,34 @@
   typedef int(ucall *uhstb_##t##_comp_ft)(t*,t*)
 
 #define uhstb_new_decl_tpl(t)			\
-  uapi_tpl uhstb_##t* ucall uhstb_##t##_new(int len)
+  uapi_tpl uhstb_##t* ucall			\
+  uhstb_##t##_new(int len)
 
 #define uhstb_alloc_decl_tpl(t)					\
-  uapi_tpl uhstb_##t* ucall uhstb_##t##_alloc(uallocator* allocator,int len)
+  uapi_tpl uhstb_##t* ucall					\
+  uhstb_##t##_alloc(uallocator* allocator,int len)
 
 #define uhstb_dest_decl_tpl(t)						\
-  uapi_tpl void ucall uhstb_##t##_dest(uhstb_##t* hstb,uhstb_##t##_dest_ft dest)
+  uapi_tpl void ucall							\
+  uhstb_##t##_dest(uhstb_##t* hstb,uhstb_##t##_dest_ft dest)
 
 #define uhstb_put_decl_tpl(t)				\
-  uapi_tpl int ucall uhstb_##t##_put(uhstb_##t*          hstb,		\
-		      unsigned int        hscd,		\
-		      t*                  ink,		\
-		      t**                 outk,		\
-		      uhstb_##t##_key_ft  putk,		\
-		      uhstb_##t##_comp_ft comp)
+  uapi_tpl int ucall					\
+  uhstb_##t##_put(uhstb_##t*          hstb,		\
+		  unsigned int        hscd,		\
+		  t*                  ink,		\
+		  t**                 outk,		\
+		  uhstb_##t##_key_ft  putk,		\
+		  uhstb_##t##_comp_ft comp)
 
 #define uhstb_get_decl_tpl(t)				\
-  uapi_tpl int ucall uhstb_##t##_get(uhstb_##t*          hstb,		\
-		      unsigned int        hscd,		\
-		      t*                  ink,		\
-		      t**                 outk,		\
-		      uhstb_##t##_comp_ft comp)
-
+  uapi_tpl int ucall					\
+  uhstb_##t##_get(uhstb_##t*          hstb,		\
+		  unsigned int        hscd,		\
+		  t*                  ink,		\
+		  t**                 outk,		\
+		  uhstb_##t##_comp_ft comp)
+  
 #define uhstb_decl_tpl(t)			\
   uhstb_tpl(t);					\
   uhstb_key_ft_tpl(t);				\
