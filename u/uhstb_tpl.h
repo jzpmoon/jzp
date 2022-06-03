@@ -8,6 +8,7 @@
 #define UHSTB_LENGTH 31
 
 #define uhstb_tpl(t)				\
+  umap_decl_tpl(t);				\
   typedef struct _uhsnd_##t{			\
     struct _uhsnd_##t* next;			\
     t                  k;			\
@@ -17,7 +18,7 @@
     int next_idx;				\
   } uhstb_##t##_cursor;				\
   typedef struct _uhstb_##t{			\
-    USETHEADER;					\
+    UMAPHEADER(t);				\
     int len;					\
     int count;					\
     uallocator* allocator;			\
