@@ -6,20 +6,19 @@
 
 (defun max (a b)
   (if (> a b)
-    (a)
-    (b)))
+    a b))
 
 (defun fib (x)
   (if (> x 2)
       (+ (fib (- x 1))
 	 (fib (- x 2)))
-    (1)))
+    1))
     
 (defun factorial (x)
   (if (> x 1)
       (* (factorial (- x 1))
          x)
-      (1)))
+      1))
 
 (defun let-test (x)
   (let i 1)
@@ -34,11 +33,11 @@
 
 (defun if-test (x)
   (if (> x 1)
-    ("hello")))
+    "hello"))
 
-;(print (fib 8))
+(print (fib 3))
 ;(test)
-(print (factorial 5))
+;(print (factorial 5))
 ;(print (let-test 2))
 ;(print (while-test 6))
 ;(print (if-test 1))

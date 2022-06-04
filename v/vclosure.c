@@ -306,7 +306,8 @@ UBEGIN
     if (child->closure_type != VCLOSURE_TYPE_FUNC) {
       continue;
     }
-    if (ustring_comp(name,child->closure_name)) {
+    if (child->closure_name != NULL &&
+	ustring_comp(name,child->closure_name)) {
       return child;
     }
   }

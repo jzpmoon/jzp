@@ -13,6 +13,7 @@ ulist_decl_tpl(vclosurep);
 #define VCLOSURE_TYPE_FUNC 1
 #define VCLOSURE_TYPE_MAIN 2
 #define VCLOSURE_TYPE_NONE 3
+#define VCLOSURE_TYPE_STRU 4
 
 #define VCLOSURE_STORE_DECL 0
 #define VCLOSURE_STORE_IMPL 1

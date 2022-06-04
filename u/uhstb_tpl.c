@@ -31,34 +31,34 @@
     return k;								\
   }
 
-#define uhstb_map_put_tpl(t)					\
-  static int uhstb_map_##t##_put(umap_##t*           map,	\
-				 unsigned int        hscd,	\
-				 t*                  ink,	\
-				 t**                 outk,	\
-				 umap_##t##_key_ft   putk,	\
-				 umap_##t##_comp_ft  comp)	\
-  {								\
-    return uhstb_##t##_put((uhstb_##t*)map,			\
-			   hscd,				\
-			   ink,					\
-			   outk,				\
-			   putk,				\
-			   comp);				\
+#define uhstb_map_put_tpl(t)						\
+  static int ucall uhstb_map_##t##_put(umap_##t*           map,		\
+				       unsigned int        hscd,	\
+				       t*                  ink,		\
+				       t**                 outk,	\
+				       umap_##t##_key_ft   putk,	\
+				       umap_##t##_comp_ft  comp)	\
+  {									\
+    return uhstb_##t##_put((uhstb_##t*)map,				\
+			   hscd,					\
+			   ink,						\
+			   outk,					\
+			   putk,					\
+			   comp);					\
   }
 
-#define uhstb_map_get_tpl(t)					\
-  static int uhstb_map_##t##_get(umap_##t*           map,	\
-				 unsigned int        hscd,	\
-				 t*                  ink,	\
-				 t**                 outk,	\
-				 umap_##t##_comp_ft  comp)	\
-  {								\
-    return uhstb_##t##_get((uhstb_##t*)map,			\
-			   hscd,				\
-			   ink,					\
-			   outk,				\
-			   comp);				\
+#define uhstb_map_get_tpl(t)						\
+  static int ucall uhstb_map_##t##_get(umap_##t*           map,		\
+				       unsigned int        hscd,	\
+				       t*                  ink,		\
+				       t**                 outk,	\
+				       umap_##t##_comp_ft  comp)	\
+  {									\
+    return uhstb_##t##_get((uhstb_##t*)map,				\
+			   hscd,					\
+			   ink,						\
+			   outk,					\
+			   comp);					\
   }
 
 #define uhstb_new_tpl(t)				\

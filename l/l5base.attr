@@ -35,6 +35,11 @@ VDEFATTR(defun,"defun",{
     }
     fun_name = (vast_symbol*)obj;
 
+    /*is already define this function?*/
+    if (vclosure_func_get(jreq->closure,fun_name->name)) {
+      uabort("function already define!");
+    }
+
     grp->id.name = fun_name->name;
     
     next = vast_cdr(next);
@@ -77,13 +82,10 @@ VDEFATTR(defun,"defun",{
     next = vast_cdr(next);
     while (next) {
       if (vast_consp(next)) {
-    uabort("defun body not a cons!");
+	uabort("defun body not a cons!");
       }
       obj = vast_car(next);
-      if (vast_consp(obj)) {
-    uabort("defun body not a cons!");
-      }
-      vclosure_cons_call(closure,jreq,obj);
+      vclosure_arg_call(closure,jreq,obj);
       next = vast_cdr(next);
     }
     
@@ -237,10 +239,7 @@ VDEFATTR(if,"if",{
       uabort("ast attr \"if\" has no cond!");
     }
     obj = vast_car(next);
-    if (vast_consp(obj)) {
-      uabort("ast attr \"if\" cond has no ()!");
-    }
-    vclosure_cons_call(jreq->closure,jreq,obj);
+    vclosure_arg_call(jreq->closure,jreq,obj);
     
     inst = vps_ijmpilb(jreq->vps,then_id);
     vcfg_grp_inst_apd(grp,inst);
@@ -256,10 +255,7 @@ VDEFATTR(if,"if",{
       uabort("ast attr \"if\" has no then!");
     }
     obj = vast_car(next);
-    if (vast_consp(obj)) {
-      uabort("ast attr \"if\" then has no ()!");
-    }
-    vclosure_cons_call(jreq->closure,jreq,obj);
+    vclosure_arg_call(jreq->closure,jreq,obj);
     
     inst = vps_ijmplb(jreq->vps,exit_id);
     vcfg_grp_inst_apd(grp,inst);
@@ -274,10 +270,7 @@ VDEFATTR(if,"if",{
       vcfg_grp_inst_apd(grp,inst);
     } else if (!vast_consp(next)) {
       obj = vast_car(next);
-      if (vast_consp(obj)) {
-	uabort("ast attr \"if\" else has no ()!");
-      }
-      vclosure_cons_call(jreq->closure,jreq,obj);
+      vclosure_arg_call(jreq->closure,jreq,obj);
     } else {
       uabort("ast attr \"if\" has no else!");
     }
@@ -318,10 +311,7 @@ VDEFATTR(while,"while",{
       uabort("ast attr \"while\" has no cond!");
     }
     obj = vast_car(next);
-    if (vast_consp(obj)) {
-      uabort("ast attr \"while\" cond has no ()!");
-    }
-    vclosure_cons_call(jreq->closure,jreq,obj);
+    vclosure_arg_call(jreq->closure,jreq,obj);
 
     inst = vps_ijmpilb(jreq->vps,loop_id);
     vcfg_grp_inst_apd(grp,inst);
@@ -334,16 +324,13 @@ VDEFATTR(while,"while",{
     while (1) {
       next = vast_cdr(next);
       if (!next) {
-    break;
+	break;
       }
       if (vast_consp(next)) {
-    uabort("ast attr \"while\" loop not a cons!");
+	uabort("ast attr \"while\" loop not a cons!");
       }
       obj = vast_car(next);
-      if (vast_consp(obj)) {
-    uabort("ast attr \"while\" loop has no ()!");
-      }
-      vclosure_cons_call(jreq->closure,jreq,obj);
+      vclosure_arg_call(jreq->closure,jreq,obj);
     }
     inst = vps_ijmplb(jreq->vps,cond_id);
     vcfg_grp_inst_apd(grp,inst);
@@ -373,17 +360,16 @@ VDEFATTR(add,"+",{
     next = vast_cdr(jreq->ast_obj);
     while (1) {
       if (!next) {
-    break;
+	break;
       }
       obj = vast_car(next);
       vclosure_arg_call(jreq->closure,jreq,obj);
-
+      
       if (argc > 0) {
-    inst = vps_iadd(jreq->vps);
-    vcfg_grp_inst_apd(grp,inst);
+	inst = vps_iadd(jreq->vps);
+	vcfg_grp_inst_apd(grp,inst);
       }
       argc++;
-
       next = vast_cdr(next);
     }
     
@@ -447,17 +433,16 @@ VDEFATTR(mul,"*",{
     next = vast_cdr(jreq->ast_obj);
     while (1) {
       if (!next) {
-    break;
+	break;
       }
       obj = vast_car(next);
       vclosure_arg_call(jreq->closure,jreq,obj);
 
       if (argc > 0) {
-    inst = vps_imul(jreq->vps);
-    vcfg_grp_inst_apd(grp,inst);
+	inst = vps_imul(jreq->vps);
+	vcfg_grp_inst_apd(grp,inst);
       }
       argc++;
-
       next = vast_cdr(next);
     }
     
