@@ -18,7 +18,7 @@ lmod_somk = makefile_m
 
 CFLAGS = $(STDC98) $(WALL) $(WEXTRA) $(WNO_UNUSED_PARAMETER) $(DEBUG_MODE)
 
-&(bin_name):libl5.lib liblmod.lib $(obj_list)
+&(bin_name):libl5.lib liblm.lib $(obj_list)
 	$(LINK) $(obj_list) $(L)$(libl_path) libl5.lib $(L)$(libv_path) libv.lib $(L)$(libu_path) libu.lib $(OUT)$(bin_name)
 .c.obj:
 	$(CC) $(I) $(libl_path) $(I) $(libv_path) $(I) $(libu_path) $(C) $(COUT)$@ $< $(CFLAGS)

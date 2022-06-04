@@ -72,19 +72,19 @@ UBEGIN
     }
   } else if (!vast_keywordp(obj)) {
     vast_keyword* kw;
-
     kw = (vast_keyword*)obj;
     if (kw->kw.kw_type == lkw_true) {
       inst = vps_ipushbool(req->vps,grp,vps_bool_true);
+      vcfg_grp_inst_apd(grp,inst);
     } else if (kw->kw.kw_type == lkw_false) {
       inst = vps_ipushbool(req->vps,grp,vps_bool_false);
+      vcfg_grp_inst_apd(grp,inst);
     } else if (kw->kw.kw_type == lkw_nil) {
       inst = vps_ipushnil(req->vps,grp);
+      vcfg_grp_inst_apd(grp,inst);
     } else {
       uabort("keyword not define!");
-      inst = NULL;
     }
-    vcfg_grp_inst_apd(grp,inst);
   } else {
     uabort("push inst error!");
   }

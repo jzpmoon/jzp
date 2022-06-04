@@ -33,7 +33,7 @@ echo "currdir=$currdir" >> $mk
 
 echo "include ../u/env/env_"${envc}".mk" >> $mk
 
-cat liblmod.mk >> $mk
+cat liblm.mk >> $mk
 
 cd ../v/
 ./configure.sh --prefix=$prefix --envc=$envc --thw=$thw

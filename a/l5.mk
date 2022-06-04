@@ -6,7 +6,7 @@ conf_name = l5.conf
 l_lib = l5
 v_lib = v
 u_lib = u
-lmod_lib = lmod
+lmod_lib = lm
 
 libl_path = ../l/
 libv_path = ../v/

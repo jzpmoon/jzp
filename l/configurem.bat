@@ -25,7 +25,7 @@ echo envc=%envc% >> %mk%
 echo thw=%thw% >> %mk%
 echo currdir=%currdir% >> %mk%
 echo !include ..\u\env\env_%envc%.mk >> %mk%
-type liblmod.win.mk >> %mk%
+type liblm.win.mk >> %mk%
 
 cd ..\v\
 call .\configure.bat --prefix=%prefix% --envc=%envc% --thw=%thw%

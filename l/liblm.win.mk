@@ -1,4 +1,4 @@
-bin = liblmod$(suf_so)
+bin = liblm$(suf_so)
 obj = lmod.obj lobj.obj
 temp_cfun_file = _ltemp.cfun
 
